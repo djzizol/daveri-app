@@ -1,0 +1,1862 @@
+<style>
+.navbar{
+  width:100%;position:fixed;top:0;left:0;z-index:99999999;
+  background:radial-gradient(circle at 0 0,#111827,#020617 55%);
+  border-bottom:1px solid rgba(15,23,42,.9);
+  color:#f9fafb;transition:.35s;
+}
+.navbar-inner{
+  max-width:1240px;margin:0 auto;padding:14px 22px;
+  display:flex;justify-content:flex-start;align-items:center;gap:28px;
+}
+.navbar.shrink .navbar-inner{padding:10px 22px;}
+
+.navbar-logo{display:flex;align-items:center;cursor:pointer;}
+.logo-img{height:54px;opacity:0;transition:.2s;}
+@keyframes logoSlideIn{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
+.logo-animate{animation:logoSlideIn .6s ease-out forwards .15s;}
+.navbar-logo:hover .logo-img{transform:scale(1.03);}
+
+.nav-menu{
+  display:flex;align-items:center;gap:26px;
+  margin-left:40px;margin-right:auto;
+}
+.menu-item{
+  font-size:15px;color:#e5e7eb;cursor:pointer;position:relative;
+}
+.menu-item::after{
+  content:"";position:absolute;bottom:-4px;left:0;width:0;height:2px;
+  border-radius:999px;
+  background:linear-gradient(120deg,#fb7185,#a855f7,#60a5fa);
+  transition:.25s;
+}
+.menu-item:hover::after{width:100%;}
+
+.btn-area{display:flex;align-items:center;gap:8px;}
+
+.nav-btn{
+  position:relative;height:40px;min-width:118px;padding:0 16px;
+  border-radius:9px;border:1px solid #111827;background:#020617;
+  color:#f9fafb;font-size:13px;font-weight:600;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.55);
+  transition:.18s;
+}
+.nav-btn:hover{
+  background:#0b1120;border-color:#1f2937;
+  transform:translateY(-1px);box-shadow:0 12px 30px rgba(0,0,0,.7);
+}
+
+/* CTA */
+.nav-btn-cta{
+  min-width:150px;border-radius:10px;
+  border:1px solid #16a34a;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:#022c22;font-weight:700;letter-spacing:.01em;
+}
+.nav-btn-cta::after{
+  content:"";position:absolute;left:6px;right:6px;bottom:-10px;height:14px;
+  border-radius:999px;
+  background:linear-gradient(90deg,
+    rgba(52,211,153,0),
+    rgba(52,211,153,.75),
+    rgba(74,222,128,.95),
+    rgba(52,211,153,.75),
+    rgba(52,211,153,0)
+  );
+  filter:blur(8px);opacity:.55;pointer-events:none;
+  animation:daveriGlow 1.6s ease-in-out infinite alternate;
+}
+@keyframes daveriGlow{
+  0%{opacity:.3;transform:translateY(0) scaleX(.95)}
+  100%{opacity:.9;transform:translateY(2px) scaleX(1.05)}
+}
+.nav-btn-cta:hover{
+  background:linear-gradient(135deg,#4ade80,#16a34a);
+  border-color:#22c55e;
+}
+
+/* GOOGLE — sama duża ikona */
+.nav-btn-google{
+  min-width:56px;width:56px;padding:0;
+}
+.google-icon{width:22px;height:22px;}
+
+@media(max-width:900px){
+  .nav-menu{display:none;}
+  .btn-area{display:none;}
+}
+</style>
+
+<div class="navbar" id="navbar">
+  <div class="navbar-inner">
+
+    <div class="navbar-logo" onclick="window.location.href='/'">
+      <img
+        src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767564819792x710725775517473700/DaVeri.png"
+        class="logo-img logo-animate"
+        alt="DaVeri">
+    </div>
+
+  <div class="nav-menu">
+  <a href="https://daveri.io/plan" class="menu-item">Plany</a>
+  <a href="https://daveri.io/jak_to_dzia_a" class="menu-item">Jak to działa?</a>
+  <a href="https://daveri.io/kontakt" class="menu-item">Kontakt</a>
+  <a href="https://daveri.io/polityka" class="menu-item">Polityka prywatnośći</a>
+  <a href="https://daveri.io/regulamin" class="menu-item">Regulamin</a>
+</div>
+
+<div class="btn-area">
+  <button class="nav-btn" onclick="window.location.href='/login'">
+    Logowanie
+  </button>
+</div>
+
+
+<script>
+const navbar=document.getElementById("navbar");
+window.addEventListener("scroll",()=>{
+  if(window.scrollY>50) navbar.classList.add("shrink");
+  else navbar.classList.remove("shrink");
+});
+</script>
+<section class="chatek-hero">
+  <style>
+    :root{
+      --ck-primary-burgundy:#fb7185;
+      --ck-primary-violet:#a855f7;
+      --ck-primary-blue:#60a5fa;
+      --ck-text:#f9fafb;
+      --ck-muted:#9ca3af;
+      --ck-border:rgba(148,163,184,.32);
+      --ck-shadow:0 26px 70px rgba(0,0,0,.95);
+      --ck-chat-bg:#020617;
+    }
+
+    /* TŁO HERO – USUNIĘTE, PRZEPUŚCI TŁO STRONY */
+    .chatek-hero{
+      position:relative;
+      padding:80px 16px 60px;
+      background:transparent;
+      color:var(--ck-text);
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Inter",system-ui,sans-serif;
+      overflow:hidden;
+    }
+
+    .chatek-hero-inner{
+      max-width:1120px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:minmax(0,1.1fr) minmax(0,1.1fr);
+      gap:40px;
+      align-items:center;
+      position:relative;
+      z-index:1;
+    }
+
+    /* LEWA STRONA — COPY */
+    .chatek-label{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:4px 10px 4px 4px;
+      border-radius:999px;
+      background:rgba(5,5,20,.9);
+      border:1px solid rgba(148,163,184,.45);
+      margin-bottom:16px;
+      backdrop-filter:blur(14px);
+    }
+    .chatek-label-dot{
+      width:26px;height:26px;border-radius:999px;
+      background:conic-gradient(from 160deg,
+        var(--ck-primary-burgundy),
+        var(--ck-primary-violet),
+        var(--ck-primary-blue),
+        var(--ck-primary-burgundy)
+      );
+      display:flex;align-items:center;justify-content:center;
+    }
+    .chatek-label-dot span{
+      width:16px;height:16px;border-radius:999px;background:#020617;
+    }
+    .chatek-label-text{
+      font-size:12px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--ck-muted);
+    }
+
+    .chatek-title{
+      font-size:40px;
+      line-height:1.05;
+      letter-spacing:-.04em;
+      margin:0 0 18px;
+    }
+    .chatek-title .gradient{
+      background:linear-gradient(120deg,#fee2e2,#fb7185,#a855f7,#60a5fa);
+      -webkit-background-clip:text;
+      color:transparent;
+    }
+    .chatek-sub{
+      font-size:15px;
+      color:var(--ck-muted);
+      max-width:460px;
+      margin-bottom:22px;
+    }
+
+    .chatek-bullets{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-bottom:26px;
+    }
+    .chatek-bullet{
+      display:flex;
+      gap:10px;
+      font-size:14px;
+      color:var(--ck-muted);
+    }
+    .chatek-bullet-badge{
+      min-width:22px;height:22px;border-radius:999px;
+      background:radial-gradient(circle at 30% 0,
+        var(--ck-primary-burgundy),
+        var(--ck-primary-violet)
+      );
+      display:flex;align-items:center;justify-content:center;
+      color:#fff;font-size:13px;
+    }
+    .chatek-bullet strong{color:#fff;font-weight:500;}
+
+    .chatek-cta-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-bottom:10px;
+    }
+    .chatek-btn-primary{
+      border:none;border-radius:999px;cursor:pointer;
+      padding:11px 18px;font-size:14px;
+      display:inline-flex;align-items:center;gap:8px;
+      background:linear-gradient(120deg,
+        var(--ck-primary-burgundy),
+        var(--ck-primary-violet),
+        var(--ck-primary-blue)
+      );
+      color:#fff;
+      border:1px solid rgba(248,250,252,.12);
+      box-shadow:0 16px 40px rgba(0,0,0,.9);
+    }
+    .chatek-btn-primary .light{
+      width:8px;height:8px;border-radius:999px;background:#fff;
+      opacity:.9;
+    }
+    .chatek-cta-note{
+      font-size:12px;
+      color:var(--ck-muted);
+    }
+    .chatek-cta-note strong{color:#fff;}
+
+    /* PRAWA STRONA — CHAT W STYLU KAFELKÓW */
+    #chatek-hero-widget{
+      position:relative;
+      z-index:1;
+    }
+
+    .chatek-widget-card{
+      position:relative;
+      border-radius:28px;
+      padding:18px 18px 16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+
+      /* TU ZMIANA: STAŁA WYSOKOŚĆ ZAMIAST min-height */
+      height:520px;
+      max-height:520px;
+
+      /* obraz + lekkie przyciemnienie */
+      background:
+        linear-gradient(140deg, rgba(2,6,23,.25), rgba(2,6,23,.55)),
+        url("https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767575481247x699484001556756100/okurde.jpg")
+          center/cover no-repeat;
+
+      border:1px solid rgba(120,150,255,.42);
+      box-shadow:
+        0 26px 70px rgba(0,0,0,0.9),
+        0 0 0 1px rgba(15,23,42,0.95);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      overflow:visible;
+    }
+
+    /* NEON GLOW POD KARTĄ */
+    #chatek-hero-widget::before{
+      content:"";
+      position:absolute;
+      inset:-30px -40px -40px -40px;
+      z-index:-1;
+      border-radius:40px;
+      background:
+        radial-gradient(160px 80px at 20% 100%, rgba(248,113,113,.55), transparent 70%),
+        radial-gradient(160px 80px at 55% 100%, rgba(168,85,247,.55), transparent 70%),
+        radial-gradient(200px 90px at 90% 100%, rgba(96,165,250,.55), transparent 75%);
+      filter: blur(48px);
+      opacity:.95;
+      pointer-events:none;
+    }
+
+    .chatek-widget-header{
+      position:relative;
+      z-index:1;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:4px;
+    }
+    .chatek-avatar-wrap{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .chatek-avatar{
+      width:38px;height:38px;border-radius:999px;
+      background:conic-gradient(from 160deg,
+        var(--ck-primary-burgundy),
+        var(--ck-primary-violet),
+        var(--ck-primary-blue),
+        var(--ck-primary-burgundy)
+      );
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 10px 28px rgba(0,0,0,.9);
+      overflow:hidden;
+    }
+    .chatek-avatar-inner{
+      width:30px;height:30px;border-radius:999px;
+      background:var(--ck-chat-bg);
+      display:flex;align-items:center;justify-content:center;
+      font-size:15px;
+      position:relative;
+      overflow:hidden;
+    }
+    .chatek-avatar-inner span{
+      background:linear-gradient(135deg,#fee2e2,#fb7185,#a855f7,#60a5fa);
+      -webkit-background-clip:text;
+      color:transparent;
+      font-weight:600;
+      position:relative;
+      z-index:1;
+    }
+    .chatek-avatar-inner img{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:none;
+      border-radius:999px;
+    }
+
+    .chatek-bot-meta{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    .chatek-bot-name{
+      font-size:15px;
+      font-weight:600;
+      color:#e5e7eb;
+    }
+    .chatek-bot-status{
+      font-size:13px;
+      color:var(--ck-muted);
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .chatek-status-dot{
+      width:8px;height:8px;border-radius:999px;
+      background:radial-gradient(circle at 30% 0,#22c55e,#16a34a);
+    }
+    .chatek-widget-badge{
+      padding:6px 12px;
+      border-radius:999px;
+      font-size:11px;
+      border:1px solid rgba(148,163,184,.6);
+      background:rgba(15,23,42,.92);
+      color:#e5e7eb;
+      white-space:nowrap;
+      backdrop-filter:blur(16px);
+    }
+
+    /* CHAT SHELL – wewnętrzna karta */
+    .chatek-chat-shell{
+      position: relative;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:4px;
+      border-radius:22px;
+      backdrop-filter: blur(6px);
+
+      background:
+        linear-gradient(160deg, rgba(2,6,23,.88), rgba(2,6,23,.96)),
+        url("https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767575481247x699484001556756100/okurde.jpg")
+          center/cover no-repeat;
+
+      border:1px solid rgba(30,64,175,.55);
+      padding:10px 12px 12px;
+      min-height:380px;
+      overflow:hidden;
+    }
+
+    .chatek-chat-messages{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      overflow-y:auto;
+      padding-right:4px;
+      scrollbar-width:thin;
+      scrollbar-color:rgba(75,85,99,.8) transparent;
+    }
+    .chatek-chat-messages::-webkit-scrollbar{ width:6px; }
+    .chatek-chat-messages::-webkit-scrollbar-thumb{
+      background:rgba(75,85,99,.85);
+      border-radius:999px;
+    }
+
+    .chatek-msg-row{
+      display:flex;
+      gap:6px;
+    }
+    .chatek-msg-row.user{
+      justify-content:flex-end;
+    }
+
+    .chatek-msg-bubble{
+      max-width:82%;
+      padding:11px 14px;
+      border-radius:18px;
+      font-size:15px;
+      line-height:1.55;
+      font-weight:500;
+      word-wrap:break-word;
+      word-break:break-word;
+    }
+
+    .chatek-msg-bubble.user{
+      background:linear-gradient(135deg,
+        #fb7185,
+        #a855f7,
+        #60a5fa
+      );
+      color:#fdf2f8;
+      border-bottom-right-radius:6px;
+      box-shadow:0 10px 24px rgba(0,0,0,.95);
+    }
+    .chatek-msg-bubble.bot{
+      background:radial-gradient(circle at 0 0,#020617,#020617);
+      border:1px solid rgba(51,65,85,.95);
+      color:#e5e7eb;
+      border-bottom-left-radius:6px;
+    }
+
+    .chatek-input-row{
+      margin-top:6px;
+      border-radius:999px;
+      border:1px solid rgba(30,64,175,.8);
+      background:rgba(15,23,42,.96);
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:5px 5px 5px 14px;
+      box-shadow:0 14px 34px rgba(0,0,0,.9);
+    }
+    .chatek-input-field{
+      flex:1;
+      background:transparent;
+      border:none;
+      outline:none;
+      color:#f9fafb;
+      font-size:15px;
+      font-weight:500;
+      padding:7px 0;
+    }
+    .chatek-input-field::placeholder{
+      color:rgba(148,163,184,.98);
+    }
+    .chatek-send-btn{
+      border:none;
+      border-radius:999px;
+      width:34px;height:34px;
+      background:linear-gradient(135deg,
+        #fb7185,
+        #a855f7,
+        #60a5fa
+      );
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      box-shadow:0 12px 26px rgba(0,0,0,.95);
+    }
+    .chatek-send-icon{
+      width:16px;height:16px;
+      transform:translateX(1px);
+      fill:#fdf2f8;
+    }
+    .chatek-send-btn:disabled{
+      opacity:.55;
+      cursor:default;
+      box-shadow:none;
+    }
+
+    .chatek-helper{
+      margin-top:4px;
+      font-size:12px;
+      color:var(--ck-muted);
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    /* PASEK Z FALĄ NA DOLE (bez napisu) */
+    .daveri-ai-bar{
+      position:relative;
+      width:100%;
+      height:190px;
+      margin:40px 0 0;
+      background:transparent;
+      overflow:hidden;
+    }
+
+    .daveri-wave{
+      position:absolute;
+      inset:0;
+      background:
+        url("https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767589783840x876541405649320300/Projekt%20bez%20nazwy%20%281%29.svg")
+        center center / cover no-repeat;
+      opacity:.98;
+      pointer-events:none;
+    }
+
+    @media(max-width:900px){
+      .chatek-hero-inner{grid-template-columns:1fr;}
+      #chatek-hero-widget{order:-1;}
+      .chatek-title{font-size:32px;}
+    }
+  </style>
+
+
+  <div class="chatek-hero-inner">
+    <!-- LEWA STRONA -->
+    <div>
+      <div class="chatek-label">
+        <div class="chatek-label-dot"><span></span></div>
+        <span class="chatek-label-text">DaVeri • Samodzielna konfiguracja • od 39 zł/mies.</span>
+      </div>
+
+      <h1 class="chatek-title">
+        Skonfiguruj własnego <span class="gradient">AI-chatbota</span> w kilka minut.<br/>
+        Pełna kontrola, poważne możliwości.
+      </h1>
+
+      <p class="chatek-sub">
+        Dodaj treści, pliki i ofertę swojej firmy. System dopasowuje odpowiedzi do Twojego biznesu —
+        bez programisty, bez skomplikowanego wdrożenia.
+      </p>
+
+      <div class="chatek-bullets">
+        <div class="chatek-bullet">
+          <div class="chatek-bullet-badge">✓</div>
+          <div><strong>Plany dopasowane do wielkości Twojego biznesu</strong> — już od 39 zł/mies.</div>
+        </div>
+        <div class="chatek-bullet">
+          <div class="chatek-bullet-badge">⚙</div>
+          <div><strong>Samodzielna konfiguracja</strong> — wygląd, ton i źródła wiedzy w jednym panelu.</div>
+        </div>
+        <div class="chatek-bullet">
+          <div class="chatek-bullet-badge">⏱</div>
+          <div><strong>Gotowy do pracy w kilka minut</strong> — od konfiguracji do realnych rozmów.</div>
+        </div>
+      </div>
+
+      <div class="chatek-cta-row">
+        <button class="chatek-btn-primary" type="button">
+          <span class="light"></span>
+          Rozpocznij konfigurację • 7 dni bez zobowiązań
+        </button>
+      </div>
+
+      <div class="chatek-cta-note">
+        <strong>Bez karty na start.</strong> Skonfiguruj bota samodzielnie i przetestuj go na swojej stronie.
+      </div>
+    </div>
+
+    <!-- PRAWA STRONA — INTERAKTYWNY WIDGET DAVERI -->
+    <div id="chatek-hero-widget" data-bot-id="368c8dde-8ebc-4efc-9436-ff9d1009b602">
+      <div class="chatek-widget-card">
+        <div class="chatek-widget-header">
+          <div class="chatek-avatar-wrap">
+            <div class="chatek-avatar">
+              <div class="chatek-avatar-inner">
+                <span id="heroAvaLetter">D</span>
+                <img id="heroAvaImg" alt="Bot avatar">
+              </div>
+            </div>
+            <div class="chatek-bot-meta">
+              <div class="chatek-bot-name" id="heroBotName">Asystent DaVeri</div>
+              <div class="chatek-bot-status" id="heroBotStatus">
+                <span class="chatek-status-dot"></span>
+                Online • odpowiada w kilka sekund
+              </div>
+            </div>
+          </div>
+          <div class="chatek-widget-badge">
+            Tryb demo • bazuje na Twoich treściach
+          </div>
+        </div>
+
+        <div class="chatek-chat-shell">
+          <div id="chatek-chat-messages" class="chatek-chat-messages">
+            <!-- powitanie doda loadBotConfig() -->
+          </div>
+
+          <form id="chatek-chat-form" class="chatek-input-row">
+            <input
+              id="chatek-chat-input"
+              class="chatek-input-field"
+              type="text"
+              placeholder="Napisz wiadomość tak, jak zrobiłby to Twój klient..."
+              autocomplete="off"
+            />
+            <button id="chatek-send-btn" type="submit" class="chatek-send-btn">
+              <svg class="chatek-send-icon" viewBox="0 0 24 24">
+                <path d="M5 20.5L20.71 12 5 3.5 5 10.5 14 12 5 13.5z"></path>
+              </svg>
+            </button>
+          </form>
+
+          <div class="chatek-helper">
+            <span>Przykład: „Który plan będzie najlepszy na start dla małej firmy?”</span>
+            <span>Bot odpowiada na podstawie treści, które wgrasz w panelu.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASEK Z FALĄ NA DOLE (bez napisu) -->
+  <div class="daveri-ai-bar">
+    <div class="daveri-wave"></div>
+  </div>
+
+  <!-- LOGIKA CHATA -->
+  <script>
+  (function(){
+    const SUPABASE_URL = "https://inayqymryrriobowyysw.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_r3Lvhhf751_SNXg_rmCLQA_LJXv381f";
+    const ASK_BOT_URL  = SUPABASE_URL + "/functions/v1/ask-bot";
+
+    const root = document.getElementById("chatek-hero-widget");
+    if(!root) return;
+
+    function getBotId(){
+      const fromAttr = (root.getAttribute("data-bot-id") || "").trim();
+      if(fromAttr) return fromAttr;
+
+      try{
+        const params = new URLSearchParams(window.location.search || "");
+        const fromUrl = (params.get("bot_id") || params.get("bot") || "").trim();
+        if(fromUrl) return fromUrl;
+      }catch(e){}
+
+      return "";
+    }
+
+    const BOT_ID = getBotId();
+
+    function getUserKey(){
+      try{
+        const keyName = "daveri_user_id";
+        const existing = window.localStorage.getItem(keyName);
+        if(existing) return existing;
+        const rand = "u_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+        window.localStorage.setItem(keyName, rand);
+        return rand;
+      }catch(e){
+        return "guest";
+      }
+    }
+    const USER_KEY = getUserKey();
+
+    const messagesEl = root.querySelector("#chatek-chat-messages");
+    const formEl     = root.querySelector("#chatek-chat-form");
+    const inputEl    = root.querySelector("#chatek-chat-input");
+    const sendBtnEl  = root.querySelector("#chatek-send-btn");
+
+    const headName   = root.querySelector("#heroBotName");
+    const headStatus = root.querySelector("#heroBotStatus");
+    const avaLetter  = root.querySelector("#heroAvaLetter");
+    const avaImg     = root.querySelector("#heroAvaImg");
+
+    if(!messagesEl || !formEl || !inputEl || !sendBtnEl) return;
+
+    const state = {
+      botId: BOT_ID,
+      visitorId: USER_KEY,
+      conversationId: null,
+      messages: []
+    };
+
+    let introTyped = false; // czy pierwsza wiadomość była już animowana
+
+    function scrollToBottom(){
+      requestAnimationFrame(()=>{
+        messagesEl.scrollTop = messagesEl.scrollHeight + 100;
+      });
+    }
+
+    function renderMessages(){
+      messagesEl.innerHTML = "";
+      state.messages.forEach(msg=>{
+        const row = document.createElement("div");
+        row.className = "chatek-msg-row " + (msg.role === "user" ? "user" : "bot");
+        const b = document.createElement("div");
+        b.className = "chatek-msg-bubble " + (msg.role === "user" ? "user" : "bot");
+        b.textContent = msg.text;
+        row.appendChild(b);
+        messagesEl.appendChild(row);
+      });
+      scrollToBottom();
+    }
+
+    function addMessage(role, text){
+      state.messages.push({ role, text });
+      renderMessages();
+    }
+
+    // ANIMOWANA PIERWSZA WIADOMOŚĆ BOTA
+    function typeIntroMessage(text){
+      introTyped = true;
+      messagesEl.innerHTML = "";
+
+      const row = document.createElement("div");
+      row.className = "chatek-msg-row bot";
+
+      const bubble = document.createElement("div");
+      bubble.className = "chatek-msg-bubble bot";
+      row.appendChild(bubble);
+      messagesEl.appendChild(row);
+
+      let i = 0;
+      const speed = 24; // ms na znak
+
+      (function step(){
+        bubble.textContent = text.slice(0, i);
+        scrollToBottom();
+        i++;
+        if(i <= text.length){
+          setTimeout(step, speed);
+        } else {
+          // po zakończeniu animacji zapisujemy tę wiadomość w historii
+          state.messages.push({ role: "bot", text });
+        }
+      })();
+    }
+
+    function applyWidgetConfig(widgetCfg){
+      if(!widgetCfg) return;
+
+      if(widgetCfg.botName){
+        headName.textContent = widgetCfg.botName;
+        avaLetter.textContent = (widgetCfg.botName.trim()[0] || "D").toUpperCase();
+      }
+      if(widgetCfg.botStatus){
+        headStatus.innerHTML = '<span class="chatek-status-dot"></span>' + widgetCfg.botStatus;
+      }
+      if(widgetCfg.avatarUrl){
+        avaImg.src = widgetCfg.avatarUrl;
+        avaImg.style.display = "block";
+        avaLetter.style.display = "none";
+      }
+    }
+
+    async function loadBotConfig(){
+      if(!BOT_ID){
+        headName.textContent   = "Asystent DaVeri";
+        headStatus.innerHTML   = '<span class="chatek-status-dot"></span>Offline • brak bot_id';
+        typeIntroMessage("Cześć! 👋 Jestem asystentem DaVeri. Brakuje identyfikatora bota w konfiguracji.");
+        inputEl.disabled = true;
+        sendBtnEl.disabled = true;
+        return;
+      }
+
+      try{
+        const url = `${SUPABASE_URL}/rest/v1/bots?id=eq.${encodeURIComponent(BOT_ID)}&select=id,config`;
+
+        const res = await fetch(url, {
+          headers:{
+            "apikey": SUPABASE_KEY,
+            "Authorization":"Bearer " + SUPABASE_KEY,
+            "Accept":"application/json"
+          }
+        });
+
+        if(!res.ok){
+          const text = await res.text();
+          console.log("[DaVeriHeroWidget] config HTTP", res.status, text);
+          throw new Error("HTTP " + res.status);
+        }
+
+        const data = await res.json();
+        const bot = data && data[0];
+
+        if(!bot){
+          headName.textContent   = "Asystent DaVeri";
+          headStatus.innerHTML   = '<span class="chatek-status-dot"></span>Online • odpowiada natychmiast';
+          avaLetter.textContent  = "D";
+
+          const helloFallback =
+            "Cześć! 👋 Jestem asystentem DaVeri. Nie znalazłem konfiguracji bota, więc używam domyślnych ustawień.";
+          typeIntroMessage(helloFallback);
+          return;
+        }
+
+        let cfg = bot.config || null;
+        if(typeof cfg === "string"){
+          try{ cfg = JSON.parse(cfg); }catch(e){ cfg = null; }
+        }
+
+        const widgetCfg = cfg && cfg.widget ? cfg.widget : {};
+
+        const name =
+          widgetCfg.botName ||
+          "Asystent DaVeri";
+
+        const status =
+          widgetCfg.botStatus ||
+          "Online • odpowiada natychmiast";
+
+        headName.textContent   = name;
+        headStatus.innerHTML   = '<span class="chatek-status-dot"></span>' + status;
+        avaLetter.textContent  = (name.trim()[0] || "D").toUpperCase();
+
+        if(widgetCfg.avatarUrl){
+          avaImg.src = widgetCfg.avatarUrl;
+          avaImg.style.display = "block";
+          avaLetter.style.display = "none";
+        }
+
+        applyWidgetConfig(widgetCfg);
+
+        const hello =
+          widgetCfg.welcomeText ||
+          "Cześć! 👋 Jestem asystentem DaVeri. Zadaj pytanie tak, jak zrobiłby to Twój klient – odpowiem na podstawie treści, które wgrasz w panelu.";
+
+        typeIntroMessage(hello);
+      }catch(e){
+        console.log("[DaVeriHeroWidget] config error:", e);
+        const errHello =
+          "Cześć! 👋 Jestem asystentem DaVeri. Nie udało się pobrać konfiguracji bota, więc korzystam z domyślnych ustawień.";
+        typeIntroMessage(errHello);
+      }
+    }
+
+    async function callAskBot(userText){
+      const history = state.messages.map(m => ({
+        role: m.role === "user" ? "user" : "assistant",
+        content: m.text
+      }));
+
+      const res = await fetch(ASK_BOT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + SUPABASE_KEY
+        },
+        body: JSON.stringify({
+          bot_id: BOT_ID || null,
+          visitor_id: state.visitorId,
+          conversation_id: state.conversationId,
+
+          user_key: USER_KEY,
+          user_id: USER_KEY,
+          message: userText,
+          question: userText,
+          input: userText,
+          history
+        })
+      });
+
+      if(!res.ok){
+        const text = await res.text();
+        console.log("[DaVeriHeroWidget] ask-bot HTTP", res.status, text);
+        throw new Error("HTTP " + res.status);
+      }
+
+      const data = await res.json();
+
+      return {
+        answer: data.answer || data.output || JSON.stringify(data),
+        conversationId: data.conversation_id || null
+      };
+    }
+
+    let sending = false;
+
+    async function sendMessage(){
+      if(sending) return;
+      if(!BOT_ID){
+        addMessage("bot","Ten widget nie ma skonfigurowanego bot_id. Popraw snippet lub link.");
+        return;
+      }
+
+      const text = (inputEl.value || "").trim();
+      if(!text) return;
+
+      sending = true;
+      inputEl.value = "";
+      inputEl.focus();
+
+      addMessage("user", text);
+
+      const idx = state.messages.length;
+      addMessage("bot","Piszę odpowiedź…");
+
+      sendBtnEl.disabled = true;
+      inputEl.disabled   = true;
+
+      try{
+        const result = await callAskBot(text);
+
+        if(result.conversationId){
+          state.conversationId = result.conversationId;
+        }
+
+        state.messages[idx].text = result.answer || "Brak odpowiedzi z API.";
+        renderMessages();
+      }catch(e){
+        console.log("[DaVeriHeroWidget] ask-bot error:", e);
+        state.messages[idx].text = "Nie udało się pobrać odpowiedzi. Spróbuj ponownie później.";
+        renderMessages();
+      }finally{
+        sending = false;
+        sendBtnEl.disabled = false;
+        inputEl.disabled   = false;
+        inputEl.focus();
+      }
+    }
+
+    formEl.addEventListener("submit", function(e){
+      e.preventDefault();
+      sendMessage();
+    });
+
+    loadBotConfig();
+  })();
+  </script>
+</section>
+<section class="dav-hero" id="dav-hero">
+  <style>
+    .dav-hero{
+      position:relative;
+      padding:80px 24px 80px;
+      /* TU ZMIANA – zamiast własnego tła: */
+      background:transparent;
+      color:#f9fafb;
+      font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      overflow:hidden;
+    }
+
+    .dav-hero-inner{
+      max-width:1400px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:32px;
+    }
+
+    /* ========= LEWY BLOK — WIDEO ========= */
+
+    .dav-hero-video{
+      flex:1.3;
+      display:flex;
+      justify-content:flex-start;
+    }
+
+    .dav-video-card{
+      width:130%;
+      max-width:none;
+      margin-left:-9vw;      /* przyklejone do lewej krawędzi */
+      border-radius:22px;
+      padding:6px;
+      background:linear-gradient(135deg,#6366f1,#a855f7,#fb7185);
+      box-shadow:0 32px 110px rgba(0,0,0,.9);
+      opacity:0;
+      will-change:transform,opacity;
+    }
+
+    .dav-video-inner{
+      position:relative;
+      width:100%;
+      padding-bottom:56.25%;
+      border-radius:18px;
+      overflow:hidden;
+      background:radial-gradient(circle at 0 0, rgba(15,23,42,.9), rgba(15,23,42,1));
+    }
+
+    .dav-video-inner video{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      border-radius:18px;
+      box-shadow:0 18px 54px rgba(0,0,0,.55);
+    }
+
+    /* ========= ŚRODEK — TEKST ========= */
+
+    .dav-hero-text{
+      flex:1;
+      max-width:360px;
+      position:relative;
+      z-index:2;
+    }
+
+    .dav-hero-kicker{
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.18em;
+      color:#a5b4fc;
+      margin-bottom:8px;
+    }
+
+    .dav-hero-title{
+      font-size:36px;
+      line-height:1.05;
+      font-weight:800;
+      margin:0 0 10px;
+      opacity:0;
+      transform:translate3d(0,18px,0);
+    }
+
+    .dav-hero-title span{
+      background:linear-gradient(90deg,#60a5fa,#a855f7,#fb7185);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+
+    .dav-hero-lead{
+      margin:0;
+      font-size:14.5px;
+      line-height:1.45;
+      color:#cbd5f5;
+      opacity:0;
+      transform:translate3d(0,14px,0);
+    }
+
+    /* ========= PRAWY BLOK — DUŻY + MAŁY SCREEN ========= */
+
+    .dav-hero-main{
+      flex:1.7;
+      position:relative;
+      min-height:520px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      margin-right:-18vw;
+    }
+
+    .dav-hero-main::before{
+      content:"";
+      position:absolute;
+      inset:18% -22% 0 -6%;
+      background:
+        radial-gradient(circle at 30% 0, rgba(96,165,250,.5), transparent 60%),
+        radial-gradient(circle at 80% 40%, rgba(168,85,247,.55), transparent 70%);
+      filter:blur(46px);
+      opacity:.95;
+      z-index:0;
+      pointer-events:none;
+    }
+
+    .dav-screen-wrap{
+      position:relative;
+      z-index:1;
+      width:240%;              /* duży billboard */
+      max-width:none;
+      transform:translate3d(40px,0,0) scale(1.5) rotate(1.5deg);
+      filter:drop-shadow(0 110px 280px rgba(0,0,0,1));
+      opacity:0;
+      will-change:transform,opacity;
+    }
+
+    .dav-screen-wrap::after{
+      content:"";
+      position:absolute;
+      left:16%;
+      right:16%;
+      bottom:-80px;
+      height:150px;
+      background:radial-gradient(ellipse at center, rgba(0,0,0,0.95), transparent 72%);
+      filter:blur(28px);
+      opacity:1;
+      z-index:-1;
+    }
+
+    .dav-screen-main{
+      width:100%;
+      border-radius:28px;
+      overflow:hidden;
+      display:block;
+    }
+
+    .dav-screen-overlay{
+      position:absolute;
+      left:24%;
+      bottom:12%;
+      width:60%;
+      max-width:560px;
+      border-radius:22px;
+      box-shadow:0 30px 100px rgba(0,0,0,.9);
+      opacity:0;
+      transform:translate3d(-20px,40px,0) scale(.96);
+      will-change:transform,opacity;
+    }
+
+    /* ========= ANIMACJE ========= */
+
+    @keyframes davFadeUp{
+      from{opacity:0;transform:translate3d(0,24px,0);}
+      to{opacity:1;transform:translate3d(0,0,0);}
+    }
+
+    @keyframes davVideoIn{
+      from{opacity:0;transform:translate3d(-220px,0,0) scale(.9);}
+      to{opacity:1;transform:translate3d(0,0,0) scale(1);}
+    }
+
+    @keyframes davScreenMainIn{
+      from{opacity:0;transform:translate3d(320px,40px,0) scale(1.6) rotate(3deg);}
+      to{opacity:1;transform:translate3d(40px,0,0) scale(1.5) rotate(1.5deg);}
+    }
+
+    @keyframes davOverlayIn{
+      from{opacity:0;transform:translate3d(-80px,80px,0) scale(.9);}
+      to{opacity:1;transform:translate3d(0,0,0) scale(1);}
+    }
+
+    .dav-hero.dav-in-view .dav-video-card{
+      animation:davVideoIn .85s cubic-bezier(.22,.85,.35,1) forwards;
+      animation-delay:.1s;
+    }
+
+    .dav-hero.dav-in-view .dav-hero-title{
+      animation:davFadeUp .65s ease-out forwards;
+      animation-delay:.2s;
+    }
+
+    .dav-hero.dav-in-view .dav-hero-lead{
+      animation:davFadeUp .65s ease-out forwards;
+      animation-delay:.38s;
+    }
+
+    .dav-hero.dav-in-view .dav-screen-wrap{
+      animation:davScreenMainIn .9s cubic-bezier(.22,.85,.35,1) forwards;
+      animation-delay:.42s;
+    }
+
+    .dav-hero.dav-in-view .dav-screen-overlay{
+      animation:davOverlayIn .8s cubic-bezier(.22,.85,.35,1) forwards;
+      animation-delay:.66s;
+    }
+
+    /* ========= RESPONSYWNOŚĆ ========= */
+
+    @media (max-width:960px){
+      .dav-hero{
+        padding:64px 16px 72px;
+      }
+      .dav-hero-inner{
+        flex-direction:column;
+        gap:32px;
+      }
+      .dav-hero-video,
+      .dav-hero-text,
+      .dav-hero-main{
+        width:100%;
+        margin-right:0;
+      }
+      .dav-video-card{
+        width:100%;
+        max-width:none;
+        margin-left:0;
+      }
+      .dav-screen-wrap{
+        width:160%;
+        transform:translate3d(10px,0,0) scale(1.25) rotate(1.5deg);
+      }
+      .dav-screen-overlay{
+        width:55%;
+        left:24%;
+      }
+      .dav-screen-wrap::after{
+        left:20%;
+        right:20%;
+      }
+      .dav-hero-text{
+        max-width:none;
+      }
+    }
+
+    @media (max-width:560px){
+      .dav-hero-title{
+        font-size:30px;
+      }
+      .dav-screen-wrap{
+        width:140%;
+      }
+      .dav-screen-overlay{
+        width:60%;
+        left:20%;
+      }
+    }
+  </style>
+
+  <!-- GŁÓWNY HERO Z FILMEM I SCREENAMI -->
+  <div class="dav-hero-inner">
+
+    <!-- LEWY: WIDEO -->
+    <div class="dav-hero-video">
+      <div class="dav-video-card">
+        <div class="dav-video-inner">
+          <video autoplay loop muted playsinline controls
+            src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767564203451x184403824498956540/GOOOOOD%20REKLAMA.mp4">
+          </video>
+        </div>
+      </div>
+    </div>
+
+    <!-- ŚRODEK: TEKST -->
+    <div class="dav-hero-text">
+      <div class="dav-hero-kicker">PANEL DAVERI.IO</div>
+
+      <h1 class="dav-hero-title">
+        Buduj boty <span>w parę minut</span>.<br>
+        Pełna kontrola bez kodu.
+      </h1>
+
+      <p class="dav-hero-lead">
+        Twórz, konfiguruj i podłącz inteligentne boty do swojej strony.
+        Panel pokazuje wszystko: pliki wiedzy, historię rozmów i limity – w jednym miejscu.
+      </p>
+    </div>
+
+    <!-- PRAWY: DUŻY SCREEN + OVERLAY + CIEŃ -->
+    <div class="dav-hero-main">
+      <div class="dav-screen-wrap">
+        <img
+          class="dav-screen-main"
+          src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767584356742x919776831567406500/KOZAK%20REKALAMA%202.png"
+          alt="Panel DaVeri.io – dashboard"
+        />
+
+        <img
+          class="dav-screen-overlay"
+          src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767585013312x769525968573818100/kolory.png"
+          alt="Kolory interfejsu DaVeri.io"
+        />
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    (function(){
+      const hero = document.getElementById("dav-hero");
+      if(!hero || !("IntersectionObserver" in window)) return;
+
+      const observer = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if(entry.isIntersecting){
+            hero.classList.add("dav-in-view");
+            observer.unobserve(hero);
+          }
+        });
+      },{threshold:0.25});
+
+      observer.observe(hero);
+    })();
+  </script>
+</section>
+<section class="plans-section">
+  <div class="plans-inner">
+
+    <div class="plans-header-row">
+      <div class="plans-header">
+        <h2>Plany, które rosną razem z Twoim biznesem.</h2>
+      </div>
+
+      <!-- PRZEŁĄCZNIK BILLINGU -->
+      <div class="billing-toggle" id="billingToggle">
+        <button class="billing-btn active" data-mode="monthly">
+          Miesięcznie
+        </button>
+        <button class="billing-btn" data-mode="yearly">
+          Rocznie <span class="billing-badge">-15%</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="plans-grid">
+
+      <!-- STANDARD -->
+      <article class="plan-card plan-standard">
+        <div class="plan-image">
+          <img
+            src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767571581605x365461380707601500/standard.png"
+            alt="Plan Standard"
+          >
+        </div>
+
+        <div class="plan-body">
+          <div class="plan-head">
+            <div class="plan-title-row">
+              <h3>Standard</h3>
+              <span class="plan-pill">7 dni na start</span>
+            </div>
+
+            <div class="plan-price-row">
+              <span class="plan-price-main" data-monthly="39">39 zł</span>
+              <span class="plan-price-sub">/ miesiąc</span>
+            </div>
+
+            <p class="plan-tagline">
+              Pierwszy chatbot DaVeri – konfiguracja wyglądu, własne treści i historia rozmów w panelu.
+            </p>
+          </div>
+
+          <ul class="plan-features">
+            <li>
+              <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767573315002x578302486318862600/ikonas.png" class="feat-icon" alt="">
+              <span>Konfiguracja wyglądu widżetu DaVeri</span>
+            </li>
+            <li>
+              <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767573315002x578302486318862600/ikonas.png" class="feat-icon" alt="">
+              <span>Historia rozmów w jednym panelu</span>
+            </li>
+            <li>
+              <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767573315002x578302486318862600/ikonas.png" class="feat-icon" alt="">
+              <span>Do 5 plików wiedzy dla bota</span>
+            </li>
+          </ul>
+
+          <div class="plan-footer">
+            <div class="plan-credits">1 000 kredytów / miesiąc</div>
+            <div class="plan-year-note"></div>
+            <button type="button" class="plan-btn">Wybierz Standard</button>
+          </div>
+        </div>
+      </article>
+
+      <!-- BUSINESS -->
+      <article class="plan-card plan-business">
+        <div class="plan-image">
+          <img
+            src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767571578332x149509619424081920/buisness.png"
+            alt="Plan Business"
+          >
+        </div>
+
+        <div class="plan-body">
+          <div class="plan-head">
+            <div class="plan-title-row">
+              <h3>Business</h3>
+              <span class="plan-pill pill-main">Rekomendowany</span>
+            </div>
+
+            <div class="plan-price-row">
+              <span class="plan-price-main" data-monthly="79">79 zł</span>
+              <span class="plan-price-sub">/ miesiąc</span>
+            </div>
+
+            <p class="plan-tagline">
+              Wszystko z planu Standard plus więcej mocy – idealny do obsługi klientów i sklepów online.
+            </p>
+          </div>
+
+          <ul class="plan-features">
+            <li>
+              <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767573315002x578302486318862600/ikonas.png" class="feat-icon" alt="">
+              <span>Wszystkie funkcje z planu Standard</span>
+            </li>
+            <li>
+              <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767573315002x578302486318862600/ikonas.png" class="feat-icon" alt="">
+              <span>Możliwość dodania własnego avatara bota</span>
+            </li>
+            <li>
+              <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767573315002x578302486318862600/ikonas.png" class="feat-icon" alt="">
+              <span>Do 20 plików wiedzy i do 5 botów</span>
+            </li>
+          </ul>
+
+          <div class="plan-footer">
+            <div class="plan-credits">10 000 kredytów / miesiąc</div>
+            <div class="plan-year-note"></div>
+            <button type="button" class="plan-btn">Wybierz Business</button>
+          </div>
+        </div>
+      </article>
+
+      <!-- PRO -->
+      <article class="plan-card plan-pro">
+        <div class="plan-image">
+          <img
+            src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767571573025x334565869778480360/pro.png"
+            alt="Plan Pro"
+          >
+        </div>
+
+        <div class="plan-body">
+          <div class="plan-head">
+            <div class="plan-title-row">
+              <h3>Pro</h3>
+              <span class="plan-pill">Dla dużych wdrożeń</span>
+            </div>
+
+            <div class="plan-price-row">
+              <span class="plan-price-main" data-monthly="149">149 zł</span>
+              <span class="plan-price-sub">/ miesiąc</span>
+            </div>
+
+            <p class="plan-tagline">
+              Dla agencji i dużych projektów – dużo botów, dużo treści, przygotowany pod skalę.
+            </p>
+          </div>
+
+          <ul class="plan-features">
+            <li>
+              <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767573315002x578302486318862600/ikonas.png" class="feat-icon" alt="">
+              <span>Wszystkie funkcje z planu Business</span>
+            </li>
+            <li>
+              <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767573315002x578302486318862600/ikonas.png" class="feat-icon" alt="">
+              <span>Do 300 plików wiedzy</span>
+            </li>
+            <li>
+              <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767573315002x578302486318862600/ikonas.png" class="feat-icon" alt="">
+              <span>Do 20 botów dla wielu marek i języków</span>
+            </li>
+          </ul>
+
+          <div class="plan-footer">
+            <div class="plan-credits">30 000 kredytów / miesiąc</div>
+            <div class="plan-year-note"></div>
+            <button type="button" class="plan-btn">Wybierz Pro</button>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+  </div>
+</section>
+
+<style>
+/* SEKCJA – tło jak hero */
+.plans-section{
+  padding:80px 16px 96px;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(88,28,135,0.32), transparent 60%),
+    radial-gradient(circle at 100% 0%, rgba(37,99,235,0.28), transparent 60%),
+    #020617;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Inter",system-ui,sans-serif;
+  color:#e5e7eb;
+}
+
+.plans-inner{
+  max-width:1140px;
+  margin:0 auto;
+}
+
+/* HEADER + TOGGLE */
+.plans-header-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:24px;
+  margin-bottom:32px;
+}
+
+.plans-header{
+  max-width:520px;
+}
+.plans-header h2{
+  margin:0;
+  font-size:32px;
+  letter-spacing:-.04em;
+  color:#f9fafb;
+  font-weight:500;
+}
+
+/* PRZEŁĄCZNIK BILLINGU */
+.billing-toggle{
+  display:inline-flex;
+  padding:4px;
+  border-radius:999px;
+  background:rgba(15,23,42,0.9);
+  border:1px solid rgba(148,163,184,0.5);
+  backdrop-filter:blur(18px);
+}
+
+.billing-btn{
+  position:relative;
+  border:none;
+  background:transparent;
+  color:#9ca3af;
+  font-size:12px;
+  font-weight:500;
+  padding:6px 14px;
+  border-radius:999px;
+  cursor:pointer;
+  transition:color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+
+.billing-btn span.billing-badge{
+  font-size:11px;
+  margin-left:4px;
+  padding:1px 6px;
+  border-radius:999px;
+  border:1px solid rgba(248,250,252,0.28);
+}
+
+.billing-btn.active{
+  color:#f9fafb;
+  background:radial-gradient(circle at 0 0, rgba(148,163,184,0.5), rgba(15,23,42,1));
+  box-shadow:0 0 0 1px rgba(148,163,184,0.9), 0 10px 30px rgba(0,0,0,1);
+}
+
+/* GRID */
+.plans-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:24px;
+}
+
+/* KARTA – liquid glass */
+.plan-card{
+  display:flex;
+  flex-direction:column;
+  border-radius:24px;
+  overflow:hidden;
+  position:relative;
+
+  background:linear-gradient(155deg,rgba(15,23,42,0.96),rgba(15,23,42,0.99));
+  border:1px solid rgba(148,163,184,0.45);
+  box-shadow:
+    0 26px 70px rgba(0,0,0,0.95),
+    0 0 0 1px rgba(15,23,42,0.9);
+  backdrop-filter:blur(24px);
+}
+
+/* noise */
+.plan-card::before{
+  content:"";
+  position:absolute;
+  inset:-40px;
+  opacity:0.14;
+  mix-blend-mode:soft-light;
+  pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='3' stitchTiles='noStitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.8'/%3E%3C/svg%3E");
+}
+
+/* OBRAZ KAFELKA */
+.plan-image{
+  position:relative;
+  overflow:hidden;
+  border-bottom:1px solid rgba(148,163,184,0.35);
+}
+.plan-image img{
+  display:block;
+  width:100%;
+  height:auto;
+  object-fit:cover;
+  filter:brightness(0.96);
+  transition:transform .28s ease, filter .28s ease;
+}
+.plan-image::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(
+    to bottom,
+    rgba(248,250,252,0.16),
+    transparent 40%
+  );
+  mix-blend-mode:screen;
+  pointer-events:none;
+}
+
+/* HOVER */
+.plan-card:hover .plan-image img{
+  transform:scale(1.015) translateY(-2px);
+  filter:brightness(1.03);
+}
+
+/* BODY + tinty */
+.plan-body{
+  padding:16px 18px 18px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  position:relative;
+  z-index:1;
+  background:radial-gradient(circle at 0 0, rgba(15,23,42,0.98), rgba(15,23,42,1));
+}
+
+.plan-standard .plan-body{
+  background:
+    radial-gradient(circle at 0 0, rgba(16,185,129,0.14), transparent 55%),
+    radial-gradient(circle at 100% 100%, rgba(5,150,105,0.18), transparent 60%),
+    linear-gradient(155deg,rgba(15,23,42,0.98),rgba(15,23,42,1));
+}
+.plan-business .plan-body{
+  background:
+    radial-gradient(circle at 0 0, rgba(220,38,38,0.16), transparent 55%),
+    radial-gradient(circle at 100% 100%, rgba(127,29,29,0.22), transparent 60%),
+    linear-gradient(155deg,rgba(15,23,42,0.98),rgba(15,23,42,1));
+}
+.plan-pro .plan-body{
+  background:
+    radial-gradient(circle at 0 0, rgba(59,130,246,0.16), transparent 55%),
+    radial-gradient(circle at 100% 100%, rgba(30,64,175,0.24), transparent 60%),
+    linear-gradient(155deg,rgba(15,23,42,0.98),rgba(15,23,42,1));
+}
+
+/* HEAD */
+.plan-head{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.plan-title-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+
+.plan-body h3{
+  margin:0;
+  font-size:17px;
+  font-weight:600;
+  color:#f9fafb;
+  letter-spacing:-0.02em;
+}
+
+/* pill */
+.plan-pill{
+  padding:4px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:500;
+  white-space:nowrap;
+  color:#d4d4d8;
+  border:1px solid rgba(148,163,184,0.6);
+  background:linear-gradient(145deg,rgba(15,23,42,0.9),rgba(24,33,52,0.98));
+  backdrop-filter:blur(18px);
+}
+.pill-main{
+  border-color:rgba(209,213,219,0.9);
+}
+
+.plan-price-row{
+  display:flex;
+  align-items:flex-end;
+  gap:6px;
+}
+.plan-price-main{
+  font-size:21px;
+  font-weight:650;
+  color:#f9fafb;
+}
+.plan-price-sub{
+  font-size:13px;
+  color:#9ca3af;
+}
+
+.plan-tagline{
+  margin:4px 0 0;
+  font-size:13px;
+  color:#a1a1aa;
+  line-height:1.45;
+}
+
+/* LISTA */
+.plan-features{
+  list-style:none;
+  padding:0;
+  margin:4px 0 12px;
+  font-size:13px;
+  color:#e5e7eb;
+}
+.plan-features li{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  margin-bottom:5px;
+}
+.plan-features span{
+  line-height:1.4;
+}
+
+.feat-icon{
+  width:20px;
+  height:20px;
+  flex-shrink:0;
+  filter:drop-shadow(0 6px 12px rgba(0,0,0,.7));
+  opacity:.95;
+}
+
+/* STOPKA – wyrównanie przycisków */
+.plan-footer{
+  margin-top:auto;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.plan-credits{
+  font-size:14px;
+  font-weight:600;
+  color:#e5e7eb;
+}
+
+.plan-year-note{
+  font-size:11px;
+  color:#9ca3af;
+  min-height:14px; /* żeby nie skakał layout przy przełączaniu */
+}
+
+/* PRZYCISK */
+.plan-btn{
+  width:100%;
+  border-radius:999px;
+  padding:11px 16px;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+
+  border:1px solid rgba(148,163,184,0.85);
+  background:linear-gradient(
+    to bottom,
+    rgba(17,24,39,0.98),
+    rgba(3,7,18,1)
+  );
+  color:#f9fafb;
+
+  box-shadow:
+    0 0 0 1px rgba(15,23,42,1),
+    0 20px 48px rgba(0,0,0,1),
+    0 0 20px rgba(148,163,184,0.55);
+  backdrop-filter:blur(18px);
+
+  transition:transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+}
+
+.plan-btn:hover{
+  transform:translateY(-1px);
+  background:linear-gradient(
+    to bottom,
+    rgba(24,35,53,1),
+    rgba(3,7,18,1)
+  );
+  border-color:rgba(209,213,219,0.95);
+  box-shadow:
+    0 0 0 1px rgba(148,163,184,0.95),
+    0 26px 60px rgba(0,0,0,1),
+    0 0 26px rgba(148,163,184,0.95);
+}
+
+/* RESPONSYWNOŚĆ */
+@media (max-width:980px){
+  .plans-header-row{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .plans-grid{
+    grid-template-columns:1fr;
+  }
+  .billing-toggle{
+    align-self:stretch;
+    justify-content:space-between;
+  }
+}
+</style>
+
+<script>
+(function(){
+  const toggle = document.getElementById("billingToggle");
+  if(!toggle) return;
+
+  let mode = "monthly"; // default
+
+  function formatZl(value){
+    return value.toString().replace(".", ",") + " zł";
+  }
+
+  function applyPrices(){
+    const cards = document.querySelectorAll(".plan-card");
+    cards.forEach(card => {
+      const priceMain = card.querySelector(".plan-price-main");
+      const priceSub  = card.querySelector(".plan-price-sub");
+      const yearNote  = card.querySelector(".plan-year-note");
+
+      if(!priceMain || !priceSub || !yearNote) return;
+
+      const monthly = parseFloat(priceMain.dataset.monthly || "0");
+      if(!monthly) return;
+
+      // oblicz -15% na rok (zaokrąglamy do pełnych zł)
+      const yearlyPerMonth = Math.round(monthly * 0.85);
+      const yearlyTotal    = yearlyPerMonth * 12;
+
+      if(mode === "monthly"){
+        priceMain.textContent = formatZl(monthly);
+        priceSub.textContent  = "/ miesiąc";
+        yearNote.textContent  = "";
+      } else {
+        priceMain.textContent = formatZl(yearlyPerMonth);
+        priceSub.textContent  = "/ miesiąc przy rozliczeniu rocznym";
+        yearNote.textContent  = "Płacisz " + formatZl(yearlyTotal) + " / rok (oszczędzasz ~15%)";
+      }
+    });
+  }
+
+  toggle.addEventListener("click", (e)=>{
+    const btn = e.target.closest(".billing-btn");
+    if(!btn) return;
+
+    const newMode = btn.getAttribute("data-mode");
+    if(!newMode || newMode === mode) return;
+    mode = newMode;
+
+    // klasa active
+    toggle.querySelectorAll(".billing-btn").forEach(b=>{
+      b.classList.toggle("active", b === btn);
+    });
+
+    applyPrices();
+  });
+
+  // start – ustaw miesięczne
+  applyPrices();
+})();
+</script>
