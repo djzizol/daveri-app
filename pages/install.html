@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Instalacja - DaVeri</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --dv-bg: #0d0e13; --dv-bg2: #0f1114;
+      --dv-surface: rgba(255,255,255,.03); --dv-surface2: rgba(255,255,255,.05);
+      --dv-stroke: rgba(255,255,255,.08); --dv-stroke2: rgba(255,255,255,.12);
+      --dv-text: rgba(255,255,255,.92); --dv-text2: rgba(255,255,255,.65);
+      --dv-muted: rgba(255,255,255,.55); --dv-muted2: rgba(255,255,255,.35);
+      --dv-burg: #fb7185; --dv-vio: #a855f7; --dv-blue: #60a5fa;
+      --dv-grad: linear-gradient(135deg, var(--dv-burg) 0%, var(--dv-vio) 48%, var(--dv-blue) 100%);
+      --dv-gradGlow: 0 0 18px rgba(168,85,247,.22), 0 0 22px rgba(96,165,250,.14), 0 0 18px rgba(251,113,133,.14);
+      --dv-radius-xl: 16px; --dv-radius-lg: 14px; --dv-radius-md: 10px; --dv-radius-sm: 8px;
+      --dv-ease: cubic-bezier(.22,.61,.36,1);
+      --page-max: 900px; --page-pad: 24px;
+      --dv-sidebar-w: 0px;
+    }
+    [data-theme="light"] {
+      --dv-bg: #f8f9fc; --dv-bg2: #ffffff;
+      --dv-surface: rgba(0,0,0,.03); --dv-surface2: rgba(0,0,0,.05);
+      --dv-stroke: rgba(0,0,0,.08); --dv-stroke2: rgba(0,0,0,.12);
+      --dv-text: rgba(0,0,0,.88); --dv-text2: rgba(0,0,0,.65);
+      --dv-muted: rgba(0,0,0,.55); --dv-muted2: rgba(0,0,0,.35);
+    }
+    [data-theme="light"] body::before, [data-theme="light"] body::after { display: none; }
+    [data-theme="light"] #ambientParticles { opacity: 0.15; }
+    [data-theme="light"] .code-block { background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.08); }
+    [data-theme="light"] .code-block code { color: var(--dv-text); }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased; color: var(--dv-text);
+      background: var(--dv-bg); min-height: 100vh; line-height: 1.5;
+      letter-spacing: -0.01em; position: relative;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.05), transparent 40%),
+        radial-gradient(circle at 80% 60%, rgba(255,255,255,0.04), transparent 45%),
+        radial-gradient(circle at 50% 80%, rgba(255,255,255,0.03), transparent 40%);
+      animation: ambientDrift 30s ease-in-out infinite;
+    }
+    @keyframes ambientDrift { 0%, 100% { opacity: 1; } 50% { opacity: 0.85; } }
+    body::after {
+      content: ""; position: fixed; width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(255,255,255,0.05), transparent 60%);
+      filter: blur(100px); opacity: 0.3; pointer-events: none; z-index: 0;
+      top: 20%; left: 40%; animation: floatLight 40s ease-in-out infinite;
+    }
+    @keyframes floatLight { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(15%,10%); } }
+    #ambientParticles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.6; }
+    #page-wrapper { display: flex; min-height: 100vh; width: 100%; position: relative; z-index: 1; }
+    #sidebar-spacer { width: var(--dv-sidebar-w, 0px); flex-shrink: 0; transition: width .22s var(--dv-ease); }
+    #main-content { flex: 1; min-width: 0; max-width: 100%; transition: all .22s var(--dv-ease); overflow-x: hidden; }
+    .page { max-width: var(--page-max); margin: 0 auto; padding: var(--page-pad); min-height: 100vh; position: relative; }
+
+    .page-header { margin-bottom: 32px; }
+    .page-title { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: var(--dv-text); }
+    .page-subtitle { font-size: 14px; color: var(--dv-muted); margin-top: 4px; }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 24px; }
+    .step-card {
+      background: var(--dv-surface); border: 1px solid var(--dv-stroke);
+      border-radius: var(--dv-radius-xl); overflow: hidden; position: relative;
+    }
+    .step-card::before {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(100% 100% at 0% 0%, rgba(168,85,247,.06), transparent 60%),
+        radial-gradient(100% 100% at 100% 100%, rgba(96,165,250,.05), transparent 60%);
+    }
+
+    .step-header {
+      padding: 20px 24px; display: flex; align-items: center; gap: 16px; position: relative; z-index: 1;
+    }
+    .step-number {
+      width: 36px; height: 36px; border-radius: 10px; font-size: 14px; font-weight: 800; color: #fff;
+      background: var(--dv-grad); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      box-shadow: 0 2px 10px rgba(168,85,247,.3);
+    }
+    .step-title { font-size: 16px; font-weight: 700; color: var(--dv-text); }
+    .step-desc { font-size: 13px; color: var(--dv-muted); margin-top: 2px; }
+
+    .step-body { padding: 0 24px 24px; position: relative; z-index: 1; }
+
+    /* Code Block */
+    .code-block {
+      background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.06);
+      border-radius: var(--dv-radius-md); padding: 16px 20px; position: relative;
+      overflow-x: auto;
+    }
+    .code-block code {
+      font-family: 'SF Mono', 'Monaco', 'Fira Code', monospace;
+      font-size: 13px; line-height: 1.6; color: rgba(255,255,255,.85);
+      white-space: pre; display: block;
+    }
+    .copy-btn {
+      position: absolute; top: 10px; right: 10px; padding: 6px 12px;
+      background: var(--dv-surface2); border: 1px solid var(--dv-stroke);
+      border-radius: var(--dv-radius-sm); font-size: 11px; font-weight: 600;
+      color: var(--dv-muted); cursor: pointer; transition: all 0.15s var(--dv-ease);
+    }
+    .copy-btn:hover { background: var(--dv-stroke); color: var(--dv-text); }
+
+    /* Status Card */
+    .status-card {
+      background: var(--dv-surface); border: 1px solid var(--dv-stroke);
+      border-radius: var(--dv-radius-xl); padding: 24px; margin-top: 32px;
+      display: flex; align-items: center; gap: 16px; position: relative; overflow: hidden;
+    }
+    .status-card::before {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(100% 100% at 0% 0%, rgba(168,85,247,.06), transparent 60%);
+    }
+    .status-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.10);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      position: relative; z-index: 1;
+    }
+    .status-icon svg { width: 24px; height: 24px; stroke-width: 1.5; }
+    .status-icon.ok svg { color: #22c55e; }
+    .status-icon.warn svg { color: #f59e0b; }
+    .status-info { position: relative; z-index: 1; }
+    .status-title { font-size: 14px; font-weight: 700; color: var(--dv-text); }
+    .status-desc { font-size: 12px; color: var(--dv-muted); margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <canvas id="ambientParticles"></canvas>
+  <div id="page-wrapper">
+    <div id="sidebar-spacer"></div>
+    <div id="main-content">
+      <div class="page" id="instalacja_root" data-user-id="CURRENT USER" data-bot-id="">
+        <div class="page-header">
+          <div class="page-title">Instalacja</div>
+          <div class="page-subtitle">Zainstaluj widget DaVeri na swojej stronie w 3 prostych krokach.</div>
+        </div>
+
+        <div class="steps">
+          <!-- Step 1 -->
+          <div class="step-card">
+            <div class="step-header">
+              <div class="step-number">1</div>
+              <div>
+                <div class="step-title">Skopiuj kod</div>
+                <div class="step-desc">Wklej ten fragment kodu przed zamknieciem tagu &lt;/body&gt; na swojej stronie.</div>
+              </div>
+            </div>
+            <div class="step-body">
+              <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Kopiuj</button>
+                <code id="installCode">&lt;script src="https://daveri.app/widget.js"
+  data-bot-id="TWOJ_BOT_ID"
+  data-position="bottom-right"
+  async&gt;&lt;/script&gt;</code>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="step-card">
+            <div class="step-header">
+              <div class="step-number">2</div>
+              <div>
+                <div class="step-title">Dostosuj pozycje</div>
+                <div class="step-desc">Zmien atrybut data-position, aby umiescic widget w wybranym rogu.</div>
+              </div>
+            </div>
+            <div class="step-body">
+              <div class="code-block">
+                <code>data-position="bottom-right"  // prawy dolny
+data-position="bottom-left"   // lewy dolny
+data-position="top-right"     // prawy gorny
+data-position="top-left"      // lewy gorny</code>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="step-card">
+            <div class="step-header">
+              <div class="step-number">3</div>
+              <div>
+                <div class="step-title">Przetestuj</div>
+                <div class="step-desc">Odwiedz swoja strone i sprawdz, czy widget wyswietla sie poprawnie.</div>
+              </div>
+            </div>
+            <div class="step-body">
+              <div style="font-size: 13px; color: var(--dv-text2); line-height: 1.7;">
+                Po wklejeniu kodu widget pojawi sie jako ikona czatu w wybranym rogu strony. Kliknij, aby rozpoczac rozmowe testowa. Jesli bot nie odpowiada, sprawdz czy masz skonfigurowany prompt i dodane pliki wiedzy.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="status-card" id="widgetStatus">
+          <div class="status-icon warn" id="statusIcon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+          </div>
+          <div class="status-info">
+            <div class="status-title" id="statusTitle">Widget niezainstalowany</div>
+            <div class="status-desc" id="statusDesc">Wklej kod na swoja strone, aby aktywowac widget.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function copyCode(btn) {
+      const code = document.getElementById('installCode');
+      const text = code.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Skopiowano!';
+        setTimeout(() => btn.textContent = 'Kopiuj', 2000);
+      }).catch(() => {
+        const range = document.createRange();
+        range.selectNodeContents(code);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand('copy');
+        btn.textContent = 'Skopiowano!';
+        setTimeout(() => btn.textContent = 'Kopiuj', 2000);
+      });
+    }
+  </script>
+
+  <!-- Sidebar Observer -->
+  <script>
+  (function() {
+    'use strict';
+    const SIDEBAR_EXPANDED = 260, SIDEBAR_COLLAPSED = 72;
+    function updateSidebarWidth(w) { document.documentElement.style.setProperty('--dv-sidebar-w', w + 'px'); }
+    function checkSidebarState() {
+      const root = document.getElementById('chatekai_root');
+      if (!root) { updateSidebarWidth(0); return; }
+      const sb = root.querySelector('.sidebar');
+      if (!sb) { updateSidebarWidth(0); return; }
+      if (sb.classList.contains('hidden')) updateSidebarWidth(0);
+      else if (sb.classList.contains('collapsed')) updateSidebarWidth(SIDEBAR_COLLAPSED);
+      else updateSidebarWidth(SIDEBAR_EXPANDED);
+    }
+    function observeSidebar() {
+      const root = document.getElementById('chatekai_root');
+      if (!root) { setTimeout(observeSidebar, 500); return; }
+      const sb = root.querySelector('.sidebar');
+      if (!sb) { setTimeout(observeSidebar, 500); return; }
+      checkSidebarState();
+      new MutationObserver(muts => muts.forEach(m => { if (m.attributeName === 'class') checkSidebarState(); }))
+        .observe(sb, { attributes: true });
+    }
+    window.addEventListener('sidebar-toggle', e => {
+      if (e.detail && typeof e.detail.width === 'number') updateSidebarWidth(e.detail.width);
+      else checkSidebarState();
+    });
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', observeSidebar);
+    else observeSidebar();
+  })();
+  </script>
+
+  <!-- Particles -->
+  <script>
+  (function() {
+    const canvas = document.getElementById('ambientParticles');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d'); let particles = []; const count = 50; let aId;
+    function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+    function create() { return { x: Math.random()*canvas.width, y: Math.random()*canvas.height, s: Math.random()+0.8, sx: (Math.random()-0.5)*0.12, sy: (Math.random()-0.5)*0.12, o: Math.random()*0.08+0.04, od: Math.random()>0.5?1:-1, os: Math.random()*0.0008+0.0004 }; }
+    function init() { particles = []; for (let i=0; i<count; i++) particles.push(create()); }
+    function animate() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const light = document.documentElement.getAttribute('data-theme') === 'light';
+      particles.forEach(p => {
+        p.x += p.sx; p.y += p.sy;
+        if (p.x<0) p.x=canvas.width; if (p.x>canvas.width) p.x=0;
+        if (p.y<0) p.y=canvas.height; if (p.y>canvas.height) p.y=0;
+        p.o += p.od*p.os;
+        if (p.o>=0.12) { p.o=0.12; p.od=-1; } else if (p.o<=0.04) { p.o=0.04; p.od=1; }
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.s,0,Math.PI*2);
+        ctx.fillStyle = light ? `rgba(0,0,0,${p.o})` : `rgba(255,255,255,${p.o})`;
+        ctx.fill();
+      });
+      aId = requestAnimationFrame(animate);
+    }
+    resize(); init(); animate();
+    addEventListener('resize', () => { resize(); init(); });
+  })();
+  </script>
+</body>
+</html>

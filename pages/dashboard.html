@@ -1,0 +1,1865 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Panel DaVeri</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      /* Dark Theme (default) */
+      --dv-bg: #0d0e13;
+      --dv-bg2: #0f1114;
+      --dv-surface: rgba(255,255,255,.03);
+      --dv-surface2: rgba(255,255,255,.05);
+      --dv-stroke: rgba(255,255,255,.08);
+      --dv-stroke2: rgba(255,255,255,.12);
+      --dv-text: rgba(255,255,255,.92);
+      --dv-text2: rgba(255,255,255,.65);
+      --dv-muted: rgba(255,255,255,.55);
+      --dv-muted2: rgba(255,255,255,.35);
+      
+      --dv-burg: #fb7185;
+      --dv-vio: #a855f7;
+      --dv-blue: #60a5fa;
+      --dv-grad: linear-gradient(135deg, var(--dv-burg) 0%, var(--dv-vio) 48%, var(--dv-blue) 100%);
+      --dv-gradGlow: 0 0 18px rgba(168,85,247,.22), 0 0 22px rgba(96,165,250,.14), 0 0 18px rgba(251,113,133,.14);
+      
+      --dv-radius-xl: 16px;
+      --dv-radius-lg: 14px;
+      --dv-radius-md: 10px;
+      --dv-radius-sm: 8px;
+      
+      --dv-ease: cubic-bezier(.22,.61,.36,1);
+      
+      --page-max: 1280px;
+      --page-pad: 24px;
+      
+      /* Sidebar integration */
+      --dv-sidebar-w: 0px;
+    }
+    
+    /* Light Theme */
+    [data-theme="light"] {
+      --dv-bg: #f8f9fc;
+      --dv-bg2: #ffffff;
+      --dv-surface: rgba(0,0,0,.03);
+      --dv-surface2: rgba(0,0,0,.05);
+      --dv-stroke: rgba(0,0,0,.08);
+      --dv-stroke2: rgba(0,0,0,.12);
+      --dv-text: rgba(0,0,0,.88);
+      --dv-text2: rgba(0,0,0,.65);
+      --dv-muted: rgba(0,0,0,.55);
+      --dv-muted2: rgba(0,0,0,.35);
+    }
+    
+    [data-theme="light"] body::before,
+    [data-theme="light"] body::after {
+      display: none;
+    }
+    
+    [data-theme="light"] #ambientParticles {
+      opacity: 0.15;
+    }
+    
+    [data-theme="light"] .kpi-value,
+    [data-theme="light"] .card-title,
+    [data-theme="light"] .check-title {
+      color: var(--dv-text);
+    }
+    
+    [data-theme="light"] .message.user {
+      background: rgba(168,85,247,0.08);
+    }
+    
+    [data-theme="light"] .messages-container {
+      background: rgba(0,0,0,0.02);
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      color: var(--dv-text);
+      background: var(--dv-bg);
+      min-height: 100vh;
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+      position: relative;
+    }
+    
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.05), transparent 40%),
+        radial-gradient(circle at 80% 60%, rgba(255,255,255,0.04), transparent 45%),
+        radial-gradient(circle at 50% 80%, rgba(255,255,255,0.03), transparent 40%);
+      pointer-events: none;
+      z-index: 0;
+      animation: ambientDrift 30s ease-in-out infinite;
+    }
+    
+    @keyframes ambientDrift {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.85; }
+    }
+    
+    body::after {
+      content: "";
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(255,255,255,0.05), transparent 60%);
+      filter: blur(100px);
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 0;
+      top: 20%;
+      left: 40%;
+      animation: floatLight 40s ease-in-out infinite;
+    }
+    
+    @keyframes floatLight {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(15%, 10%); }
+    }
+    
+    #ambientParticles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.6;
+    }
+    
+    /* ========== SIDEBAR LAYOUT CSS ========== */
+    #page-wrapper {
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+    
+    #sidebar-spacer {
+      width: var(--dv-sidebar-w, 0px);
+      flex-shrink: 0;
+      transition: width .22s var(--dv-ease);
+    }
+    
+    #main-content {
+      flex: 1;
+      min-width: 0;
+      max-width: 100%;
+      transition: all .22s var(--dv-ease);
+      overflow-x: hidden;
+    }
+    
+    .page {
+      max-width: var(--page-max);
+      margin: 0 auto;
+      padding: var(--page-pad);
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* KPI Cards */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .kpi-card {
+      background: var(--dv-surface);
+      border: 1px solid var(--dv-stroke);
+      border-radius: var(--dv-radius-lg);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.2s var(--dv-ease);
+    }
+    
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--dv-stroke2);
+      background: var(--dv-surface2);
+    }
+    
+    .kpi-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.04), transparent 60%);
+      pointer-events: none;
+    }
+    
+    .kpi-icon {
+      width: 44px;
+      height: 44px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--dv-text2);
+    }
+    
+    .kpi-icon svg {
+      width: 28px;
+      height: 28px;
+      stroke-width: 1.5;
+    }
+    
+    .kpi-value {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    
+    .kpi-label {
+      font-size: 13px;
+      color: var(--dv-muted);
+      font-weight: 500;
+    }
+    
+    /* Dashboard Grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    
+    /* Glass Cards */
+    .glass-card {
+      background: var(--dv-surface);
+      border: 1px solid var(--dv-stroke);
+      border-radius: var(--dv-radius-xl);
+      overflow: hidden;
+      position: relative;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.2s var(--dv-ease);
+    }
+    
+    .glass-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.03), transparent 50%);
+      pointer-events: none;
+    }
+    
+    .glass-card:hover {
+      border-color: var(--dv-stroke2);
+    }
+    
+    /* Collapsible Card Header */
+    .card-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--dv-stroke);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s ease;
+    }
+    
+    .card-header:hover {
+      background: rgba(255,255,255,0.02);
+    }
+    
+    .card-header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    
+    .card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--dv-radius-sm);
+      background: rgba(168,85,247,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--dv-vio);
+      transition: all 0.2s ease;
+    }
+    
+    .card-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.8;
+    }
+    
+    .glass-card.active .card-icon {
+      background: rgba(168,85,247,0.2);
+    }
+    
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--dv-text);
+    }
+    
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--dv-muted);
+      margin-top: 2px;
+    }
+    
+    .card-arrow {
+      color: var(--dv-muted2);
+      transition: transform 0.25s var(--dv-ease), color 0.25s ease;
+    }
+    
+    .card-arrow svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2;
+    }
+    
+    .glass-card.active .card-arrow {
+      transform: rotate(180deg);
+      color: var(--dv-vio);
+    }
+    
+    /* Collapsible Content */
+    .card-body {
+      padding: 0 20px;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.3s var(--dv-ease), padding 0.2s ease, opacity 0.2s ease;
+    }
+    
+    .glass-card.active .card-body {
+      padding: 20px;
+      max-height: 1200px;
+      opacity: 1;
+    }
+    
+    /* Checklist */
+    .checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--dv-stroke);
+      border-radius: var(--dv-radius-md);
+      transition: all 0.2s var(--dv-ease);
+      position: relative;
+      cursor: pointer;
+    }
+    
+    .check-item:hover {
+      background: rgba(255,255,255,0.04);
+      border-color: var(--dv-stroke2);
+      transform: translateX(4px);
+    }
+    
+    .check-item.done {
+      background: rgba(168,85,247,0.06);
+      border-color: rgba(168,85,247,0.25);
+    }
+    
+    .check-item.done::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 24px;
+      background: var(--dv-grad);
+      border-radius: 999px;
+      box-shadow: var(--dv-gradGlow);
+    }
+    
+    .check-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--dv-radius-sm);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--dv-stroke);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--dv-muted);
+      transition: all 0.2s ease;
+    }
+    
+    .check-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.8;
+    }
+    
+    .check-item.done .check-icon {
+      background: rgba(168,85,247,0.15);
+      border-color: rgba(168,85,247,0.3);
+      color: var(--dv-vio);
+    }
+    
+    .check-content {
+      flex: 1;
+    }
+    
+    .check-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--dv-text);
+      margin-bottom: 2px;
+    }
+    
+    .check-hint {
+      font-size: 12px;
+      color: var(--dv-muted);
+    }
+    
+    .check-status {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--dv-stroke);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    
+    .check-item.done .check-status {
+      background: var(--dv-grad);
+      border-color: transparent;
+    }
+    
+    .check-status svg {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2.5;
+      color: #fff;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    
+    .check-item.done .check-status svg {
+      opacity: 1;
+    }
+    
+    /* Progress Bar */
+    .progress-container {
+      margin-bottom: 20px;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: var(--dv-grad);
+      border-radius: 999px;
+      transition: width 0.5s var(--dv-ease);
+      position: relative;
+      box-shadow: var(--dv-gradGlow);
+    }
+    
+    .progress-fill::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shine 2.5s var(--dv-ease) infinite;
+    }
+    
+    @keyframes shine {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--dv-muted);
+    }
+    
+    /* Files Grid */
+    .files-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    
+    .file-item {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--dv-stroke);
+      border-radius: var(--dv-radius-md);
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: all 0.2s var(--dv-ease);
+      cursor: pointer;
+    }
+    
+    .file-item:hover {
+      background: rgba(255,255,255,0.04);
+      border-color: var(--dv-stroke2);
+      transform: translateY(-2px);
+    }
+    
+    .file-icon {
+      width: 44px;
+      height: 44px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--dv-text2);
+    }
+    
+    .file-icon svg {
+      width: 28px;
+      height: 28px;
+      stroke-width: 1.5;
+    }
+    
+    .file-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--dv-text);
+      margin-bottom: 4px;
+      word-break: break-word;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .file-date {
+      font-size: 11px;
+      color: var(--dv-muted2);
+    }
+    
+    /* Conversations */
+    .conv-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    
+    .bot-selector {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 200px;
+    }
+    
+    .bot-select {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--dv-stroke);
+      border-radius: var(--dv-radius-sm);
+      color: var(--dv-text);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.2s var(--dv-ease);
+    }
+    
+    .bot-select:focus {
+      border-color: var(--dv-vio);
+      box-shadow: 0 0 0 3px rgba(168,85,247,0.1);
+    }
+    
+    .bot-select option {
+      background: var(--dv-bg2);
+      color: var(--dv-text);
+    }
+    
+    .conv-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 16px;
+      min-height: 360px;
+    }
+    
+    .conv-list {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--dv-stroke);
+      border-radius: var(--dv-radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .conv-list-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--dv-stroke);
+      font-size: 12px;
+      color: var(--dv-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .conv-count {
+      background: rgba(168,85,247,0.15);
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    
+    .conv-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+    
+    .conv-item {
+      width: 100%;
+      padding: 12px 14px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--dv-radius-sm);
+      text-align: left;
+      cursor: pointer;
+      margin-bottom: 6px;
+      transition: all 0.2s var(--dv-ease);
+      position: relative;
+    }
+    
+    .conv-item:hover {
+      background: rgba(255,255,255,0.04);
+      border-color: var(--dv-stroke);
+    }
+    
+    .conv-item.active {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(168,85,247,0.3);
+    }
+    
+    .conv-item.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 20px;
+      background: var(--dv-grad);
+      border-radius: 999px;
+    }
+    
+    .conv-visitor {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--dv-text);
+      margin-bottom: 2px;
+    }
+    
+    .conv-preview {
+      font-size: 12px;
+      color: var(--dv-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+    
+    .conv-date {
+      font-size: 11px;
+      color: var(--dv-muted2);
+    }
+    
+    .conv-detail {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--dv-stroke);
+      border-radius: var(--dv-radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .conv-meta {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--dv-stroke);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .conv-meta-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--dv-text);
+    }
+    
+    .conv-meta-visitor {
+      font-size: 11px;
+      color: var(--dv-muted);
+    }
+    
+    .messages-container {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: rgba(0,0,0,0.15);
+    }
+    
+    .message {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.45;
+      border: 1px solid var(--dv-stroke);
+      background: rgba(255,255,255,0.03);
+    }
+    
+    .message.user {
+      align-self: flex-end;
+      background: rgba(168,85,247,0.12);
+      border-color: rgba(168,85,247,0.25);
+      border-bottom-right-radius: 4px;
+    }
+    
+    .message.assistant {
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    
+    .message-time {
+      font-size: 11px;
+      color: var(--dv-muted2);
+      margin-top: 4px;
+      text-align: right;
+    }
+    
+    /* Buttons */
+    .btn {
+      padding: 10px 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--dv-stroke);
+      border-radius: var(--dv-radius-sm);
+      color: var(--dv-text);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s var(--dv-ease);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: var(--dv-stroke2);
+      transform: translateY(-1px);
+    }
+    
+    .btn-primary {
+      background: rgba(168,85,247,0.15);
+      border-color: rgba(168,85,247,0.3);
+      color: #fff;
+    }
+    
+    .btn-primary:hover {
+      background: rgba(168,85,247,0.25);
+      border-color: rgba(168,85,247,0.4);
+    }
+    
+    /* Quick Actions */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 24px;
+    }
+    
+    .quick-action {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--dv-surface);
+      border: 1px solid var(--dv-stroke);
+      border-radius: var(--dv-radius-md);
+      cursor: pointer;
+      transition: all 0.2s var(--dv-ease);
+      text-decoration: none;
+      color: var(--dv-text);
+    }
+    
+    .quick-action:hover {
+      background: var(--dv-surface2);
+      border-color: var(--dv-stroke2);
+      transform: translateY(-2px);
+    }
+    
+    .quick-action-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--dv-radius-sm);
+      background: rgba(168,85,247,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--dv-vio);
+    }
+    
+    .quick-action-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.8;
+    }
+    
+    .quick-action-text {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    
+    /* Plans Tile */
+    .plans-tile {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      background: linear-gradient(135deg, rgba(168,85,247,0.12), rgba(96,165,250,0.08));
+      border: 1px solid rgba(168,85,247,0.25);
+      border-radius: var(--dv-radius-lg);
+      cursor: pointer;
+      transition: all 0.2s var(--dv-ease);
+      text-decoration: none;
+      color: var(--dv-text);
+      margin-top: 24px;
+    }
+    
+    .plans-tile:hover {
+      background: linear-gradient(135deg, rgba(168,85,247,0.18), rgba(96,165,250,0.12));
+      border-color: rgba(168,85,247,0.35);
+      transform: translateY(-2px);
+    }
+    
+    .plans-tile-content {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    
+    .plans-tile-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--dv-radius-sm);
+      background: rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    
+    .plans-tile-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke-width: 1.8;
+    }
+    
+    .plans-tile-text h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    
+    .plans-tile-text p {
+      font-size: 12px;
+      color: var(--dv-muted);
+    }
+    
+    .plans-tile-arrow {
+      color: var(--dv-muted);
+    }
+    
+    .plans-tile-arrow svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2;
+    }
+    
+    /* Empty State */
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--dv-muted);
+      font-size: 13px;
+    }
+    
+    .empty-state-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--dv-muted2);
+    }
+    
+    .empty-state-icon svg {
+      width: 32px;
+      height: 32px;
+      stroke-width: 1.5;
+    }
+    
+    /* Scrollbars */
+    .conv-items::-webkit-scrollbar,
+    .messages-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .conv-items::-webkit-scrollbar-thumb,
+    .messages-container::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.12);
+      border-radius: 999px;
+    }
+    
+    .conv-items::-webkit-scrollbar-track,
+    .messages-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .kpis {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .kpis {
+        grid-template-columns: 1fr 1fr;
+      }
+      .conv-layout {
+        grid-template-columns: 1fr;
+      }
+      .quick-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .kpis {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="ambientParticles"></canvas>
+  
+  <div id="page-wrapper">
+    <div id="sidebar-spacer"></div>
+    <div id="main-content">
+      <div class="page" id="panel_root" data-user-id="CURRENT USER" data-active-bot-id="">
+    
+    <!-- KPI Cards -->
+    <div class="kpis">
+      <div class="kpi-card">
+        <div class="kpi-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+          </svg>
+        </div>
+        <div class="kpi-value" id="kpi-conversations">0</div>
+        <div class="kpi-label">Rozmowy (7 dni)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+          </svg>
+        </div>
+        <div class="kpi-value" id="kpi-messages">0</div>
+        <div class="kpi-label">Wiadomosci</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+          </svg>
+        </div>
+        <div class="kpi-value" id="kpi-sources">0</div>
+        <div class="kpi-label">Zrodla wiedzy</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="kpi-value" id="kpi-avg-time">--</div>
+        <div class="kpi-label">Sr. czas odpowiedzi</div>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+      <!-- LEFT COLUMN -->
+      <div>
+        <!-- CHECKLIST - Collapsible -->
+        <div class="glass-card active" data-card="checklist">
+          <div class="card-header" onclick="toggleCard(this)">
+            <div class="card-header-left">
+              <div class="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <div class="card-title">Postep uruchomienia</div>
+                <div class="card-subtitle" id="panel-progress-text">Krotki checklist, zeby Twoj bot dzialal jak trzeba.</div>
+              </div>
+            </div>
+            <div class="card-arrow">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress-fill" id="panel-progress-fill" style="width: 0%"></div>
+              </div>
+              <div class="progress-text">
+                <span id="panel-progress-label">0/5 krokow</span>
+                <span>Najpierw wybierz aktywnego bota po prawej.</span>
+              </div>
+            </div>
+            
+            <div class="checklist">
+              <div class="check-item" id="step-create-bot">
+                <div class="check-icon">
+                  <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249140796x253773293772721950/boty.svg" alt="Boty" style="width:20px;height:20px;filter:brightness(0) invert(1);opacity:0.7;">
+                </div>
+                <div class="check-content">
+                  <div class="check-title">Stworz bota</div>
+                  <div class="check-hint">Zakladka "Boty" -> Utworz bota</div>
+                </div>
+                <div class="check-status">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                </div>
+              </div>
+              <div class="check-item" id="step-prompt">
+                <div class="check-icon">
+                  <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249125077x656254872647275600/prompt.svg" alt="Prompt" style="width:20px;height:20px;filter:brightness(0) invert(1);opacity:0.7;">
+                </div>
+                <div class="check-content">
+                  <div class="check-title">Ustaw prompt</div>
+                  <div class="check-hint">Zakladka "Prompt" -> zachowanie bota</div>
+                </div>
+                <div class="check-status">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                </div>
+              </div>
+              <div class="check-item" id="step-style">
+                <div class="check-icon">
+                  <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249145896x475580076785379700/wyglad.svg" alt="Wyglad" style="width:20px;height:20px;filter:brightness(0) invert(1);opacity:0.7;">
+                </div>
+                <div class="check-content">
+                  <div class="check-title">Skonfiguruj wyglad</div>
+                  <div class="check-hint">Zakladka "Wyglad" -> widzet</div>
+                </div>
+                <div class="check-status">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                </div>
+              </div>
+              <div class="check-item" id="step-add-files">
+                <div class="check-icon">
+                  <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249121272x452195540458458100/pliki.svg" alt="Pliki" style="width:20px;height:20px;filter:brightness(0) invert(1);opacity:0.7;">
+                </div>
+                <div class="check-content">
+                  <div class="check-title">Dodaj pliki wiedzy</div>
+                  <div class="check-hint">Zakladka "Pliki" -> Wgraj plik</div>
+                </div>
+                <div class="check-status">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                </div>
+              </div>
+              <div class="check-item" id="step-install">
+                <div class="check-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
+                  </svg>
+                </div>
+                <div class="check-content">
+                  <div class="check-title">Wstaw widget na strone</div>
+                  <div class="check-hint">Zakladka "Instalacja" -> skopiuj kod</div>
+                </div>
+                <div class="check-status">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            <button class="btn btn-primary" id="btn-continue" style="margin-top: 20px; width: 100%;">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;stroke-width:2;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+              Kontynuuj
+            </button>
+          </div>
+        </div>
+
+        <!-- FILES - Collapsible -->
+        <div class="glass-card" data-card="files" style="margin-top: 16px;">
+          <div class="card-header" onclick="toggleCard(this)">
+            <div class="card-header-left">
+              <div class="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
+                </svg>
+              </div>
+              <div>
+                <div class="card-title">Pliki wiedzy</div>
+                <div class="card-subtitle">Ostatnio dodane pliki dla aktywnego bota.</div>
+              </div>
+            </div>
+            <div class="card-arrow">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="files-grid" id="panel-files-list"></div>
+            <div class="empty-state" id="files-empty">
+              <div class="empty-state-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                </svg>
+              </div>
+              <div>Brak plikow - wgraj pierwsze zrodla wiedzy.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <div class="quick-actions">
+          <a href="#boty" class="quick-action" data-action="boty">
+            <div class="quick-action-icon">
+              <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249140796x253773293772721950/boty.svg" alt="Boty" style="width:20px;height:20px;filter:brightness(0) invert(1);">
+            </div>
+            <div class="quick-action-text">Stworz bota</div>
+          </a>
+          <a href="#pliki" class="quick-action" data-action="pliki">
+            <div class="quick-action-icon">
+              <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249121272x452195540458458100/pliki.svg" alt="Pliki" style="width:20px;height:20px;filter:brightness(0) invert(1);">
+            </div>
+            <div class="quick-action-text">Dodaj wiedze</div>
+          </a>
+          <a href="#wyglad" class="quick-action" data-action="wyglad">
+            <div class="quick-action-icon">
+              <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249145896x475580076785379700/wyglad.svg" alt="Wyglad" style="width:20px;height:20px;filter:brightness(0) invert(1);">
+            </div>
+            <div class="quick-action-text">Wyglad</div>
+          </a>
+          <a href="#instalacja" class="quick-action" data-action="instalacja">
+            <div class="quick-action-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
+              </svg>
+            </div>
+            <div class="quick-action-text">Instalacja</div>
+          </a>
+        </div>
+
+        <!-- PLANS TILE -->
+        <a href="/plany" class="plans-tile">
+          <div class="plans-tile-content">
+            <div class="plans-tile-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+              </svg>
+            </div>
+            <div class="plans-tile-text">
+              <h3>Plany i limity</h3>
+              <p>Sprawdz dostepne pakiety i zuzycie</p>
+            </div>
+          </div>
+          <div class="plans-tile-arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </div>
+        </a>
+      </div>
+
+      <!-- RIGHT COLUMN - CONVERSATIONS -->
+      <div class="glass-card active" data-card="conversations">
+        <div class="card-header" onclick="toggleCard(this)">
+          <div class="card-header-left">
+            <div class="card-icon">
+              <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249131284x840037696645927700/hisotria.svg" alt="Historia" style="width:18px;height:18px;filter:brightness(0) invert(1);">
+            </div>
+            <div>
+              <div class="card-title">Historia rozmow</div>
+              <div class="card-subtitle" id="ckpConvInfo">Wybierz rozmowe z listy</div>
+            </div>
+          </div>
+          <div class="card-arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+            </svg>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="conv-header">
+            <div class="bot-selector">
+              <select id="panel-active-bot" class="bot-select">
+                <option value="">Ladowanie botow...</option>
+              </select>
+              <div class="card-subtitle" id="panel-active-bot-label">Aktywny bot: --</div>
+            </div>
+          </div>
+          <div class="conv-layout">
+            <div class="conv-list">
+              <div class="conv-list-header">
+                <span>Rozmowy</span>
+                <span class="conv-count" id="conv-count">0</span>
+              </div>
+              <div class="conv-items" id="ckpConvList">
+                <div class="empty-state">
+                  <div class="empty-state-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+                    </svg>
+                  </div>
+                  <div>Brak rozmow</div>
+                </div>
+              </div>
+            </div>
+            <div class="conv-detail">
+              <div class="conv-meta" id="ckpConvMeta">
+                <div class="conv-meta-title">Szczegoly rozmowy</div>
+                <div id="ckpConvMetaVisitor" class="conv-meta-visitor">Wybierz rozmowe</div>
+              </div>
+              <div class="messages-container" id="ckpConvMessages">
+                <div class="empty-state">
+                  <div class="empty-state-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                    </svg>
+                  </div>
+                  <div>Wybierz rozmowe z listy po lewej</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /page -->
+  </div><!-- /main-content -->
+  </div><!-- /page-wrapper -->
+
+  <!-- Particles Animation -->
+  <script>
+  (function() {
+    const canvas = document.getElementById('ambientParticles');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const particleCount = 50;
+    
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    
+    function createParticle() {
+      return {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 1.2 + 0.8,
+        speedX: (Math.random() - 0.5) * 0.12,
+        speedY: (Math.random() - 0.5) * 0.12,
+        opacity: Math.random() * 0.08 + 0.04,
+        opacityDirection: Math.random() > 0.5 ? 1 : -1,
+        opacitySpeed: Math.random() * 0.0008 + 0.0003
+      };
+    }
+    
+    function initParticles() {
+      particles = [];
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(createParticle());
+      }
+    }
+    
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.x += p.speedX;
+        p.y += p.speedY;
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+        p.opacity += p.opacityDirection * p.opacitySpeed;
+        if (p.opacity >= 0.12) { p.opacity = 0.12; p.opacityDirection = -1; }
+        else if (p.opacity <= 0.04) { p.opacity = 0.04; p.opacityDirection = 1; }
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+        ctx.fill();
+      });
+      requestAnimationFrame(animate);
+    }
+    
+    resize();
+    initParticles();
+    animate();
+    window.addEventListener('resize', () => { resize(); initParticles(); });
+  })();
+  </script>
+
+  <!-- Toggle Card Function -->
+  <script>
+  function toggleCard(header) {
+    const card = header.closest('.glass-card');
+    if (card) card.classList.toggle('active');
+  }
+  </script>
+
+  <!-- Supabase Integration -->
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    const SUPABASE_URL = "https://inayqymryrriobowyysw.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_r3Lvhhf751_SNXg_rmCLQA_LJXv381f";
+    const BOTS_TABLE = "bots";
+    const FILES_TABLE = "bot_files";
+    const CONVERSATIONS_TABLE = "conversations";
+    const MESSAGES_TABLE = "messages";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const root = document.getElementById("panel_root");
+    const botSelect = document.getElementById("panel-active-bot");
+    const botLabel = document.getElementById("panel-active-bot-label");
+    const kpiConversationsEl = document.getElementById("kpi-conversations");
+    const kpiMessagesEl = document.getElementById("kpi-messages");
+    const kpiSourcesEl = document.getElementById("kpi-sources");
+    const kpiAvgTimeEl = document.getElementById("kpi-avg-time");
+    const convCountEl = document.getElementById("conv-count");
+    const filesListEl = document.getElementById("panel-files-list");
+    const filesEmptyEl = document.getElementById("files-empty");
+    const stepElements = {
+      create: document.getElementById("step-create-bot"),
+      prompt: document.getElementById("step-prompt"),
+      style: document.getElementById("step-style"),
+      files: document.getElementById("step-add-files"),
+      install: document.getElementById("step-install")
+    };
+    const progressFill = document.getElementById("panel-progress-fill");
+    const progressLabel = document.getElementById("panel-progress-label");
+    const convListEl = document.getElementById("ckpConvList");
+    const convMessagesEl = document.getElementById("ckpConvMessages");
+    const convInfoEl = document.getElementById("ckpConvInfo");
+    const convMetaVisitor = document.getElementById("ckpConvMetaVisitor");
+
+    const state = {
+      bots: [],
+      activeBotId: null,
+      totalFilesForUser: 0,
+      conversations: [],
+      selectedConversationId: null
+    };
+
+    function getUserId() {
+      const id = (root?.dataset.userId || "").trim();
+      return id || null;
+    }
+
+    function getInitialActiveBotId() {
+      return (root?.dataset.activeBotId || "").trim() || null;
+    }
+
+    function sendToBubble(action, payload) {
+      const payloadStr = payload == null ? "" : (typeof payload === "string" ? payload : JSON.stringify(payload));
+      if (window.bubble_fn_j2b_payload) window.bubble_fn_j2b_payload(payloadStr);
+      if (window.bubble_fn_j2b_action) window.bubble_fn_j2b_action(String(action || ""));
+    }
+
+    function renderBotsInPanel() {
+      if (!botSelect) return;
+      botSelect.innerHTML = "";
+      if (!state.bots.length) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "Brak botow - najpierw utworz bota.";
+        botSelect.appendChild(opt);
+        if (botLabel) botLabel.textContent = "Aktywny bot: --";
+        return;
+      }
+      state.bots.forEach(bot => {
+        const opt = document.createElement("option");
+        opt.value = bot.id;
+        opt.textContent = bot.name || ("Bot " + bot.id);
+        botSelect.appendChild(opt);
+      });
+      if (!state.activeBotId) state.activeBotId = getInitialActiveBotId() || state.bots[0]?.id;
+      botSelect.value = state.activeBotId || "";
+      const current = state.bots.find(b => String(b.id) === String(state.activeBotId));
+      if (botLabel) botLabel.textContent = current ? `Aktywny bot: ${current.name || current.id}` : "Aktywny bot: --";
+      updateChecklist();
+      loadFilesList();
+      loadConversationsAndKpis();
+    }
+
+    async function loadBotsForPanel() {
+      const userId = getUserId();
+      if (!userId) return;
+      try {
+        const { data, error } = await supabase
+          .from(BOTS_TABLE)
+          .select("id, name, status, installed")
+          .eq("bubble_user_id", userId)
+          .order("created_at", { ascending: true });
+        if (error) { console.error("[Panel] blad SELECT bots:", error); return; }
+        state.bots = data || [];
+        renderBotsInPanel();
+      } catch (e) { console.error("[Panel] wyjatek loadBotsForPanel:", e); }
+    }
+
+    function updateChecklist() {
+      const hasBot = state.bots.length > 0;
+      const hasFiles = state.totalFilesForUser > 0;
+      const activeBotInstalled = state.bots.some(b => String(b.id) === String(state.activeBotId) && (b.installed === true || b.installed === "yes"));
+      const steps = [
+        { el: stepElements.create, done: hasBot },
+        { el: stepElements.prompt, done: hasBot },
+        { el: stepElements.style, done: hasBot },
+        { el: stepElements.files, done: hasFiles },
+        { el: stepElements.install, done: activeBotInstalled }
+      ];
+      steps.forEach(step => {
+        if (step.el) step.done ? step.el.classList.add("done") : step.el.classList.remove("done");
+      });
+      const doneCount = steps.filter(s => s.done).length;
+      const pct = (doneCount / 5) * 100;
+      if (progressFill) progressFill.style.width = `${pct}%`;
+      if (progressLabel) progressLabel.textContent = `${doneCount}/5 krokow`;
+    }
+
+    async function loadSourcesKpiAndFileCount() {
+      const userId = getUserId();
+      if (!userId || !kpiSourcesEl) return;
+      try {
+        const { count, error } = await supabase
+          .from(FILES_TABLE)
+          .select("id", { count: "exact", head: true })
+          .eq("owner_id", userId);
+        if (error) { console.warn("[Panel] blad count plikow:", error); return; }
+        const total = typeof count === "number" ? count : 0;
+        state.totalFilesForUser = total;
+        kpiSourcesEl.textContent = total;
+        updateChecklist();
+      } catch (e) { console.error("[Panel] wyjatek loadSourcesKpi:", e); }
+    }
+
+    function formatDateTime(iso) {
+      if (!iso) return "";
+      try {
+        const d = new Date(iso);
+        return d.toLocaleDateString("pl-PL") + " " + d.toLocaleTimeString("pl-PL", { hour: '2-digit', minute: '2-digit' });
+      } catch (e) { return iso; }
+    }
+
+    async function loadFilesList() {
+      const userId = getUserId();
+      if (!userId || !filesListEl) return;
+      try {
+        let q = supabase.from(FILES_TABLE).select("id, name, bot_id, created_at").eq("owner_id", userId).order("created_at", { ascending: false }).limit(8);
+        if (state.activeBotId) q = q.eq("bot_id", state.activeBotId);
+        const { data, error } = await q;
+        if (error) { filesEmptyEl.style.display = "block"; filesListEl.innerHTML = ""; return; }
+        const rows = data || [];
+        if (!rows.length) { filesEmptyEl.style.display = "block"; filesListEl.innerHTML = ""; return; }
+        filesEmptyEl.style.display = "none";
+        filesListEl.innerHTML = "";
+        rows.forEach(row => {
+          const fileEl = document.createElement("div");
+          fileEl.className = "file-item";
+          const icon = document.createElement("div");
+          icon.className = "file-icon";
+          icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>`;
+          const name = document.createElement("div");
+          name.className = "file-name";
+          name.textContent = row.name || "plik";
+          const date = document.createElement("div");
+          date.className = "file-date";
+          date.textContent = formatDateTime(row.created_at);
+          fileEl.appendChild(icon);
+          fileEl.appendChild(name);
+          fileEl.appendChild(date);
+          filesListEl.appendChild(fileEl);
+        });
+      } catch (e) { filesEmptyEl.style.display = "block"; filesListEl.innerHTML = ""; }
+    }
+
+    function formatShortDate(iso) {
+      if (!iso) return "";
+      try {
+        const d = new Date(iso);
+        return d.toLocaleDateString("pl-PL", { day: '2-digit', month: '2-digit', year: 'numeric' }) + " " + d.toLocaleTimeString("pl-PL", { hour: '2-digit', minute: '2-digit' });
+      } catch (e) { return ""; }
+    }
+
+    function renderConversationList() {
+      if (!convListEl || !convCountEl) return;
+      if (!state.conversations.length) {
+        convListEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg></div><div>Brak rozmow dla tego bota</div></div>`;
+        convCountEl.textContent = "0";
+        if (convInfoEl) convInfoEl.textContent = "Brak rozmow (7 dni)";
+        return;
+      }
+      convCountEl.textContent = state.conversations.length;
+      convListEl.innerHTML = "";
+      state.conversations.forEach(conv => {
+        const item = document.createElement("button");
+        item.className = "conv-item" + (conv.id === state.selectedConversationId ? " active" : "");
+        item.type = "button";
+        const visitor = document.createElement("div");
+        visitor.className = "conv-visitor";
+        visitor.textContent = conv.visitor_id || "anonim";
+        const preview = document.createElement("div");
+        preview.className = "conv-preview";
+        preview.textContent = conv.last_message_preview || "(brak podgladu)";
+        const date = document.createElement("div");
+        date.className = "conv-date";
+        date.textContent = formatShortDate(conv.last_message_at) || "";
+        item.appendChild(visitor);
+        item.appendChild(preview);
+        item.appendChild(date);
+        item.addEventListener("click", () => {
+          state.selectedConversationId = conv.id;
+          renderConversationList();
+          loadMessages(conv.id);
+          if (convMetaVisitor) convMetaVisitor.textContent = `Visitor: ${conv.visitor_id || "anonim"}`;
+        });
+        convListEl.appendChild(item);
+      });
+      if (convInfoEl) convInfoEl.textContent = `Rozmow (7 dni): ${state.conversations.length}`;
+    }
+
+    async function loadMessages(conversationId) {
+      if (!convMessagesEl) return;
+      convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div><div>Ladowanie...</div></div>';
+      try {
+        const { data, error } = await supabase.from(MESSAGES_TABLE).select("sender, role, content, created_at").eq("conversation_id", conversationId).order("created_at", { ascending: true });
+        if (error) { convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg></div><div>Blad ladowania</div></div>'; return; }
+        const msgs = data || [];
+        if (!msgs.length) { convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg></div><div>Brak wiadomosci</div></div>'; return; }
+        convMessagesEl.innerHTML = "";
+        msgs.forEach(m => {
+          const isUser = (m.sender === "user" || m.role === "user");
+          const msgEl = document.createElement("div");
+          msgEl.className = `message ${isUser ? "user" : "assistant"}`;
+          const content = document.createElement("div");
+          content.textContent = m.content || "";
+          const time = document.createElement("div");
+          time.className = "message-time";
+          time.textContent = formatShortDate(m.created_at);
+          msgEl.appendChild(content);
+          msgEl.appendChild(time);
+          convMessagesEl.appendChild(msgEl);
+        });
+        convMessagesEl.scrollTop = convMessagesEl.scrollHeight;
+      } catch (e) { convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg></div><div>Blad</div></div>'; }
+    }
+
+    async function loadConversationsAndKpis() {
+      const botId = state.activeBotId;
+      if (!botId) {
+        if (convListEl) convListEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" /></svg></div><div>Wybierz bota</div></div>';
+        if (convMessagesEl) convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg></div><div>Wybierz rozmowe</div></div>';
+        if (kpiConversationsEl) kpiConversationsEl.textContent = "0";
+        if (kpiMessagesEl) kpiMessagesEl.textContent = "0";
+        if (kpiAvgTimeEl) kpiAvgTimeEl.textContent = "--";
+        if (convCountEl) convCountEl.textContent = "0";
+        state.conversations = [];
+        state.selectedConversationId = null;
+        return;
+      }
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      try {
+        const { data: convs, error: convErr } = await supabase.from(CONVERSATIONS_TABLE).select("id, visitor_id, last_message_preview, last_message_at, created_at").eq("bot_id", botId).gte("created_at", sevenDaysAgo).order("last_message_at", { ascending: false, nullsLast: true });
+        if (convErr) { convListEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg></div><div>Blad ladowania</div></div>'; return; }
+        state.conversations = convs || [];
+        state.selectedConversationId = null;
+        if (kpiConversationsEl) kpiConversationsEl.textContent = state.conversations.length;
+        renderConversationList();
+        convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg></div><div>Wybierz rozmowe</div></div>';
+        let totalMessages = 0;
+        if (state.conversations.length) {
+          const convIds = state.conversations.map(c => c.id);
+          const { count, error: msgErr } = await supabase.from(MESSAGES_TABLE).select("id", { count: "exact", head: true }).in("conversation_id", convIds).gte("created_at", sevenDaysAgo);
+          if (!msgErr && typeof count === "number") totalMessages = count;
+        }
+        if (kpiMessagesEl) kpiMessagesEl.textContent = totalMessages;
+        if (kpiAvgTimeEl) kpiAvgTimeEl.textContent = "--";
+      } catch (e) {
+        convListEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg></div><div>Blad</div></div>';
+        if (kpiConversationsEl) kpiConversationsEl.textContent = "0";
+        if (kpiMessagesEl) kpiMessagesEl.textContent = "0";
+        if (convCountEl) convCountEl.textContent = "0";
+      }
+    }
+
+    function wirePanel() {
+      if (botSelect && !botSelect.__wired) {
+        botSelect.__wired = true;
+        botSelect.addEventListener("change", () => {
+          state.activeBotId = botSelect.value || null;
+          const current = state.bots.find(b => String(b.id) === String(state.activeBotId));
+          if (botLabel) botLabel.textContent = current ? `Aktywny bot: ${current.name || current.id}` : "Aktywny bot: --";
+          updateChecklist();
+          loadFilesList();
+          loadConversationsAndKpis();
+          sendToBubble("panel:active_bot_changed", { bot_id: state.activeBotId, user_id: getUserId() });
+        });
+      }
+      const btnContinue = document.getElementById("btn-continue");
+      if (btnContinue && !btnContinue.__wired) {
+        btnContinue.__wired = true;
+        btnContinue.addEventListener("click", () => {
+          const order = [
+            { el: stepElements.create, route: "boty" },
+            { el: stepElements.prompt, route: "prompt" },
+            { el: stepElements.style, route: "wyglad" },
+            { el: stepElements.files, route: "pliki" },
+            { el: stepElements.install, route: "instalacja" }
+          ];
+          const missing = order.find(x => x.el && !x.el.classList.contains("done"));
+          sendToBubble("panel:navigate", missing ? missing.route : "boty");
+        });
+      }
+      document.querySelectorAll('.quick-action').forEach(action => {
+        action.addEventListener('click', (e) => {
+          e.preventDefault();
+          const route = action.dataset.action;
+          if (route) sendToBubble("panel:navigate", route);
+        });
+      });
+      const plansTile = document.querySelector('.plans-tile');
+      if (plansTile) {
+        plansTile.addEventListener('click', (e) => {
+          e.preventDefault();
+          sendToBubble("panel:navigate", "plany");
+        });
+      }
+    }
+
+    (function initPanel() {
+      console.log("[Panel] init...");
+      wirePanel();
+      loadBotsForPanel();
+      loadSourcesKpiAndFileCount();
+    })();
+    
+    // ========== SIDEBAR WIDTH OBSERVER (from chat.html) ==========
+    (function() {
+      'use strict';
+      
+      const SIDEBAR_EXPANDED = 240;
+      const SIDEBAR_COLLAPSED = 68;
+      
+      function updateSidebarWidth(width) {
+        document.documentElement.style.setProperty('--dv-sidebar-w', width + 'px');
+      }
+      
+      function checkSidebarState() {
+        const chatekaiRoot = document.getElementById('chatekai_root');
+        if (!chatekaiRoot) {
+          updateSidebarWidth(0);
+          return;
+        }
+        const sidebar = chatekaiRoot.querySelector('.sidebar');
+        if (!sidebar) {
+          updateSidebarWidth(0);
+          return;
+        }
+        if (sidebar.classList.contains('hidden')) {
+          updateSidebarWidth(0);
+        } else if (sidebar.classList.contains('collapsed')) {
+          updateSidebarWidth(SIDEBAR_COLLAPSED);
+        } else {
+          updateSidebarWidth(SIDEBAR_EXPANDED);
+        }
+      }
+      
+      function observeSidebar() {
+        const chatekaiRoot = document.getElementById('chatekai_root');
+        if (!chatekaiRoot) {
+          setTimeout(observeSidebar, 500);
+          return;
+        }
+        const sidebar = chatekaiRoot.querySelector('.sidebar');
+        if (!sidebar) {
+          setTimeout(observeSidebar, 500);
+          return;
+        }
+        checkSidebarState();
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.attributeName === 'class') {
+              checkSidebarState();
+            }
+          });
+        });
+        observer.observe(sidebar, { attributes: true });
+      }
+      
+      window.addEventListener('sidebar-toggle', function(e) {
+        if (e.detail && typeof e.detail.width === 'number') {
+          updateSidebarWidth(e.detail.width);
+        } else {
+          checkSidebarState();
+        }
+      });
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', observeSidebar);
+      } else {
+        observeSidebar();
+      }
+    })();
+  </script>
+  
+  <!-- Ambient Particles Animation -->
+  <script>
+  (function() {
+    'use strict';
+    const canvas = document.getElementById('ambientParticles');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const particleCount = 50;
+    let animationId;
+    
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    
+    function createParticle() {
+      return {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 1 + 0.8,
+        speedX: (Math.random() - 0.5) * 0.12,
+        speedY: (Math.random() - 0.5) * 0.12,
+        opacity: Math.random() * 0.08 + 0.04,
+        opacityDirection: Math.random() > 0.5 ? 1 : -1,
+        opacitySpeed: Math.random() * 0.0008 + 0.0004
+      };
+    }
+    
+    function initParticles() {
+      particles = [];
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(createParticle());
+      }
+    }
+    
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      particles.forEach(p => {
+        p.x += p.speedX;
+        p.y += p.speedY;
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+        p.opacity += p.opacityDirection * p.opacitySpeed;
+        if (p.opacity >= 0.12) {
+          p.opacity = 0.12;
+          p.opacityDirection = -1;
+        } else if (p.opacity <= 0.04) {
+          p.opacity = 0.04;
+          p.opacityDirection = 1;
+        }
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = isLight 
+          ? `rgba(0, 0, 0, ${p.opacity})` 
+          : `rgba(255, 255, 255, ${p.opacity})`;
+        ctx.fill();
+      });
+      animationId = requestAnimationFrame(animate);
+    }
+    
+    resize();
+    initParticles();
+    animate();
+    window.addEventListener('resize', () => { resize(); initParticles(); });
+    window.addEventListener('unload', () => { if (animationId) cancelAnimationFrame(animationId); });
+  })();
+  </script>
+</body>
+</html>

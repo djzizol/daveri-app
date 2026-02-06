@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Prompt - DaVeri</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --dv-bg: #0d0e13; --dv-bg2: #0f1114;
+      --dv-surface: rgba(255,255,255,.03); --dv-surface2: rgba(255,255,255,.05);
+      --dv-stroke: rgba(255,255,255,.08); --dv-stroke2: rgba(255,255,255,.12);
+      --dv-text: rgba(255,255,255,.92); --dv-text2: rgba(255,255,255,.65);
+      --dv-muted: rgba(255,255,255,.55); --dv-muted2: rgba(255,255,255,.35);
+      --dv-burg: #fb7185; --dv-vio: #a855f7; --dv-blue: #60a5fa;
+      --dv-grad: linear-gradient(135deg, var(--dv-burg) 0%, var(--dv-vio) 48%, var(--dv-blue) 100%);
+      --dv-gradGlow: 0 0 18px rgba(168,85,247,.22), 0 0 22px rgba(96,165,250,.14), 0 0 18px rgba(251,113,133,.14);
+      --dv-radius-xl: 16px; --dv-radius-lg: 14px; --dv-radius-md: 10px; --dv-radius-sm: 8px;
+      --dv-ease: cubic-bezier(.22,.61,.36,1);
+      --page-max: 900px; --page-pad: 24px;
+      --dv-sidebar-w: 0px;
+    }
+    [data-theme="light"] {
+      --dv-bg: #f8f9fc; --dv-bg2: #ffffff;
+      --dv-surface: rgba(0,0,0,.03); --dv-surface2: rgba(0,0,0,.05);
+      --dv-stroke: rgba(0,0,0,.08); --dv-stroke2: rgba(0,0,0,.12);
+      --dv-text: rgba(0,0,0,.88); --dv-text2: rgba(0,0,0,.65);
+      --dv-muted: rgba(0,0,0,.55); --dv-muted2: rgba(0,0,0,.35);
+    }
+    [data-theme="light"] body::before, [data-theme="light"] body::after { display: none; }
+    [data-theme="light"] #ambientParticles { opacity: 0.15; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased; color: var(--dv-text);
+      background: var(--dv-bg); min-height: 100vh; line-height: 1.5;
+      letter-spacing: -0.01em; position: relative;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.05), transparent 40%),
+        radial-gradient(circle at 80% 60%, rgba(255,255,255,0.04), transparent 45%),
+        radial-gradient(circle at 50% 80%, rgba(255,255,255,0.03), transparent 40%);
+      animation: ambientDrift 30s ease-in-out infinite;
+    }
+    @keyframes ambientDrift { 0%, 100% { opacity: 1; } 50% { opacity: 0.85; } }
+    body::after {
+      content: ""; position: fixed; width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(255,255,255,0.05), transparent 60%);
+      filter: blur(100px); opacity: 0.3; pointer-events: none; z-index: 0;
+      top: 20%; left: 40%; animation: floatLight 40s ease-in-out infinite;
+    }
+    @keyframes floatLight { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(15%,10%); } }
+    #ambientParticles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.6; }
+    #page-wrapper { display: flex; min-height: 100vh; width: 100%; position: relative; z-index: 1; }
+    #sidebar-spacer { width: var(--dv-sidebar-w, 0px); flex-shrink: 0; transition: width .22s var(--dv-ease); }
+    #main-content { flex: 1; min-width: 0; max-width: 100%; transition: all .22s var(--dv-ease); overflow-x: hidden; }
+    .page { max-width: var(--page-max); margin: 0 auto; padding: var(--page-pad); min-height: 100vh; position: relative; }
+
+    /* Page Header */
+    .page-header { margin-bottom: 32px; }
+    .page-title { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: var(--dv-text); }
+    .page-subtitle { font-size: 14px; color: var(--dv-muted); margin-top: 4px; }
+
+    /* Card */
+    .glass-card {
+      background: var(--dv-surface); border: 1px solid var(--dv-stroke);
+      border-radius: var(--dv-radius-xl); overflow: hidden; position: relative;
+    }
+    .glass-card::before {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(100% 100% at 0% 0%, rgba(168,85,247,.06), transparent 60%),
+        radial-gradient(100% 100% at 100% 100%, rgba(96,165,250,.05), transparent 60%);
+    }
+    .card-header {
+      padding: 20px 24px; border-bottom: 1px solid var(--dv-stroke);
+      display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1;
+    }
+    .card-header-left { display: flex; align-items: center; gap: 14px; }
+    .card-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.10);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .card-icon img { width: 22px; height: 22px; object-fit: contain; }
+    .card-title { font-size: 16px; font-weight: 700; color: var(--dv-text); }
+    .card-subtitle { font-size: 13px; color: var(--dv-muted); margin-top: 2px; }
+    .card-body { padding: 24px; position: relative; z-index: 1; }
+
+    /* Textarea */
+    .prompt-area {
+      width: 100%; min-height: 320px; max-height: 600px; resize: vertical;
+      background: var(--dv-surface); border: 1px solid var(--dv-stroke);
+      border-radius: var(--dv-radius-md); padding: 18px; font-size: 14px;
+      color: var(--dv-text); font-family: 'SF Mono', 'Monaco', 'Fira Code', monospace;
+      line-height: 1.6; outline: none; transition: border-color 0.2s var(--dv-ease);
+    }
+    .prompt-area:focus { border-color: var(--dv-vio); box-shadow: 0 0 0 3px rgba(168,85,247,.1); }
+    .prompt-area::placeholder { color: var(--dv-muted2); }
+
+    /* Footer */
+    .card-footer {
+      padding: 16px 24px; border-top: 1px solid var(--dv-stroke);
+      display: flex; align-items: center; justify-content: space-between;
+      position: relative; z-index: 1;
+    }
+    .char-count { font-size: 12px; color: var(--dv-muted2); font-variant-numeric: tabular-nums; }
+    .save-btn {
+      padding: 10px 24px; border-radius: var(--dv-radius-sm); border: none;
+      background: var(--dv-grad); color: #fff; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all 0.2s var(--dv-ease);
+      box-shadow: 0 2px 12px rgba(168,85,247,.3);
+    }
+    .save-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(168,85,247,.4); }
+    .save-btn:active { transform: scale(0.98); }
+    .save-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Tips */
+    .tips { margin-top: 24px; }
+    .tips-title { font-size: 13px; font-weight: 600; color: var(--dv-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .tip-item {
+      padding: 12px 16px; background: var(--dv-surface); border: 1px solid var(--dv-stroke);
+      border-radius: var(--dv-radius-md); font-size: 13px; color: var(--dv-text2);
+      margin-bottom: 8px; line-height: 1.5;
+    }
+
+    /* Status message */
+    .save-status {
+      font-size: 12px; color: var(--dv-muted); opacity: 0;
+      transition: opacity 0.3s ease; margin-right: 12px;
+    }
+    .save-status.show { opacity: 1; }
+    .save-status.success { color: #22c55e; }
+    .save-status.error { color: #ef4444; }
+  </style>
+</head>
+<body>
+  <canvas id="ambientParticles"></canvas>
+  <div id="page-wrapper">
+    <div id="sidebar-spacer"></div>
+    <div id="main-content">
+      <div class="page" id="prompt_root" data-user-id="CURRENT USER" data-bot-id="">
+        <div class="page-header">
+          <div class="page-title">Prompt systemowy</div>
+          <div class="page-subtitle">Zdefiniuj jak Twoj bot ma sie zachowywac i odpowiadac.</div>
+        </div>
+
+        <div class="glass-card">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-icon">
+                <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249125077x656254872647275600/prompt.svg"
+                  alt="Prompt" style="filter: brightness(0) invert(1); opacity: 0.7;">
+              </div>
+              <div>
+                <div class="card-title">System prompt</div>
+                <div class="card-subtitle">Instrukcja dla modelu AI - opisz role, ton, zasady.</div>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <textarea class="prompt-area" id="promptTextarea"
+              placeholder="Jestes pomocnym asystentem AI. Odpowiadasz uprzejmie i rzeczowo w jezyku polskim..."
+              spellcheck="false"></textarea>
+          </div>
+          <div class="card-footer">
+            <div style="display:flex;align-items:center;">
+              <span class="save-status" id="saveStatus"></span>
+              <span class="char-count" id="charCount">0 znakow</span>
+            </div>
+            <button class="save-btn" id="saveBtn" onclick="savePrompt()">Zapisz prompt</button>
+          </div>
+        </div>
+
+        <div class="tips">
+          <div class="tips-title">Wskazowki</div>
+          <div class="tip-item">Opisz role bota: "Jestes ekspertem od..."</div>
+          <div class="tip-item">Dodaj zasady: "Nigdy nie podawaj informacji finansowych"</div>
+          <div class="tip-item">Okresl ton: "Odpowiadaj profesjonalnie, ale przyjaznie"</div>
+          <div class="tip-item">Uzyj formatowania: "Odpowiadaj w punktach, uzywaj emoji"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+    const SUPABASE_URL = "https://inayqymryrriobowyysw.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_r3Lvhhf751_SNXg_rmCLQA_LJXv381f";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const root = document.getElementById('prompt_root');
+    const textarea = document.getElementById('promptTextarea');
+    const charCount = document.getElementById('charCount');
+    const saveStatus = document.getElementById('saveStatus');
+    const saveBtn = document.getElementById('saveBtn');
+
+    textarea.addEventListener('input', () => {
+      charCount.textContent = textarea.value.length + ' znakow';
+    });
+
+    async function loadPrompt() {
+      const botId = root?.dataset?.botId;
+      if (!botId) return;
+      const { data, error } = await supabase
+        .from('bots')
+        .select('system_prompt')
+        .eq('id', botId)
+        .single();
+      if (data?.system_prompt) {
+        textarea.value = data.system_prompt;
+        charCount.textContent = data.system_prompt.length + ' znakow';
+      }
+    }
+
+    window.savePrompt = async function() {
+      const botId = root?.dataset?.botId;
+      if (!botId) {
+        saveStatus.textContent = 'Najpierw wybierz bota';
+        saveStatus.className = 'save-status show error';
+        setTimeout(() => saveStatus.className = 'save-status', 2000);
+        return;
+      }
+      saveBtn.disabled = true;
+      const { error } = await supabase
+        .from('bots')
+        .update({ system_prompt: textarea.value })
+        .eq('id', botId);
+
+      if (error) {
+        saveStatus.textContent = 'Blad zapisu';
+        saveStatus.className = 'save-status show error';
+      } else {
+        saveStatus.textContent = 'Zapisano';
+        saveStatus.className = 'save-status show success';
+      }
+      saveBtn.disabled = false;
+      setTimeout(() => saveStatus.className = 'save-status', 2500);
+    };
+
+    loadPrompt();
+  </script>
+
+  <!-- Sidebar Observer -->
+  <script>
+  (function() {
+    'use strict';
+    const SIDEBAR_EXPANDED = 260, SIDEBAR_COLLAPSED = 72;
+    function updateSidebarWidth(w) { document.documentElement.style.setProperty('--dv-sidebar-w', w + 'px'); }
+    function checkSidebarState() {
+      const root = document.getElementById('chatekai_root');
+      if (!root) { updateSidebarWidth(0); return; }
+      const sb = root.querySelector('.sidebar');
+      if (!sb) { updateSidebarWidth(0); return; }
+      if (sb.classList.contains('hidden')) updateSidebarWidth(0);
+      else if (sb.classList.contains('collapsed')) updateSidebarWidth(SIDEBAR_COLLAPSED);
+      else updateSidebarWidth(SIDEBAR_EXPANDED);
+    }
+    function observeSidebar() {
+      const root = document.getElementById('chatekai_root');
+      if (!root) { setTimeout(observeSidebar, 500); return; }
+      const sb = root.querySelector('.sidebar');
+      if (!sb) { setTimeout(observeSidebar, 500); return; }
+      checkSidebarState();
+      new MutationObserver(muts => muts.forEach(m => { if (m.attributeName === 'class') checkSidebarState(); }))
+        .observe(sb, { attributes: true });
+    }
+    window.addEventListener('sidebar-toggle', e => {
+      if (e.detail && typeof e.detail.width === 'number') updateSidebarWidth(e.detail.width);
+      else checkSidebarState();
+    });
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', observeSidebar);
+    else observeSidebar();
+  })();
+  </script>
+
+  <!-- Particles -->
+  <script>
+  (function() {
+    const canvas = document.getElementById('ambientParticles');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d'); let particles = []; const count = 50; let aId;
+    function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+    function create() { return { x: Math.random()*canvas.width, y: Math.random()*canvas.height, s: Math.random()+0.8, sx: (Math.random()-0.5)*0.12, sy: (Math.random()-0.5)*0.12, o: Math.random()*0.08+0.04, od: Math.random()>0.5?1:-1, os: Math.random()*0.0008+0.0004 }; }
+    function init() { particles = []; for (let i=0; i<count; i++) particles.push(create()); }
+    function animate() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const light = document.documentElement.getAttribute('data-theme') === 'light';
+      particles.forEach(p => {
+        p.x += p.sx; p.y += p.sy;
+        if (p.x<0) p.x=canvas.width; if (p.x>canvas.width) p.x=0;
+        if (p.y<0) p.y=canvas.height; if (p.y>canvas.height) p.y=0;
+        p.o += p.od*p.os;
+        if (p.o>=0.12) { p.o=0.12; p.od=-1; } else if (p.o<=0.04) { p.o=0.04; p.od=1; }
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.s,0,Math.PI*2);
+        ctx.fillStyle = light ? `rgba(0,0,0,${p.o})` : `rgba(255,255,255,${p.o})`;
+        ctx.fill();
+      });
+      aId = requestAnimationFrame(animate);
+    }
+    resize(); init(); animate();
+    addEventListener('resize', () => { resize(); init(); });
+  })();
+  </script>
+</body>
+</html>
