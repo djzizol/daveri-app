@@ -204,6 +204,60 @@
             height: 22px;
         }
         
+        /* User Dropdown */
+        #user-dropdown {
+            position: relative;
+        }
+        
+        #user-menu-btn {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #fb7185, #a855f7, #60a5fa);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        #user-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: rgba(15,23,42,0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 12px 0;
+            min-width: 200px;
+            z-index: 1000;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        }
+        
+        .dropdown-item {
+            padding: 10px 16px;
+            color: #e5e7eb;
+            text-decoration: none;
+            display: block;
+            transition: background 0.2s;
+            font-size: 14px;
+        }
+        
+        .dropdown-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .dropdown-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+            margin: 8px 0;
+        }
+        
         @media(max-width: 900px) {
             .nav-menu {
                 display: none;
@@ -1322,6 +1376,116 @@
                 justify-content: space-between;
             }
         }
+        
+        /* Welcome Notification */
+        #welcome-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(15,23,42,0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 16px;
+            min-width: 280px;
+            max-width: 320px;
+            z-index: 9999;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .welcome-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .welcome-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+        
+        .welcome-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fb7185, #a855f7, #60a5fa);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .welcome-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #f9fafb;
+        }
+        
+        .welcome-email {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+        
+        .welcome-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .welcome-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+        }
+        
+        .welcome-btn-primary {
+            background: linear-gradient(135deg, #fb7185, #a855f7);
+            color: white;
+            border: none;
+        }
+        
+        .welcome-btn-secondary {
+            background: rgba(255,255,255,0.05);
+            color: #e5e7eb;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .welcome-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -1344,9 +1508,28 @@
             </div>
             
             <div class="btn-area">
-                <button class="nav-btn" onclick="window.location.href='/login'">
+                <!-- Przycisk logowania (domyślnie widoczny) -->
+                <button class="nav-btn" id="login-btn" onclick="window.location.href='https://api.daveri.io/auth/google'">
                     Logowanie
                 </button>
+                
+                <!-- Dropdown dla zalogowanego użytkownika (domyślnie ukryty) -->
+                <div id="user-dropdown" style="display: none;">
+                    <div class="nav-btn" id="user-menu-btn" style="padding: 0; width: 40px; height: 40px;">
+                        <span id="user-initials">U</span>
+                    </div>
+                    <div id="user-dropdown-menu">
+                        <div class="dropdown-item" style="font-weight: 600; color: #f9fafb;">
+                            <div id="dropdown-email"></div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="/dashboard/" class="dropdown-item">Dashboard</a>
+                        <a href="/dashboard/#boty" class="dropdown-item">Moje boty</a>
+                        <a href="/dashboard/#pliki" class="dropdown-item">Pliki wiedzy</a>
+                        <div class="dropdown-divider"></div>
+                        <a href="https://api.daveri.io/auth/logout" class="dropdown-item" style="color: #fb7185;">Wyloguj</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1389,9 +1572,9 @@
                     </div>
                     
                     <div class="chatek-cta-row">
-                        <button class="chatek-btn-primary" type="button">
+                        <button class="chatek-btn-primary" type="button" id="main-cta-btn">
                             <span class="light"></span>
-                            Rozpocznij konfigurację • 7 dni bez zobowiązań
+                            <span id="cta-text">Rozpocznij konfigurację • 7 dni bez zobowiązań</span>
                         </button>
                     </div>
                     
@@ -1571,7 +1754,7 @@
                             <div class="plan-footer">
                                 <div class="plan-credits">1 000 kredytów / miesiąc</div>
                                 <div class="plan-year-note"></div>
-                                <button type="button" class="plan-btn">Wybierz Standard</button>
+                                <button type="button" class="plan-btn" data-plan="standard">Wybierz Standard</button>
                             </div>
                         </div>
                     </article>
@@ -1620,7 +1803,7 @@
                             <div class="plan-footer">
                                 <div class="plan-credits">10 000 kredytów / miesiąc</div>
                                 <div class="plan-year-note"></div>
-                                <button type="button" class="plan-btn">Wybierz Business</button>
+                                <button type="button" class="plan-btn" data-plan="business">Wybierz Business</button>
                             </div>
                         </div>
                     </article>
@@ -1669,7 +1852,7 @@
                             <div class="plan-footer">
                                 <div class="plan-credits">30 000 kredytów / miesiąc</div>
                                 <div class="plan-year-note"></div>
-                                <button type="button" class="plan-btn">Wybierz Pro</button>
+                                <button type="button" class="plan-btn" data-plan="pro">Wybierz Pro</button>
                             </div>
                         </div>
                     </article>
@@ -1677,9 +1860,195 @@
             </div>
         </section>
     </main>
-    
+
+    <!-- SYSTEM AUTORYZACJI I INTERAKCJI -->
     <script>
-        // Skrypt dla nawigacji
+    // ========== SYSTEM AUTORYZACJI ==========
+    async function checkSession() {
+        console.log('🔐 Strona główna: sprawdzam sesję...');
+        
+        try {
+            const response = await fetch('https://api.daveri.io/auth/me', {
+                credentials: 'include'
+            });
+            
+            console.log('Status odpowiedzi:', response.status);
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                if (data.logged) {
+                    console.log('✅ ZALOGOWANY jako:', data.user.email);
+                    
+                    // Aktualizuj navbar dla zalogowanego użytkownika
+                    updateNavbarForLoggedUser(data.user);
+                    
+                    // Aktualizuj przycisk CTA
+                    updateCTAButton(data.user);
+                    
+                    // Pokaż powiadomienie powitalne
+                    showWelcomeNotification(data.user);
+                    
+                    return true;
+                }
+            }
+            
+            // Nie zalogowany - ustaw domyślny stan
+            setDefaultState();
+            return false;
+            
+        } catch (error) {
+            console.error('❌ Błąd sprawdzania sesji:', error);
+            setDefaultState();
+            return false;
+        }
+    }
+    
+    function updateNavbarForLoggedUser(user) {
+        const loginBtn = document.getElementById('login-btn');
+        const dropdown = document.getElementById('user-dropdown');
+        const initials = document.getElementById('user-initials');
+        const emailEl = document.getElementById('dropdown-email');
+        
+        // Ukryj przycisk logowania
+        if (loginBtn) {
+            loginBtn.style.display = 'none';
+        }
+        
+        // Pokaż dropdown użytkownika
+        if (dropdown) {
+            dropdown.style.display = 'block';
+        }
+        
+        // Ustaw inicjały
+        if (initials && user.name) {
+            const nameParts = user.name.split(' ');
+            const initialsText = nameParts.length > 1 
+                ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
+                : user.name.substring(0, 2).toUpperCase();
+            initials.textContent = initialsText;
+        } else if (initials && user.email) {
+            initials.textContent = user.email.substring(0, 2).toUpperCase();
+        }
+        
+        // Ustaw email w dropdown
+        if (emailEl) {
+            emailEl.textContent = user.email;
+        }
+        
+        // Obsługa dropdown menu
+        const menuBtn = document.getElementById('user-menu-btn');
+        const menu = document.getElementById('user-dropdown-menu');
+        
+        if (menuBtn && menu) {
+            menuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            });
+            
+            // Zamknij dropdown po kliknięciu gdzie indziej
+            document.addEventListener('click', (e) => {
+                if (!dropdown.contains(e.target)) {
+                    menu.style.display = 'none';
+                }
+            });
+        }
+    }
+    
+    function updateCTAButton(user) {
+        const ctaBtn = document.getElementById('main-cta-btn');
+        const ctaText = document.getElementById('cta-text');
+        
+        if (ctaBtn && ctaText) {
+            ctaText.textContent = 'Przejdź do dashboardu';
+            ctaBtn.onclick = (e) => {
+                e.preventDefault();
+                window.location.href = '/dashboard/';
+            };
+        }
+    }
+    
+    function setDefaultState() {
+        const loginBtn = document.getElementById('login-btn');
+        const dropdown = document.getElementById('user-dropdown');
+        const ctaBtn = document.getElementById('main-cta-btn');
+        const ctaText = document.getElementById('cta-text');
+        
+        // Ustaw przycisk logowania
+        if (loginBtn) {
+            loginBtn.style.display = 'block';
+            loginBtn.onclick = () => {
+                window.location.href = 'https://api.daveri.io/auth/google';
+            };
+        }
+        
+        // Ukryj dropdown użytkownika
+        if (dropdown) {
+            dropdown.style.display = 'none';
+        }
+        
+        // Ustaw domyślny CTA
+        if (ctaBtn && ctaText) {
+            ctaText.textContent = 'Rozpocznij konfigurację • 7 dni bez zobowiązań';
+            ctaBtn.onclick = (e) => {
+                e.preventDefault();
+                window.location.href = 'https://api.daveri.io/auth/google';
+            };
+        }
+    }
+    
+    function showWelcomeNotification(user) {
+        // Usuń istniejące powiadomienie
+        const existing = document.getElementById('welcome-notification');
+        if (existing) existing.remove();
+        
+        // Utwórz nowe powiadomienie
+        const notification = document.createElement('div');
+        notification.id = 'welcome-notification';
+        
+        const initials = user.name 
+            ? (user.name.split(' ').length > 1 
+                ? (user.name.split(' ')[0][0] + user.name.split(' ')[1][0]).toUpperCase()
+                : user.name.substring(0, 2).toUpperCase())
+            : user.email.substring(0, 2).toUpperCase();
+        
+        notification.innerHTML = `
+            <div class="welcome-content">
+                <div class="welcome-close" onclick="this.parentElement.parentElement.remove()">×</div>
+                <div class="welcome-header">
+                    <div class="welcome-avatar">${initials}</div>
+                    <div>
+                        <div class="welcome-title">Witaj ponownie!</div>
+                        <div class="welcome-email">${user.email}</div>
+                    </div>
+                </div>
+                <div class="welcome-actions">
+                    <a href="/dashboard/" class="welcome-btn welcome-btn-primary">Dashboard</a>
+                    <a href="https://api.daveri.io/auth/logout" class="welcome-btn welcome-btn-secondary">Wyloguj</a>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Automatycznie ukryj po 8 sekundach
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.5s';
+                setTimeout(() => notification.remove(), 500);
+            }
+        }, 8000);
+    }
+    
+    // ========== INICJALIZACJA STRONY ==========
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Strona główna: DOM loaded');
+        
+        // Sprawdź sesję po załadowaniu
+        setTimeout(checkSession, 500);
+        
+        // Obsługa nawigacji
         const navbar = document.getElementById("navbar");
         if (navbar) {
             window.addEventListener("scroll", () => {
@@ -1688,404 +2057,406 @@
             });
         }
         
-        // Skrypt dla chatbota
-        (function(){
-            const SUPABASE_URL = "https://inayqymryrriobowyysw.supabase.co";
-            const SUPABASE_KEY = "sb_publishable_r3Lvhhf751_SNXg_rmCLQA_LJXv381f";
-            const ASK_BOT_URL  = SUPABASE_URL + "/functions/v1/ask-bot";
-
-            const root = document.getElementById("chatek-hero-widget");
-            if(!root) return;
-
-            function getBotId(){
-                const fromAttr = (root.getAttribute("data-bot-id") || "").trim();
-                if(fromAttr) return fromAttr;
-
-                try{
-                    const params = new URLSearchParams(window.location.search || "");
-                    const fromUrl = (params.get("bot_id") || params.get("bot") || "").trim();
-                    if(fromUrl) return fromUrl;
-                }catch(e){}
-
-                return "";
-            }
-
-            const BOT_ID = getBotId();
-
-            function getUserKey(){
-                try{
-                    const keyName = "daveri_user_id";
-                    const existing = window.localStorage.getItem(keyName);
-                    if(existing) return existing;
-                    const rand = "u_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
-                    window.localStorage.setItem(keyName, rand);
-                    return rand;
-                }catch(e){
-                    return "guest";
-                }
-            }
-            const USER_KEY = getUserKey();
-
-            const messagesEl = root.querySelector("#chatek-chat-messages");
-            const formEl     = root.querySelector("#chatek-chat-form");
-            const inputEl    = root.querySelector("#chatek-chat-input");
-            const sendBtnEl  = root.querySelector("#chatek-send-btn");
-
-            const headName   = root.querySelector("#heroBotName");
-            const headStatus = root.querySelector("#heroBotStatus");
-            const avaLetter  = root.querySelector("#heroAvaLetter");
-            const avaImg     = root.querySelector("#heroAvaImg");
-
-            if(!messagesEl || !formEl || !inputEl || !sendBtnEl) return;
-
-            const state = {
-                botId: BOT_ID,
-                visitorId: USER_KEY,
-                conversationId: null,
-                messages: []
-            };
-
-            let introTyped = false;
-
-            function scrollToBottom(){
-                requestAnimationFrame(()=>{
-                    messagesEl.scrollTop = messagesEl.scrollHeight + 100;
-                });
-            }
-
-            function renderMessages(){
-                messagesEl.innerHTML = "";
-                state.messages.forEach(msg=>{
-                    const row = document.createElement("div");
-                    row.className = "chatek-msg-row " + (msg.role === "user" ? "user" : "bot");
-                    const b = document.createElement("div");
-                    b.className = "chatek-msg-bubble " + (msg.role === "user" ? "user" : "bot");
-                    b.textContent = msg.text;
-                    row.appendChild(b);
-                    messagesEl.appendChild(row);
-                });
-                scrollToBottom();
-            }
-
-            function addMessage(role, text){
-                state.messages.push({ role, text });
-                renderMessages();
-            }
-
-            function typeIntroMessage(text){
-                introTyped = true;
-                messagesEl.innerHTML = "";
-
-                const row = document.createElement("div");
-                row.className = "chatek-msg-row bot";
-
-                const bubble = document.createElement("div");
-                bubble.className = "chatek-msg-bubble bot";
-                row.appendChild(bubble);
-                messagesEl.appendChild(row);
-
-                let i = 0;
-                const speed = 24;
-
-                (function step(){
-                    bubble.textContent = text.slice(0, i);
-                    scrollToBottom();
-                    i++;
-                    if(i <= text.length){
-                        setTimeout(step, speed);
+        // Obsługa przycisków wyboru planów
+        document.querySelectorAll('.plan-btn').forEach(button => {
+            button.addEventListener('click', async function(e) {
+                e.preventDefault();
+                
+                // Sprawdź czy zalogowany
+                try {
+                    const response = await fetch('https://api.daveri.io/auth/me', {
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        // Już zalogowany - idź do dashboardu
+                        window.location.href = '/dashboard/';
                     } else {
-                        state.messages.push({ role: "bot", text });
+                        // Nie zalogowany - przekieruj do logowania
+                        window.location.href = 'https://api.daveri.io/auth/google';
                     }
-                })();
+                } catch (error) {
+                    window.location.href = 'https://api.daveri.io/auth/google';
+                }
+            });
+        });
+    });
+    
+    // ========== CHATBOT WIDGET ==========
+    (function(){
+        const SUPABASE_URL = "https://inayqymryrriobowyysw.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_r3Lvhhf751_SNXg_rmCLQA_LJXv381f";
+        const ASK_BOT_URL  = SUPABASE_URL + "/functions/v1/ask-bot";
+
+        const root = document.getElementById("chatek-hero-widget");
+        if(!root) return;
+
+        function getBotId(){
+            const fromAttr = (root.getAttribute("data-bot-id") || "").trim();
+            if(fromAttr) return fromAttr;
+
+            try{
+                const params = new URLSearchParams(window.location.search || "");
+                const fromUrl = (params.get("bot_id") || params.get("bot") || "").trim();
+                if(fromUrl) return fromUrl;
+            }catch(e){}
+
+            return "";
+        }
+
+        const BOT_ID = getBotId();
+
+        function getUserKey(){
+            try{
+                const keyName = "daveri_user_id";
+                const existing = window.localStorage.getItem(keyName);
+                if(existing) return existing;
+                const rand = "u_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+                window.localStorage.setItem(keyName, rand);
+                return rand;
+            }catch(e){
+                return "guest";
+            }
+        }
+        const USER_KEY = getUserKey();
+
+        const messagesEl = root.querySelector("#chatek-chat-messages");
+        const formEl     = root.querySelector("#chatek-chat-form");
+        const inputEl    = root.querySelector("#chatek-chat-input");
+        const sendBtnEl  = root.querySelector("#chatek-send-btn");
+
+        const headName   = root.querySelector("#heroBotName");
+        const headStatus = root.querySelector("#heroBotStatus");
+        const avaLetter  = root.querySelector("#heroAvaLetter");
+        const avaImg     = root.querySelector("#heroAvaImg");
+
+        if(!messagesEl || !formEl || !inputEl || !sendBtnEl) return;
+
+        const state = {
+            botId: BOT_ID,
+            visitorId: USER_KEY,
+            conversationId: null,
+            messages: []
+        };
+
+        let introTyped = false;
+
+        function scrollToBottom(){
+            requestAnimationFrame(()=>{
+                messagesEl.scrollTop = messagesEl.scrollHeight + 100;
+            });
+        }
+
+        function renderMessages(){
+            messagesEl.innerHTML = "";
+            state.messages.forEach(msg=>{
+                const row = document.createElement("div");
+                row.className = "chatek-msg-row " + (msg.role === "user" ? "user" : "bot");
+                const b = document.createElement("div");
+                b.className = "chatek-msg-bubble " + (msg.role === "user" ? "user" : "bot");
+                b.textContent = msg.text;
+                row.appendChild(b);
+                messagesEl.appendChild(row);
+            });
+            scrollToBottom();
+        }
+
+        function addMessage(role, text){
+            state.messages.push({ role, text });
+            renderMessages();
+        }
+
+        function typeIntroMessage(text){
+            introTyped = true;
+            messagesEl.innerHTML = "";
+
+            const row = document.createElement("div");
+            row.className = "chatek-msg-row bot";
+
+            const bubble = document.createElement("div");
+            bubble.className = "chatek-msg-bubble bot";
+            row.appendChild(bubble);
+            messagesEl.appendChild(row);
+
+            let i = 0;
+            const speed = 24;
+
+            (function step(){
+                bubble.textContent = text.slice(0, i);
+                scrollToBottom();
+                i++;
+                if(i <= text.length){
+                    setTimeout(step, speed);
+                } else {
+                    state.messages.push({ role: "bot", text });
+                }
+            })();
+        }
+
+        function applyWidgetConfig(widgetCfg){
+            if(!widgetCfg) return;
+
+            if(widgetCfg.botName){
+                headName.textContent = widgetCfg.botName;
+                avaLetter.textContent = (widgetCfg.botName.trim()[0] || "D").toUpperCase();
+            }
+            if(widgetCfg.botStatus){
+                headStatus.innerHTML = '<span class="chatek-status-dot"></span>' + widgetCfg.botStatus;
+            }
+            if(widgetCfg.avatarUrl){
+                avaImg.src = widgetCfg.avatarUrl;
+                avaImg.style.display = "block";
+                avaLetter.style.display = "none";
+            }
+        }
+
+        async function loadBotConfig(){
+            if(!BOT_ID){
+                headName.textContent   = "Asystent DaVeri";
+                headStatus.innerHTML   = '<span class="chatek-status-dot"></span>Offline • brak bot_id';
+                typeIntroMessage("Cześć! 👋 Jestem asystentem DaVeri. Brakuje identyfikatora bota w konfiguracji.");
+                inputEl.disabled = true;
+                sendBtnEl.disabled = true;
+                return;
             }
 
-            function applyWidgetConfig(widgetCfg){
-                if(!widgetCfg) return;
+            try{
+                const url = `${SUPABASE_URL}/rest/v1/bots?id=eq.${encodeURIComponent(BOT_ID)}&select=id,config`;
 
-                if(widgetCfg.botName){
-                    headName.textContent = widgetCfg.botName;
-                    avaLetter.textContent = (widgetCfg.botName.trim()[0] || "D").toUpperCase();
+                const res = await fetch(url, {
+                    headers:{
+                        "apikey": SUPABASE_KEY,
+                        "Authorization":"Bearer " + SUPABASE_KEY,
+                        "Accept":"application/json"
+                    }
+                });
+
+                if(!res.ok){
+                    const text = await res.text();
+                    console.log("[DaVeriHeroWidget] config HTTP", res.status, text);
+                    throw new Error("HTTP " + res.status);
                 }
-                if(widgetCfg.botStatus){
-                    headStatus.innerHTML = '<span class="chatek-status-dot"></span>' + widgetCfg.botStatus;
+
+                const data = await res.json();
+                const bot = data && data[0];
+
+                if(!bot){
+                    headName.textContent   = "Asystent DaVeri";
+                    headStatus.innerHTML   = '<span class="chatek-status-dot"></span>Online • odpowiada natychmiast';
+                    avaLetter.textContent  = "D";
+
+                    const helloFallback =
+                        "Cześć! 👋 Jestem asystentem DaVeri. Nie znalazłem konfiguracji bota, więc używam domyślnych ustawień.";
+                    typeIntroMessage(helloFallback);
+                    return;
                 }
+
+                let cfg = bot.config || null;
+                if(typeof cfg === "string"){
+                    try{ cfg = JSON.parse(cfg); }catch(e){ cfg = null; }
+                }
+
+                const widgetCfg = cfg && cfg.widget ? cfg.widget : {};
+
+                const name =
+                    widgetCfg.botName ||
+                    "Asystent DaVeri";
+
+                const status =
+                    widgetCfg.botStatus ||
+                    "Online • odpowiada natychmiast";
+
+                headName.textContent   = name;
+                headStatus.innerHTML   = '<span class="chatek-status-dot"></span>' + status;
+                avaLetter.textContent  = (name.trim()[0] || "D").toUpperCase();
+
                 if(widgetCfg.avatarUrl){
                     avaImg.src = widgetCfg.avatarUrl;
                     avaImg.style.display = "block";
                     avaLetter.style.display = "none";
                 }
+
+                applyWidgetConfig(widgetCfg);
+
+                const hello =
+                    widgetCfg.welcomeText ||
+                    "Cześć! 👋 Jestem asystentem DaVeri. Zadaj pytanie tak, jak zrobiłby to Twój klient – odpowiem na podstawie treści, które wgrasz w panelu.";
+
+                typeIntroMessage(hello);
+            }catch(e){
+                console.log("[DaVeriHeroWidget] config error:", e);
+                const errHello =
+                    "Cześć! 👋 Jestem asystentem DaVeri. Nie udało się pobrać konfiguracji bota, więc korzystam z domyślnych ustawień.";
+                typeIntroMessage(errHello);
             }
+        }
 
-            async function loadBotConfig(){
-                if(!BOT_ID){
-                    headName.textContent   = "Asystent DaVeri";
-                    headStatus.innerHTML   = '<span class="chatek-status-dot"></span>Offline • brak bot_id';
-                    typeIntroMessage("Cześć! 👋 Jestem asystentem DaVeri. Brakuje identyfikatora bota w konfiguracji.");
-                    inputEl.disabled = true;
-                    sendBtnEl.disabled = true;
-                    return;
-                }
+        async function callAskBot(userText){
+            const history = state.messages.map(m => ({
+                role: m.role === "user" ? "user" : "assistant",
+                content: m.text
+            }));
 
-                try{
-                    const url = `${SUPABASE_URL}/rest/v1/bots?id=eq.${encodeURIComponent(BOT_ID)}&select=id,config`;
+            const res = await fetch(ASK_BOT_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": "Bearer " + SUPABASE_KEY
+                },
+                body: JSON.stringify({
+                    bot_id: BOT_ID || null,
+                    visitor_id: state.visitorId,
+                    conversation_id: state.conversationId,
 
-                    const res = await fetch(url, {
-                        headers:{
-                            "apikey": SUPABASE_KEY,
-                            "Authorization":"Bearer " + SUPABASE_KEY,
-                            "Accept":"application/json"
-                        }
-                    });
-
-                    if(!res.ok){
-                        const text = await res.text();
-                        console.log("[DaVeriHeroWidget] config HTTP", res.status, text);
-                        throw new Error("HTTP " + res.status);
-                    }
-
-                    const data = await res.json();
-                    const bot = data && data[0];
-
-                    if(!bot){
-                        headName.textContent   = "Asystent DaVeri";
-                        headStatus.innerHTML   = '<span class="chatek-status-dot"></span>Online • odpowiada natychmiast';
-                        avaLetter.textContent  = "D";
-
-                        const helloFallback =
-                            "Cześć! 👋 Jestem asystentem DaVeri. Nie znalazłem konfiguracji bota, więc używam domyślnych ustawień.";
-                        typeIntroMessage(helloFallback);
-                        return;
-                    }
-
-                    let cfg = bot.config || null;
-                    if(typeof cfg === "string"){
-                        try{ cfg = JSON.parse(cfg); }catch(e){ cfg = null; }
-                    }
-
-                    const widgetCfg = cfg && cfg.widget ? cfg.widget : {};
-
-                    const name =
-                        widgetCfg.botName ||
-                        "Asystent DaVeri";
-
-                    const status =
-                        widgetCfg.botStatus ||
-                        "Online • odpowiada natychmiast";
-
-                    headName.textContent   = name;
-                    headStatus.innerHTML   = '<span class="chatek-status-dot"></span>' + status;
-                    avaLetter.textContent  = (name.trim()[0] || "D").toUpperCase();
-
-                    if(widgetCfg.avatarUrl){
-                        avaImg.src = widgetCfg.avatarUrl;
-                        avaImg.style.display = "block";
-                        avaLetter.style.display = "none";
-                    }
-
-                    applyWidgetConfig(widgetCfg);
-
-                    const hello =
-                        widgetCfg.welcomeText ||
-                        "Cześć! 👋 Jestem asystentem DaVeri. Zadaj pytanie tak, jak zrobiłby to Twój klient – odpowiem na podstawie treści, które wgrasz w panelu.";
-
-                    typeIntroMessage(hello);
-                }catch(e){
-                    console.log("[DaVeriHeroWidget] config error:", e);
-                    const errHello =
-                        "Cześć! 👋 Jestem asystentem DaVeri. Nie udało się pobrać konfiguracji bota, więc korzystam z domyślnych ustawień.";
-                    typeIntroMessage(errHello);
-                }
-            }
-
-            async function callAskBot(userText){
-                const history = state.messages.map(m => ({
-                    role: m.role === "user" ? "user" : "assistant",
-                    content: m.text
-                }));
-
-                const res = await fetch(ASK_BOT_URL, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": "Bearer " + SUPABASE_KEY
-                    },
-                    body: JSON.stringify({
-                        bot_id: BOT_ID || null,
-                        visitor_id: state.visitorId,
-                        conversation_id: state.conversationId,
-
-                        user_key: USER_KEY,
-                        user_id: USER_KEY,
-                        message: userText,
-                        question: userText,
-                        input: userText,
-                        history
-                    })
-                });
-
-                if(!res.ok){
-                    const text = await res.text();
-                    console.log("[DaVeriHeroWidget] ask-bot HTTP", res.status, text);
-                    throw new Error("HTTP " + res.status);
-                }
-
-                const data = await res.json();
-
-                return {
-                    answer: data.answer || data.output || JSON.stringify(data),
-                    conversationId: data.conversation_id || null
-                };
-            }
-
-            let sending = false;
-
-            async function sendMessage(){
-                if(sending) return;
-                if(!BOT_ID){
-                    addMessage("bot","Ten widget nie ma skonfigurowanego bot_id. Popraw snippet lub link.");
-                    return;
-                }
-
-                const text = (inputEl.value || "").trim();
-                if(!text) return;
-
-                sending = true;
-                inputEl.value = "";
-                inputEl.focus();
-
-                addMessage("user", text);
-
-                const idx = state.messages.length;
-                addMessage("bot","Piszę odpowiedź…");
-
-                sendBtnEl.disabled = true;
-                inputEl.disabled   = true;
-
-                try{
-                    const result = await callAskBot(text);
-
-                    if(result.conversationId){
-                        state.conversationId = result.conversationId;
-                    }
-
-                    state.messages[idx].text = result.answer || "Brak odpowiedzi z API.";
-                    renderMessages();
-                }catch(e){
-                    console.log("[DaVeriHeroWidget] ask-bot error:", e);
-                    state.messages[idx].text = "Nie udało się pobrać odpowiedzi. Spróbuj ponownie później.";
-                    renderMessages();
-                }finally{
-                    sending = false;
-                    sendBtnEl.disabled = false;
-                    inputEl.disabled   = false;
-                    inputEl.focus();
-                }
-            }
-
-            formEl.addEventListener("submit", function(e){
-                e.preventDefault();
-                sendMessage();
+                    user_key: USER_KEY,
+                    user_id: USER_KEY,
+                    message: userText,
+                    question: userText,
+                    input: userText,
+                    history
+                })
             });
 
-            loadBotConfig();
-        })();
-        
-        // Skrypt dla animacji sekcji DAV Hero
-        (function(){
-            const hero = document.getElementById("dav-hero");
-            if(!hero || !("IntersectionObserver" in window)) return;
-
-            const observer = new IntersectionObserver(function(entries){
-                entries.forEach(function(entry){
-                    if(entry.isIntersecting){
-                        hero.classList.add("dav-in-view");
-                        observer.unobserve(hero);
-                    }
-                });
-            },{threshold:0.25});
-
-            observer.observe(hero);
-        })();
-        
-        // Skrypt dla przełącznika planów
-        (function(){
-            const toggle = document.getElementById("billingToggle");
-            if(!toggle) return;
-
-            let mode = "monthly";
-
-            function formatZl(value){
-                return value.toString().replace(".", ",") + " zł";
+            if(!res.ok){
+                const text = await res.text();
+                console.log("[DaVeriHeroWidget] ask-bot HTTP", res.status, text);
+                throw new Error("HTTP " + res.status);
             }
 
-            function applyPrices(){
-                const cards = document.querySelectorAll(".plan-card");
-                cards.forEach(card => {
-                    const priceMain = card.querySelector(".plan-price-main");
-                    const priceSub  = card.querySelector(".plan-price-sub");
-                    const yearNote  = card.querySelector(".plan-year-note");
+            const data = await res.json();
 
-                    if(!priceMain || !priceSub || !yearNote) return;
+            return {
+                answer: data.answer || data.output || JSON.stringify(data),
+                conversationId: data.conversation_id || null
+            };
+        }
 
-                    const monthly = parseFloat(priceMain.dataset.monthly || "0");
-                    if(!monthly) return;
+        let sending = false;
 
-                    const yearlyPerMonth = Math.round(monthly * 0.85);
-                    const yearlyTotal    = yearlyPerMonth * 12;
-
-                    if(mode === "monthly"){
-                        priceMain.textContent = formatZl(monthly);
-                        priceSub.textContent  = "/ miesiąc";
-                        yearNote.textContent  = "";
-                    } else {
-                        priceMain.textContent = formatZl(yearlyPerMonth);
-                        priceSub.textContent  = "/ miesiąc przy rozliczeniu rocznym";
-                        yearNote.textContent  = "Płacisz " + formatZl(yearlyTotal) + " / rok (oszczędzasz ~15%)";
-                    }
-                });
+        async function sendMessage(){
+            if(sending) return;
+            if(!BOT_ID){
+                addMessage("bot","Ten widget nie ma skonfigurowanego bot_id. Popraw snippet lub link.");
+                return;
             }
 
-            toggle.addEventListener("click", (e)=>{
-                const btn = e.target.closest(".billing-btn");
-                if(!btn) return;
+            const text = (inputEl.value || "").trim();
+            if(!text) return;
 
-                const newMode = btn.getAttribute("data-mode");
-                if(!newMode || newMode === mode) return;
-                mode = newMode;
+            sending = true;
+            inputEl.value = "";
+            inputEl.focus();
 
-                toggle.querySelectorAll(".billing-btn").forEach(b=>{
-                    b.classList.toggle("active", b === btn);
-                });
+            addMessage("user", text);
 
-                applyPrices();
+            const idx = state.messages.length;
+            addMessage("bot","Piszę odpowiedź…");
+
+            sendBtnEl.disabled = true;
+            inputEl.disabled   = true;
+
+            try{
+                const result = await callAskBot(text);
+
+                if(result.conversationId){
+                    state.conversationId = result.conversationId;
+                }
+
+                state.messages[idx].text = result.answer || "Brak odpowiedzi z API.";
+                renderMessages();
+            }catch(e){
+                console.log("[DaVeriHeroWidget] ask-bot error:", e);
+                state.messages[idx].text = "Nie udało się pobrać odpowiedzi. Spróbuj ponownie później.";
+                renderMessages();
+            }finally{
+                sending = false;
+                sendBtnEl.disabled = false;
+                inputEl.disabled   = false;
+                inputEl.focus();
+            }
+        }
+
+        formEl.addEventListener("submit", function(e){
+            e.preventDefault();
+            sendMessage();
+        });
+
+        loadBotConfig();
+    })();
+    
+    // ========== ANIMACJE SEKCJI DAV HERO ==========
+    (function(){
+        const hero = document.getElementById("dav-hero");
+        if(!hero || !("IntersectionObserver" in window)) return;
+
+        const observer = new IntersectionObserver(function(entries){
+            entries.forEach(function(entry){
+                if(entry.isIntersecting){
+                    hero.classList.add("dav-in-view");
+                    observer.unobserve(hero);
+                }
+            });
+        },{threshold:0.25});
+
+        observer.observe(hero);
+    })();
+    
+    // ========== PRZEŁĄCZNIK PLANÓW ==========
+    (function(){
+        const toggle = document.getElementById("billingToggle");
+        if(!toggle) return;
+
+        let mode = "monthly";
+
+        function formatZl(value){
+            return value.toString().replace(".", ",") + " zł";
+        }
+
+        function applyPrices(){
+            const cards = document.querySelectorAll(".plan-card");
+            cards.forEach(card => {
+                const priceMain = card.querySelector(".plan-price-main");
+                const priceSub  = card.querySelector(".plan-price-sub");
+                const yearNote  = card.querySelector(".plan-year-note");
+
+                if(!priceMain || !priceSub || !yearNote) return;
+
+                const monthly = parseFloat(priceMain.dataset.monthly || "0");
+                if(!monthly) return;
+
+                const yearlyPerMonth = Math.round(monthly * 0.85);
+                const yearlyTotal    = yearlyPerMonth * 12;
+
+                if(mode === "monthly"){
+                    priceMain.textContent = formatZl(monthly);
+                    priceSub.textContent  = "/ miesiąc";
+                    yearNote.textContent  = "";
+                } else {
+                    priceMain.textContent = formatZl(yearlyPerMonth);
+                    priceSub.textContent  = "/ miesiąc przy rozliczeniu rocznym";
+                    yearNote.textContent  = "Płacisz " + formatZl(yearlyTotal) + " / rok (oszczędzasz ~15%)";
+                }
+            });
+        }
+
+        toggle.addEventListener("click", (e)=>{
+            const btn = e.target.closest(".billing-btn");
+            if(!btn) return;
+
+            const newMode = btn.getAttribute("data-mode");
+            if(!newMode || newMode === mode) return;
+            mode = newMode;
+
+            toggle.querySelectorAll(".billing-btn").forEach(b=>{
+                b.classList.toggle("active", b === btn);
             });
 
             applyPrices();
-        })();
-        async function checkAuth(){
+        });
 
-try{
-
-const res =
-await fetch(
-"https://api.daveri.io/auth/me",
-{
-credentials:"include"
-})
-
-if(res.ok){
-
-window.location.href =
-"/pages/dashboard.html"
-
-}
-
-}catch(e){}
-
-}
-
-checkAuth()
+        applyPrices();
+    })();
     </script>
 </body>
 </html>
