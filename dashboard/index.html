@@ -1054,6 +1054,7 @@
   <div id="page-wrapper" style="display: none;">
     <div id="sidebar-spacer"></div>
     <div id="main-content">
+      <div id="panel" hidden></div>
       <div class="page" id="panel_root" data-user-id="CURRENT USER" data-active-bot-id="">
     
     <!-- KPI Cards -->
@@ -1511,6 +1512,8 @@
     if (card) card.classList.toggle('active');
   }
   </script>
+
+  <script src="../js/sidebar-loader.js"></script>
 
   <!-- Supabase Integration -->
   <script type="module">
