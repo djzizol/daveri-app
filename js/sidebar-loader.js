@@ -1,84 +1,66 @@
-(() => {
-  if (window.__DV_SIDEBAR_LOADER) return;
-  window.__DV_SIDEBAR_LOADER = true;
+import { initSidebar } from "./sidebar.js";
 
-  const routeMap = {
-    panel: "/dashboard/",
-    boty: "/bots/",
-    historia: "/history/",
-    prompt: "/prompts/",
-    wyglad: "/appearance/",
-    pliki: "/files/",
-    instalacja: "/install/",
-  };
+const SIDEBAR_STYLE_ID = "daveri-sidebar-style";
+const SIDEBAR_ROOT_ID = "daveri_sidebar";
+const SIDEBAR_TEMPLATE_URL = new URL("../components/sidebar.html", import.meta.url);
 
-  const buildUrl = (path) => {
-    try {
-      return new URL(path, window.location.href).toString();
-    } catch (error) {
-      return path;
-    }
-  };
-
-  window.bubble_fn_nav ||= ((route) => {
-    const target = routeMap[route];
-    if (!target) return;
-    window.location.href = buildUrl(target);
-  });
-
-  window.bubble_fn_profile ||= (() => {
-    window.location.href = buildUrl("/settings/");
-  });
-
-  const injectSidebar = async () => {
-    if (document.getElementById("chatekai_root")) return;
-
-    const sidebarUrl = buildUrl("../components/sidebar.html");
-    const response = await fetch(sidebarUrl);
-    if (!response.ok) return;
-
-    const html = await response.text();
-    const doc = new DOMParser().parseFromString(html, "text/html");
-
-    const style = doc.querySelector("style");
-    if (style && !document.getElementById("dv-sidebar-style")) {
-      const clone = style.cloneNode(true);
-      clone.id = "dv-sidebar-style";
-      document.head.appendChild(clone);
-    }
-
-    const root = doc.getElementById("chatekai_root");
-    if (!root) return;
-
-    const pageUserSource = document.querySelector("[data-user-id]");
-    const syncUserId = () => {
-      const userId = pageUserSource?.dataset?.userId;
-      if (userId) {
-        root.dataset.userId = userId;
-      }
-    };
-    syncUserId();
-
-    if (pageUserSource) {
-      const observer = new MutationObserver(() => syncUserId());
-      observer.observe(pageUserSource, { attributes: true, attributeFilter: ["data-user-id"] });
-    }
-
-    document.body.insertBefore(root, document.body.firstChild);
-
-    const moduleScript = doc.querySelector('script[type="module"]');
-    if (moduleScript && !document.getElementById("dv-sidebar-script")) {
-      const script = document.createElement("script");
-      script.type = "module";
-      script.id = "dv-sidebar-script";
-      script.textContent = moduleScript.textContent;
-      document.body.appendChild(script);
-    }
-  };
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", injectSidebar);
-  } else {
-    injectSidebar();
+const loadSidebarTemplate = async () => {
+  const response = await fetch(SIDEBAR_TEMPLATE_URL);
+  if (!response.ok) {
+    return null;
   }
-})();
+
+  const html = await response.text();
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const style = doc.querySelector("style");
+  const root = doc.getElementById(SIDEBAR_ROOT_ID);
+
+  if (!root) {
+    return null;
+  }
+
+  return { root, style };
+};
+
+const ensureSidebarStyle = (style) => {
+  if (!style || document.getElementById(SIDEBAR_STYLE_ID)) {
+    return;
+  }
+  const clone = style.cloneNode(true);
+  clone.id = SIDEBAR_STYLE_ID;
+  document.head.appendChild(clone);
+};
+
+const insertSidebarRoot = (root) => {
+  if (document.getElementById(SIDEBAR_ROOT_ID)) {
+    return;
+  }
+
+  const pageWrapper = document.getElementById("page-wrapper");
+  if (pageWrapper?.parentNode) {
+    pageWrapper.parentNode.insertBefore(root, pageWrapper);
+  } else {
+    document.body.prepend(root);
+  }
+};
+
+const mountSidebar = async () => {
+  if (document.getElementById(SIDEBAR_ROOT_ID)) {
+    return;
+  }
+
+  const template = await loadSidebarTemplate();
+  if (!template) {
+    return;
+  }
+
+  ensureSidebarStyle(template.style);
+  insertSidebarRoot(template.root);
+  await initSidebar(template.root);
+};
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", mountSidebar, { once: true });
+} else {
+  mountSidebar();
+}

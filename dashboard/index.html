@@ -1054,7 +1054,6 @@
   <div id="page-wrapper" style="display: none;">
     <div id="sidebar-spacer"></div>
     <div id="main-content">
-      <div id="panel" hidden></div>
       <div class="page" id="panel_root" data-user-id="CURRENT USER" data-active-bot-id="">
     
     <!-- KPI Cards -->
@@ -1513,7 +1512,7 @@
   }
   </script>
 
-  <script src="../js/sidebar-loader.js"></script>
+  <script type="module" src="../js/sidebar-loader.js"></script>
 
   <!-- Supabase Integration -->
   <script type="module">
@@ -1853,73 +1852,6 @@
       loadSourcesKpiAndFileCount();
     };
     
-    // ========== SIDEBAR WIDTH OBSERVER (from chat.html) ==========
-    (function() {
-      'use strict';
-      
-      const SIDEBAR_EXPANDED = 240;
-      const SIDEBAR_COLLAPSED = 68;
-      
-      function updateSidebarWidth(width) {
-        document.documentElement.style.setProperty('--dv-sidebar-w', width + 'px');
-      }
-      
-      function checkSidebarState() {
-        const chatekaiRoot = document.getElementById('chatekai_root');
-        if (!chatekaiRoot) {
-          updateSidebarWidth(0);
-          return;
-        }
-        const sidebar = chatekaiRoot.querySelector('.sidebar');
-        if (!sidebar) {
-          updateSidebarWidth(0);
-          return;
-        }
-        if (sidebar.classList.contains('hidden')) {
-          updateSidebarWidth(0);
-        } else if (sidebar.classList.contains('collapsed')) {
-          updateSidebarWidth(SIDEBAR_COLLAPSED);
-        } else {
-          updateSidebarWidth(SIDEBAR_EXPANDED);
-        }
-      }
-      
-      function observeSidebar() {
-        const chatekaiRoot = document.getElementById('chatekai_root');
-        if (!chatekaiRoot) {
-          setTimeout(observeSidebar, 500);
-          return;
-        }
-        const sidebar = chatekaiRoot.querySelector('.sidebar');
-        if (!sidebar) {
-          setTimeout(observeSidebar, 500);
-          return;
-        }
-        checkSidebarState();
-        const observer = new MutationObserver(function(mutations) {
-          mutations.forEach(function(mutation) {
-            if (mutation.attributeName === 'class') {
-              checkSidebarState();
-            }
-          });
-        });
-        observer.observe(sidebar, { attributes: true });
-      }
-      
-      window.addEventListener('sidebar-toggle', function(e) {
-        if (e.detail && typeof e.detail.width === 'number') {
-          updateSidebarWidth(e.detail.width);
-        } else {
-          checkSidebarState();
-        }
-      });
-      
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', observeSidebar);
-      } else {
-        observeSidebar();
-      }
-    })();
   </script>
 </body>
 </html>
