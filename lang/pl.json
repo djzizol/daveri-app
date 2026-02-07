@@ -1,0 +1,109 @@
+{
+  "nav": {
+    "dashboard": "Panel",
+    "bots": "Boty",
+    "history": "Historia rozmow",
+    "prompt": "Prompt",
+    "appearance": "Wyglad",
+    "files": "Pliki",
+    "install": "Instalacja",
+    "plans": "Plany",
+    "settings": "Ustawienia",
+    "faq": "FAQ",
+    "legal": "Regulamin"
+  },
+  "header": {
+    "login": "Logowanie",
+    "signup": "Rozpocznij"
+  },
+  "landing": {
+    "hero_label": "DaVeri - Samodzielna konfiguracja - od 39 zl/mies.",
+    "hero_title_1": "Skonfiguruj wlasnego",
+    "hero_title_highlight": "AI-chatbota",
+    "hero_title_2": "w kilka minut.",
+    "hero_subtitle": "Pelna kontrola, powazne mozliwosci.",
+    "hero_desc": "Dodaj tresci, pliki i oferte swojej firmy. System dopasowuje odpowiedzi do Twojego biznesu - bez programisty, bez skomplikowanego wdrozenia.",
+    "bullet_1": "Plany dopasowane do wielkosci Twojego biznesu",
+    "bullet_1_sub": "juz od 39 zl/mies.",
+    "bullet_2": "Samodzielna konfiguracja",
+    "bullet_2_sub": "wyglad, ton i zrodla wiedzy w jednym panelu.",
+    "bullet_3": "Gotowy do pracy w kilka minut",
+    "bullet_3_sub": "od konfiguracji do realnych rozmow.",
+    "cta": "Rozpocznij konfiguracje - 7 dni bez zobowiazan",
+    "cta_note_bold": "Bez karty na start.",
+    "cta_note": "Skonfiguruj bota samodzielnie i przetestuj go na swojej stronie."
+  },
+  "plans": {
+    "title": "Plany, ktore rosna razem z Twoim biznesem.",
+    "monthly": "Miesiecznie",
+    "yearly": "Rocznie",
+    "free_name": "Free",
+    "free_price": "0 zl",
+    "free_desc": "Przetestuj DaVeri za darmo. Idealny na start.",
+    "free_f1": "1 bot",
+    "free_f2": "100 kredytow/miesiac",
+    "free_f3": "Podstawowa personalizacja widgetu",
+    "free_f4": "Wsparcie spolecznosci",
+    "free_cta": "Zacznij za darmo",
+    "pro_name": "Pro",
+    "pro_price": "79 zl",
+    "pro_desc": "Dla rosnacych firm. Wiecej botow, plikow i mocy.",
+    "pro_f1": "Do 5 botow",
+    "pro_f2": "10 000 kredytow/miesiac",
+    "pro_f3": "Do 20 plikow wiedzy",
+    "pro_f4": "Wlasny avatar bota",
+    "pro_f5": "Priorytetowe wsparcie",
+    "pro_cta": "Wybierz Pro",
+    "enterprise_name": "Enterprise",
+    "enterprise_price": "149 zl",
+    "enterprise_desc": "Dla agencji i duzych projektow pod skale.",
+    "enterprise_f1": "Do 20 botow",
+    "enterprise_f2": "30 000 kredytow/miesiac",
+    "enterprise_f3": "Do 300 plikow wiedzy",
+    "enterprise_f4": "Obsluga wielu jezykow",
+    "enterprise_f5": "Dedykowane wsparcie",
+    "enterprise_cta": "Wybierz Enterprise",
+    "per_month": "/miesiac"
+  },
+  "faq": {
+    "title": "Czesto zadawane pytania",
+    "subtitle": "Odpowiedzi na najczestsze pytania o DaVeri.",
+    "q1": "Czym jest DaVeri?",
+    "a1": "DaVeri to platforma do tworzenia i konfiguracji chatbotow AI dla Twojej strony. Wgraj tresci firmy, a bot bedzie odpowiadal na ich podstawie.",
+    "q2": "Czy potrzebuje umiejetnosci programowania?",
+    "a2": "Nie. DaVeri jest zaprojektowane tak, aby kazdy mogl skonfigurowac bota bez wiedzy technicznej. Wszystko odbywa sie w wizualnym panelu.",
+    "q3": "Jak dzialaja kredyty?",
+    "a3": "Kazda odpowiedz bota zuzywa jeden kredyt. Miesięczny limit kredytow zalezy od planu. Kredyty resetuja sie na poczatku kazdego okresu rozliczeniowego.",
+    "q4": "Czy moge zmienic plan w dowolnym momencie?",
+    "a4": "Tak. Mozesz ulepszyc lub obnizac plan w kazdej chwili. Zmiany wchodza w zycie natychmiast.",
+    "q5": "Jakie formaty plikow sa obslugiwane?",
+    "a5": "Obslugujemy pliki PDF, TXT, DOC, DOCX i CSV. Maksymalny rozmiar pliku to 10MB."
+  },
+  "legal": {
+    "title": "Informacje prawne",
+    "terms_title": "Regulamin",
+    "privacy_title": "Polityka prywatnosci"
+  },
+  "settings": {
+    "title": "Ustawienia",
+    "subtitle": "Zarzadzaj swoim kontem i preferencjami.",
+    "account": "Konto",
+    "email": "Adres email",
+    "name": "Nazwa wyswietlana",
+    "save": "Zapisz zmiany",
+    "danger": "Strefa zagrożenia",
+    "delete_account": "Usun konto",
+    "delete_desc": "Trwale usun swoje konto i wszystkie powiazane dane."
+  },
+  "dashboard": {
+    "title": "Panel",
+    "subtitle": "Przeglad Twojego workspace DaVeri."
+  },
+  "common": {
+    "loading": "Ladowanie...",
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "delete": "Usun",
+    "back": "Wstecz"
+  }
+}

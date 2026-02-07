@@ -1,0 +1,109 @@
+{
+  "nav": {
+    "dashboard": "Panel",
+    "bots": "Bots",
+    "history": "Historial de chats",
+    "prompt": "Prompt",
+    "appearance": "Apariencia",
+    "files": "Archivos",
+    "install": "Instalacion",
+    "plans": "Planes",
+    "settings": "Ajustes",
+    "faq": "FAQ",
+    "legal": "Legal"
+  },
+  "header": {
+    "login": "Iniciar sesion",
+    "signup": "Empezar"
+  },
+  "landing": {
+    "hero_label": "DaVeri - Configuracion autonoma - desde 39 PLN/mes",
+    "hero_title_1": "Configura tu propio",
+    "hero_title_highlight": "chatbot de IA",
+    "hero_title_2": "en minutos.",
+    "hero_subtitle": "Control total, capacidades serias.",
+    "hero_desc": "Agrega el contenido, archivos y ofertas de tu empresa. El sistema adapta las respuestas a tu negocio - sin programador, sin implementacion compleja.",
+    "bullet_1": "Planes adaptados al tamano de tu negocio",
+    "bullet_1_sub": "desde 39 PLN/mes.",
+    "bullet_2": "Configuracion autonoma",
+    "bullet_2_sub": "apariencia, tono y fuentes de conocimiento en un panel.",
+    "bullet_3": "Listo para trabajar en minutos",
+    "bullet_3_sub": "de la configuracion a conversaciones reales.",
+    "cta": "Comenzar configuracion - 7 dias gratis",
+    "cta_note_bold": "Sin tarjeta para empezar.",
+    "cta_note": "Configura tu bot y pruebalo en tu sitio."
+  },
+  "plans": {
+    "title": "Planes que crecen con tu negocio.",
+    "monthly": "Mensual",
+    "yearly": "Anual",
+    "free_name": "Free",
+    "free_price": "0 PLN",
+    "free_desc": "Prueba DaVeri gratis. Perfecto para probar.",
+    "free_f1": "1 bot",
+    "free_f2": "100 creditos/mes",
+    "free_f3": "Personalizacion basica del widget",
+    "free_f4": "Soporte comunitario",
+    "free_cta": "Empezar Gratis",
+    "pro_name": "Pro",
+    "pro_price": "79 PLN",
+    "pro_desc": "Para negocios en crecimiento. Mas bots, archivos y potencia.",
+    "pro_f1": "Hasta 5 bots",
+    "pro_f2": "10.000 creditos/mes",
+    "pro_f3": "Hasta 20 archivos de conocimiento",
+    "pro_f4": "Avatar personalizado del bot",
+    "pro_f5": "Soporte prioritario",
+    "pro_cta": "Elegir Pro",
+    "enterprise_name": "Enterprise",
+    "enterprise_price": "149 PLN",
+    "enterprise_desc": "Para agencias y grandes proyectos a escala.",
+    "enterprise_f1": "Hasta 20 bots",
+    "enterprise_f2": "30.000 creditos/mes",
+    "enterprise_f3": "Hasta 300 archivos de conocimiento",
+    "enterprise_f4": "Soporte multiidioma",
+    "enterprise_f5": "Soporte dedicado",
+    "enterprise_cta": "Elegir Enterprise",
+    "per_month": "/mes"
+  },
+  "faq": {
+    "title": "Preguntas Frecuentes",
+    "subtitle": "Encuentra respuestas a las preguntas mas comunes sobre DaVeri.",
+    "q1": "Que es DaVeri?",
+    "a1": "DaVeri es una plataforma para crear y configurar chatbots de IA para tu sitio web. Sube el contenido de tu empresa y el bot respondera basandose en tus materiales.",
+    "q2": "Necesito conocimientos de programacion?",
+    "a2": "No. DaVeri esta disenado para que cualquiera pueda configurar un bot sin conocimientos tecnicos. Todo se hace a traves de un panel visual.",
+    "q3": "Como funcionan los creditos?",
+    "a3": "Cada respuesta del bot consume un credito. Tu limite mensual de creditos depende de tu plan. Los creditos se reinician al inicio de cada periodo de facturacion.",
+    "q4": "Puedo cambiar mi plan en cualquier momento?",
+    "a4": "Si. Puedes mejorar o reducir tu plan en cualquier momento. Los cambios surten efecto inmediatamente.",
+    "q5": "Que formatos de archivo se admiten?",
+    "a5": "Admitimos archivos PDF, TXT, DOC, DOCX y CSV. El tamano maximo del archivo es 10MB."
+  },
+  "legal": {
+    "title": "Informacion Legal",
+    "terms_title": "Terminos de Servicio",
+    "privacy_title": "Politica de Privacidad"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "subtitle": "Gestiona tu cuenta y preferencias.",
+    "account": "Cuenta",
+    "email": "Direccion de email",
+    "name": "Nombre visible",
+    "save": "Guardar cambios",
+    "danger": "Zona de peligro",
+    "delete_account": "Eliminar cuenta",
+    "delete_desc": "Eliminar permanentemente tu cuenta y todos los datos asociados."
+  },
+  "dashboard": {
+    "title": "Panel",
+    "subtitle": "Vista general de tu espacio de trabajo DaVeri."
+  },
+  "common": {
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "back": "Volver"
+  }
+}
