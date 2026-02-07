@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Login — DaVeri</title>
+
+<style>
+
+* { box-sizing: border-box; }
+
+body {
+  margin:0;
+  background:#ffffff;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color:#111827;
+}
+
+/* layer */
+.auth-layer {
+  position: fixed;
+  inset: 0;
+  background: #ffffff;
+  z-index: 9999;
+  overflow-y: auto;
+}
+
+/* logo */
+.auth-logo {
+  text-align: center;
+  margin-top: 64px;
+  margin-bottom: 48px;
+}
+
+.auth-logo-img {
+  height: 64px;
+}
+
+/* center */
+.auth-center {
+  display:flex;
+  justify-content:center;
+  padding-bottom:64px;
+}
+
+.auth-box {
+  width:380px;
+  position:relative;
+}
+
+/* views */
+.auth-view {
+  position:absolute;
+  inset:0;
+  opacity:0;
+  transform:translateY(16px);
+  transition:.35s;
+  pointer-events:none;
+}
+
+.auth-view.active {
+  opacity:1;
+  transform:none;
+  pointer-events:all;
+}
+
+/* title */
+.auth-title {
+  text-align:center;
+  font-size:22px;
+  margin-bottom:26px;
+}
+
+/* input */
+.input {
+  width:100%;
+  height:44px;
+  border-radius:10px;
+  border:1px solid #e5e7eb;
+  padding:0 14px;
+  margin-bottom:14px;
+}
+
+/* buttons */
+.btn {
+  width:100%;
+  height:44px;
+  border-radius:10px;
+  border:1px solid #e5e7eb;
+  background:#fff;
+  cursor:pointer;
+  margin-bottom:12px;
+}
+
+.btn.primary {
+  background:#111827;
+  color:#fff;
+  border:none;
+}
+
+.btn.social {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+
+.btn.social img {
+  width:18px;
+}
+
+/* divider */
+.divider {
+  text-align:center;
+  font-size:12px;
+  color:#9ca3af;
+  margin:20px 0;
+}
+
+/* checkbox */
+.checkbox {
+  display:flex;
+  gap:8px;
+  font-size:12px;
+  margin-bottom:18px;
+}
+
+/* footer */
+.footer {
+  text-align:center;
+  font-size:13px;
+}
+
+.link {
+  font-weight:600;
+  cursor:pointer;
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div class="auth-layer">
+
+<div class="auth-logo">
+<img class="auth-logo-img"
+src="/assets/logo.png">
+</div>
+
+<div class="auth-center">
+<div class="auth-box">
+
+
+<!-- LOGIN -->
+
+<div class="auth-view active" id="login-view">
+
+<div class="auth-title">
+Witamy ponownie
+</div>
+
+<button class="btn social" onclick="loginGoogle()">
+<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">
+Zaloguj się przez Google
+</button>
+
+<div class="divider">lub</div>
+
+<input class="input" id="login-email" placeholder="Email">
+<input class="input" id="login-pass" type="password" placeholder="Hasło">
+
+<button class="btn primary" onclick="loginEmail()">
+Zaloguj się
+</button>
+
+<div class="footer">
+Nie masz konta?
+<span class="link" onclick="switchView('signup-view')">
+Zarejestruj się
+</span>
+</div>
+
+</div>
+
+
+<!-- SIGNUP -->
+
+<div class="auth-view" id="signup-view">
+
+<div class="auth-title">
+Utwórz konto
+</div>
+
+<button class="btn social" onclick="loginGoogle()">
+<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">
+Zarejestruj się przez Google
+</button>
+
+<div class="divider">lub</div>
+
+<input class="input" id="signup-email" placeholder="Email">
+<input class="input" id="signup-pass" type="password" placeholder="Hasło">
+
+<div class="checkbox">
+<input id="signup-legal" type="checkbox">
+<span>Akceptuję regulamin</span>
+</div>
+
+<button class="btn primary" onclick="signupEmail()">
+Utwórz konto
+</button>
+
+<div class="footer">
+Masz konto?
+<span class="link" onclick="switchView('login-view')">
+Zaloguj się
+</span>
+</div>
+
+</div>
+
+</div>
+</div>
+</div>
+
+
+<script>
+
+
+/* view switch */
+
+function switchView(id){
+
+document
+.querySelectorAll(".auth-view")
+.forEach(v=>v.classList.remove("active"))
+
+document
+.getElementById(id)
+.classList.add("active")
+
+}
+
+
+/* GOOGLE LOGIN */
+
+function loginGoogle(){
+
+window.location.href =
+"https://api.daveri.io/auth/google"
+
+}
+
+
+/* EMAIL LOGIN */
+
+async function loginEmail(){
+
+const email =
+document.getElementById("login-email").value
+
+const pass =
+document.getElementById("login-pass").value
+
+if(!email||!pass){
+
+alert("Wpisz email i hasło")
+return
+
+}
+
+const res =
+await fetch(
+"https://api.daveri.io/auth/login",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({email,pass}),
+credentials:"include"
+})
+
+if(res.ok){
+
+window.location.href =
+"/pages/dashboard.html"
+
+}else{
+
+alert("Błąd logowania")
+
+}
+
+}
+
+
+/* EMAIL SIGNUP */
+
+async function signupEmail(){
+
+const email =
+document.getElementById("signup-email").value
+
+const pass =
+document.getElementById("signup-pass").value
+
+const legal =
+document.getElementById("signup-legal").checked
+
+if(!legal){
+
+alert("Akceptuj regulamin")
+return
+
+}
+
+const res =
+await fetch(
+"https://api.daveri.io/auth/signup",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({email,pass}),
+credentials:"include"
+})
+
+if(res.ok){
+
+window.location.href =
+"/pages/dashboard.html"
+
+}else{
+
+alert("Błąd rejestracji")
+
+}
+
+}
+
+async function checkAuth(){
+
+try{
+
+const res =
+await fetch(
+"https://api.daveri.io/auth/me",
+{
+credentials:"include"
+})
+
+if(res.ok){
+
+window.location.href =
+"/pages/dashboard.html"
+
+}
+
+}catch(e){}
+
+}
+
+checkAuth()
+
+</script>
+
+</body>
+</html>

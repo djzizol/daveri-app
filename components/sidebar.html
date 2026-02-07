@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pl">
 <head>
 <meta charset="utf-8" />
@@ -745,11 +745,7 @@
 </head>
 
 <body>
-<!-- holders bubble -->
-<div id="b_provider" style="display:none;">gogleauthprov</div>
-<div id="b_name" style="display:none;">CURENTUSERGOOGLE FIRSTNAME</div>
-<div id="b_email" style="display:none;">CURENTUSEREMIAL</div>
-<div id="b_avatar" style="display:none;">CurentGoglePRofilePictru</div>
+<!-- USUNIĘTE: holders bubble były tutaj -->
 
 <div id="chatekai_root" data-user-id="XXXXXXXXXXXXXXX">
   <aside class="sidebar chat-sidebar" id="sidebar">
@@ -909,7 +905,9 @@
   import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
   // Bubble function placeholders
-  window.bubble_fn_logout ||= (() => alert("LOCAL: logout (mock)"));
+  window.bubble_fn_logout ||= (() => {
+    window.location.href = "https://api.daveri.io/auth/logout";
+  });
   window.bubble_fn_profile ||= (() => alert("LOCAL: profile (mock)"));
   window.bubble_fn_nav     ||= (route => console.log("LOCAL nav:", route));
 
@@ -1081,13 +1079,7 @@ const LS_KEY = "chatekai_sidebar_collapsed";
     return String(p||"").trim().toLowerCase() === "google" ? "google" : "email";
   }
 
-  function getUserFromHolders(){
-    const provider  = ($("#b_provider")?.textContent || "").trim();
-    const name      = ($("#b_name")?.textContent || "").trim();
-    const email     = ($("#b_email")?.textContent || "").trim();
-    const avatarUrl = ($("#b_avatar")?.textContent || "").trim();
-    return {provider,name,email,avatarUrl};
-  }
+  // USUNIĘTE: function getUserFromHolders() została usunięta
 
   function renderAvatar(avatarBox,{avatarUrl,name,provider}){
     if(!avatarBox) return;
@@ -1111,21 +1103,63 @@ const LS_KEY = "chatekai_sidebar_collapsed";
     avatarBox.appendChild(badge);
   }
 
-  function loadUser(els){
-    const raw       = getUserFromHolders();
-    const provider  = normalizeProvider(raw.provider);
-    const email     = (raw.email || "").trim();
-    const name      = (raw.name || "").trim() || (email ? email.split("@")[0] : "Użytkownik");
-    const avatarUrl = (raw.avatarUrl || "").trim();
+  // NOWA funkcja loadUser (Worker version)
+  async function loadUser(els){
 
-    if(els.userName) els.userName.textContent = name;
-    if(els.userSub){
-      els.userSub.textContent = provider === "google"
-        ? "Konto Google"
-        : email ? `Email • ${email}` : "Email";
+    try{
+
+    const res =
+    await fetch(
+    "https://api.daveri.io/auth/me",
+    {
+    credentials:"include"
+    })
+
+    if(!res.ok){
+
+    window.location.href =
+    "/pages/login.html"
+
+    return
+
     }
-    renderAvatar(els.avatarBox, {avatarUrl,name,provider});
-  }
+
+    const data =
+    await res.json()
+
+    const user = data.user
+
+    const name =
+    user.name || user.email
+
+    const email =
+    user.email || ""
+
+    const avatarUrl =
+    user.picture || ""
+
+    if(els.userName)
+    els.userName.textContent = name
+
+    if(els.userSub)
+    els.userSub.textContent = email
+
+    renderAvatar(
+    els.avatarBox,
+    {
+    avatarUrl,
+    name,
+    provider:"google"
+    })
+
+    }catch(e){
+
+    window.location.href =
+    "/pages/login.html"
+
+    }
+
+    }
 
   function getUserId(){
     const root = getRoot();

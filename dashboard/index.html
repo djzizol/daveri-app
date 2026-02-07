@@ -1317,6 +1317,20 @@
 
   <!-- Particles Animation -->
   <script>
+    fetch("https://api.daveri.io/auth/me",
+{
+credentials:"include"
+})
+.then(r=>{
+
+if(!r.ok){
+
+window.location.href =
+"/pages/login.html"
+
+}
+
+})
   (function() {
     const canvas = document.getElementById('ambientParticles');
     if (!canvas) return;
