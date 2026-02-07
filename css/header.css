@@ -1,0 +1,130 @@
+/* ========== DaVeri Header ========== */
+
+.dv-header {
+  width: 100%;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: rgba(13,14,19,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--dv-stroke);
+}
+
+[data-theme="light"] .dv-header {
+  background: rgba(248,249,252,0.85);
+}
+
+/* Logo */
+.dv-header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.dv-header-logo img {
+  height: 36px;
+  object-fit: contain;
+}
+
+.dv-header-logo-text {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--dv-text);
+}
+
+/* Right section */
+.dv-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Language Switcher */
+.dv-lang-switcher {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--dv-surface);
+  border: 1px solid var(--dv-stroke);
+}
+
+.dv-lang-btn {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--dv-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.dv-lang-btn:hover {
+  color: var(--dv-text);
+  background: var(--dv-surface2);
+}
+
+.dv-lang-btn.active {
+  background: var(--dv-text);
+  color: var(--dv-bg);
+}
+
+[data-theme="light"] .dv-lang-btn.active {
+  background: var(--dv-text);
+  color: #fff;
+}
+
+/* User Menu Placeholder */
+.dv-header-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px 5px 5px;
+  border-radius: 999px;
+  border: 1px solid var(--dv-stroke);
+  background: var(--dv-surface);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dv-header-user:hover {
+  background: var(--dv-surface2);
+  border-color: var(--dv-stroke2);
+}
+
+.dv-header-user-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--dv-surface2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--dv-muted);
+}
+
+.dv-header-user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dv-text);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .dv-header {
+    padding: 10px 16px;
+  }
+  .dv-header-user-name {
+    display: none;
+  }
+}

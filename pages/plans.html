@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Plany - DaVeri</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/sidebar.css" />
+  <link rel="stylesheet" href="../css/header.css" />
+  <link rel="stylesheet" href="../css/pages.css" />
+</head>
+<body>
+  <canvas id="ambientParticles"></canvas>
+  <div id="sidebar-slot"></div>
+  <div id="page-wrapper">
+    <div id="sidebar-spacer"></div>
+    <div id="main-content">
+      <div id="header-slot"></div>
+      <div class="page">
+        <div class="page-header" style="text-align:center; margin-bottom:48px;">
+          <div class="page-title" data-i18n="plans.title">Plany dopasowane do Twojego biznesu.</div>
+          <div class="page-subtitle" style="margin-top:8px;">Wybierz plan i zacznij korzystac z DaVeri juz dzis.</div>
+        </div>
+
+        <div class="plans-grid">
+          <!-- Free -->
+          <div class="plan-card-page">
+            <div class="plan-badge" data-i18n="plans.free_name">Free</div>
+            <div class="plan-name-page" data-i18n="plans.free_name">Free</div>
+            <div class="plan-price-page" data-i18n="plans.free_price">0 PLN <span data-i18n="plans.per_month">/mies.</span></div>
+            <div class="plan-desc" data-i18n="plans.free_desc">Wyprobuj DaVeri za darmo. Idealny do testow.</div>
+            <ul class="plan-features-list">
+              <li><span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> <span data-i18n="plans.free_f1">1 bot</span></li>
+              <li><span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> <span data-i18n="plans.free_f2">100 kredytow/mies.</span></li>
+              <li><span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> <span data-i18n="plans.free_f3">Podstawowa personalizacja widgetu</span></li>
+              <li><span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> <span data-i18n="plans.free_f4">Wsparcie spolecznosci</span></li>
+            </ul>
+            <button class="plan-cta" data-i18n="plans.free_cta">Zacznij za darmo</button>
+          </div>
+
+          <!-- Pro -->
+          <div class="plan-card-page featured">
+            <div class="plan-badge" style="background:rgba(168,85,247,.25); color:#c084fc;">Popularny</div>
+            <div class="plan-name-page" data-i18n="plans.pro_name">Pro</div>
+            <div class="plan-price-page">79 PLN <span data-i18n="plans.per_month">/mies.</span></div>
+            <div class="plan-desc" data-i18n="plans.pro_desc">Dla rozwijajacych sie firm. Wiecej botow, plikow i mocy.</div>
+            <ul class="plan-features-list">
+              <li><span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> <span data-i18n="plans.pro_f1">Do 5 botow</span></li>
+              <li><span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> <span data-i18n="plans.pro_f2">10 000 kredytow/mies.</span></li>
+              <li><span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> <span data-i18n="plans.pro_f3">Do 20 plikow wiedzy</span></li>
+              <li><span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> <span data-i18n="plans.pro_f4">Wlasny avatar bota</span></li>
+              <li><span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> <span data-i18n="plans.pro_f5">Priorytetowe wsparcie</span></li>
+            </ul>
+            <button class="plan-cta primary" data-i18n="plans.pro_cta">Wybierz Pro</button>
+          </div>
+
+          <!-- Enterprise -->
+          <div class="plan-card-page">
+            <div class="plan-badge">Enterprise</div>
+            <div class="plan-name-page" data-i18n="plans.enterprise_name">Enterprise</div>
+            <div class="plan-price-page">149 PLN <span data-i18n="plans.per_month">/mies.</span></div>
+            <div class="plan-desc" data-i18n="plans.enterprise_desc">Dla agencji i duzych projektow na skale.</div>
+            <ul class="plan-features-list">
+              <li><span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> <span data-i18n="plans.enterprise_f1">Do 20 botow</span></li>
+              <li><span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> <span data-i18n="plans.enterprise_f2">30 000 kredytow/mies.</span></li>
+              <li><span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> <span data-i18n="plans.enterprise_f3">Do 300 plikow wiedzy</span></li>
+              <li><span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> <span data-i18n="plans.enterprise_f4">Wsparcie wielojezyczne</span></li>
+              <li><span class="plan-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span> <span data-i18n="plans.enterprise_f5">Dedykowane wsparcie</span></li>
+            </ul>
+            <button class="plan-cta" data-i18n="plans.enterprise_cta">Wybierz Enterprise</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/lang.js"></script>
+  <script src="../js/sidebar.js"></script>
+  <script src="../js/router.js"></script>
+  <script src="../js/app.js"></script>
+</body>
+</html>
