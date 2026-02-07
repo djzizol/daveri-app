@@ -1,0 +1,131 @@
+/* ========== DaVeri - Header Styles ========== */
+
+.dv-header {
+  position: fixed;
+  top: 0;
+  left: var(--dv-sidebar-w, 0px);
+  right: 0;
+  z-index: 900;
+  background: rgba(13, 14, 19, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--dv-stroke);
+  transition: left 0.22s var(--dv-ease);
+}
+
+[data-theme="light"] .dv-header {
+  background: rgba(248, 249, 252, 0.85);
+}
+
+.dv-header-inner {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 12px var(--page-pad);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* Logo */
+.dv-header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.dv-header-logo img {
+  height: 32px;
+  width: auto;
+}
+
+.dv-header-logo-text {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--dv-text);
+}
+
+/* Right side */
+.dv-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Language Switcher */
+.dv-lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--dv-surface);
+  border: 1px solid var(--dv-stroke);
+  border-radius: 999px;
+}
+
+.dv-lang-btn {
+  padding: 5px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dv-muted);
+  cursor: pointer;
+  transition: all 0.15s var(--dv-ease);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dv-lang-btn:hover {
+  color: var(--dv-text);
+  background: var(--dv-surface2);
+}
+
+.dv-lang-btn.active {
+  color: #fff;
+  background: var(--dv-grad);
+}
+
+/* User Menu Placeholder */
+.dv-user-menu {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--dv-surface);
+  border: 1px solid var(--dv-stroke);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s var(--dv-ease);
+  color: var(--dv-muted);
+}
+
+.dv-user-menu:hover {
+  background: var(--dv-surface2);
+  border-color: var(--dv-stroke2);
+  color: var(--dv-text);
+}
+
+.dv-user-menu svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Header spacer (when header is present, push content down) */
+.has-header #main-content .page {
+  padding-top: calc(var(--page-pad) + 60px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dv-header-inner {
+    padding: 10px 16px;
+  }
+  .dv-header-logo-text {
+    display: none;
+  }
+}
