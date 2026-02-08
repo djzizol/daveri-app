@@ -1948,9 +1948,15 @@
 
     function handlePostLoginRedirect() {
         if (!shouldRedirectAfterLogin()) return false;
-        const redirectUrl = consumeLoginRedirect() || buildLangUrl('/dashboard/');
-        window.location.href = redirectUrl;
-        return true;
+        const redirectUrl = consumeLoginRedirect();
+        const url = new URL(window.location.href);
+        url.searchParams.delete('auth_success');
+        window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+        if (redirectUrl) {
+            window.location.href = redirectUrl;
+            return true;
+        }
+        return false;
     }
 
     async function checkSession() {

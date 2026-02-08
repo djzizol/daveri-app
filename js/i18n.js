@@ -116,6 +116,12 @@ export const initI18n = async () => {
   }
   await applyLanguage(initialLang);
 
+  wireLanguageSelectors();
+};
+
+export const translatePage = () => applyLanguage(currentLanguage);
+
+const wireLanguageSelectors = () => {
   document.querySelectorAll("[data-language-selector]").forEach((select) => {
     if (select.dataset.languageWired) return;
     select.dataset.languageWired = "true";
@@ -145,8 +151,6 @@ export const initI18n = async () => {
   });
 };
 
-export const translatePage = () => applyLanguage(currentLanguage);
-
 if (typeof window !== "undefined") {
   window.DaVeriI18n = {
     setLanguage,
@@ -168,6 +172,7 @@ if (typeof document !== "undefined") {
 
   document.addEventListener("sidebar:mounted", () => {
     applyLanguage(currentLanguage);
+    wireLanguageSelectors();
   });
 }
 
