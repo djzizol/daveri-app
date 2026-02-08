@@ -1,4 +1,4 @@
-import { getInitialLanguage, persistLanguage, normalizeLanguage } from "./language.js";
+import { getCurrentLanguage, setCurrentLanguage, normalizeLanguage } from "./language.js";
 
 const TRANSLATION_CACHE = new Map();
 
@@ -18,40 +18,66 @@ const loadTranslations = async (lang) => {
   return data || {};
 };
 
-const getTextForKey = (key, translations, fallback) => {
-  if (!key) return fallback;
-  return translations[key] ?? fallback ?? key;
+const isNonEmptyTranslation = (value) => {
+  if (value === null || value === undefined) {
+    return false;
+  }
+  return String(value).trim().length > 0;
+};
+
+const getTextForKey = (key, translations, fallbackTranslations) => {
+  if (!key) {
+    return "[missing-key]";
+  }
+  const primary = translations[key];
+  if (isNonEmptyTranslation(primary)) {
+    return String(primary);
+  }
+  const fallback = fallbackTranslations[key];
+  if (isNonEmptyTranslation(fallback)) {
+    return String(fallback);
+  }
+  return `[${key}]`;
+};
+
+let currentLanguage = "en";
+
+const waitForAuthReady = async () => {
+  const authReady = window?.DaVeriAuth?.ready;
+  if (authReady && typeof authReady.then === "function") {
+    try {
+      await authReady;
+    } catch (error) {
+      return false;
+    }
+  }
+  return true;
 };
 
 const applyTranslations = (translations, fallbackTranslations) => {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.dataset.i18n;
-    const fallback = fallbackTranslations[key] ?? el.textContent;
-    el.textContent = getTextForKey(key, translations, fallback);
+    el.textContent = getTextForKey(key, translations, fallbackTranslations);
   });
 
   document.querySelectorAll("[data-i18n-html]").forEach((el) => {
     const key = el.dataset.i18nHtml;
-    const fallback = fallbackTranslations[key] ?? el.innerHTML;
-    el.innerHTML = getTextForKey(key, translations, fallback);
+    el.innerHTML = getTextForKey(key, translations, fallbackTranslations);
   });
 
   document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
     const key = el.dataset.i18nPlaceholder;
-    const fallback = fallbackTranslations[key] ?? el.placeholder;
-    el.placeholder = getTextForKey(key, translations, fallback);
+    el.placeholder = getTextForKey(key, translations, fallbackTranslations);
   });
 
   document.querySelectorAll("[data-i18n-title]").forEach((el) => {
     const key = el.dataset.i18nTitle;
-    const fallback = fallbackTranslations[key] ?? el.title;
-    el.title = getTextForKey(key, translations, fallback);
+    el.title = getTextForKey(key, translations, fallbackTranslations);
   });
 
   document.querySelectorAll("[data-i18n-aria-label]").forEach((el) => {
     const key = el.dataset.i18nAriaLabel;
-    const fallback = fallbackTranslations[key] ?? el.getAttribute("aria-label");
-    el.setAttribute("aria-label", getTextForKey(key, translations, fallback));
+    el.setAttribute("aria-label", getTextForKey(key, translations, fallbackTranslations));
   });
 };
 
@@ -63,20 +89,32 @@ const updateLanguageSelectors = (lang) => {
   });
 };
 
-export const setLanguage = async (lang) => {
-  const normalized = normalizeLanguage(lang) || "en";
+const applyLanguage = async (lang) => {
+  const normalized = lang || "en";
+  currentLanguage = normalized;
   const [fallbackTranslations, translations] = await Promise.all([
     loadTranslations("en"),
     normalized === "en" ? Promise.resolve({}) : loadTranslations(normalized),
   ]);
   applyTranslations(translations, fallbackTranslations);
   updateLanguageSelectors(normalized);
-  persistLanguage(normalized);
+  document.dispatchEvent(new CustomEvent("i18n:updated", { detail: { language: normalized } }));
+};
+
+export const setLanguage = async (lang) => {
+  const normalized = normalizeLanguage(lang) || "en";
+  currentLanguage = normalized;
+  setCurrentLanguage(normalized);
+  await applyLanguage(normalized);
 };
 
 export const initI18n = async () => {
-  const initialLang = getInitialLanguage();
-  await setLanguage(initialLang);
+  const initialLang = getCurrentLanguage();
+  const authReady = await waitForAuthReady();
+  if (!authReady) {
+    return;
+  }
+  await applyLanguage(initialLang);
 
   document.querySelectorAll("[data-language-selector]").forEach((select) => {
     if (select.dataset.languageWired) return;
@@ -86,6 +124,32 @@ export const initI18n = async () => {
     });
   });
 };
+
+export const translatePage = () => applyLanguage(currentLanguage);
+
+if (typeof window !== "undefined") {
+  window.DaVeriI18n = {
+    setLanguage,
+    translatePage,
+    getCurrentLanguage: () => currentLanguage,
+  };
+}
+
+if (typeof document !== "undefined") {
+  document.addEventListener("language:changed", async (event) => {
+    const language = event.detail?.language;
+    if (!language || language === currentLanguage) return;
+    const authReady = await waitForAuthReady();
+    if (!authReady) {
+      return;
+    }
+    applyLanguage(language);
+  });
+
+  document.addEventListener("sidebar:mounted", () => {
+    applyLanguage(currentLanguage);
+  });
+}
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initI18n, { once: true });

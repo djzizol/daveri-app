@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Prompt - DaVeri</title>
+  <title data-i18n="prompts.page.title"></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -143,8 +143,8 @@
     <div id="main-content">
       <div class="page" id="prompt_root" data-user-id="CURRENT USER" data-bot-id="">
         <div class="page-header">
-          <div class="page-title">Prompt systemowy</div>
-          <div class="page-subtitle">Zdefiniuj jak Twoj bot ma sie zachowywac i odpowiadac.</div>
+          <div class="page-title" data-i18n="prompts.page.heading"></div>
+          <div class="page-subtitle" data-i18n="prompts.page.subtitle"></div>
         </div>
 
         <div class="glass-card">
@@ -155,34 +155,42 @@
                   alt="Prompt" style="filter: brightness(0) invert(1); opacity: 0.7;">
               </div>
               <div>
-                <div class="card-title">System prompt</div>
-                <div class="card-subtitle">Instrukcja dla modelu AI - opisz role, ton, zasady.</div>
+                <div class="card-title" data-i18n="prompts.card.title"></div>
+                <div class="card-subtitle" data-i18n="prompts.card.subtitle"></div>
               </div>
             </div>
           </div>
           <div class="card-body">
             <textarea class="prompt-area" id="promptTextarea"
-              placeholder="Jestes pomocnym asystentem AI. Odpowiadasz uprzejmie i rzeczowo w jezyku polskim..."
+              data-i18n-placeholder="prompts.card.placeholder"
+              placeholder=""
               spellcheck="false"></textarea>
           </div>
           <div class="card-footer">
             <div style="display:flex;align-items:center;">
               <span class="save-status" id="saveStatus"></span>
-              <span class="char-count" id="charCount">0 znakow</span>
+              <span class="char-count" id="charCount">0</span>
+              <span class="char-count" data-i18n="prompts.card.characters"></span>
             </div>
-            <button class="save-btn" id="saveBtn" onclick="savePrompt()">Zapisz prompt</button>
+            <button class="save-btn" id="saveBtn" onclick="savePrompt()" data-i18n="prompts.actions.save"></button>
           </div>
         </div>
 
         <div class="tips">
-          <div class="tips-title">Wskazowki</div>
-          <div class="tip-item">Opisz role bota: "Jestes ekspertem od..."</div>
-          <div class="tip-item">Dodaj zasady: "Nigdy nie podawaj informacji finansowych"</div>
-          <div class="tip-item">Okresl ton: "Odpowiadaj profesjonalnie, ale przyjaznie"</div>
-          <div class="tip-item">Uzyj formatowania: "Odpowiadaj w punktach, uzywaj emoji"</div>
+          <div class="tips-title" data-i18n="prompts.tips.title"></div>
+          <div class="tip-item" data-i18n="prompts.tips.role"></div>
+          <div class="tip-item" data-i18n="prompts.tips.rules"></div>
+          <div class="tip-item" data-i18n="prompts.tips.tone"></div>
+          <div class="tip-item" data-i18n="prompts.tips.formatting"></div>
         </div>
-      </div>
-    </div>
+  </div>
+  </div>
+  </div>
+
+  <div id="prompts-i18n" style="display:none">
+    <span id="i18n-prompts-save-error" data-i18n="prompts.status.error"></span>
+    <span id="i18n-prompts-save-success" data-i18n="prompts.status.success"></span>
+    <span id="i18n-prompts-select-bot" data-i18n="prompts.status.selectBot"></span>
   </div>
 
   <script type="module">
@@ -196,9 +204,10 @@
     const charCount = document.getElementById('charCount');
     const saveStatus = document.getElementById('saveStatus');
     const saveBtn = document.getElementById('saveBtn');
+    const i18nText = (id) => document.getElementById(id)?.textContent || "";
 
     textarea.addEventListener('input', () => {
-      charCount.textContent = textarea.value.length + ' znakow';
+      charCount.textContent = textarea.value.length;
     });
 
     async function loadPrompt() {
@@ -211,14 +220,14 @@
         .single();
       if (data?.system_prompt) {
         textarea.value = data.system_prompt;
-        charCount.textContent = data.system_prompt.length + ' znakow';
+        charCount.textContent = data.system_prompt.length;
       }
     }
 
     window.savePrompt = async function() {
       const botId = root?.dataset?.botId;
       if (!botId) {
-        saveStatus.textContent = 'Najpierw wybierz bota';
+        saveStatus.textContent = i18nText("i18n-prompts-select-bot");
         saveStatus.className = 'save-status show error';
         setTimeout(() => saveStatus.className = 'save-status', 2000);
         return;
@@ -230,10 +239,10 @@
         .eq('id', botId);
 
       if (error) {
-        saveStatus.textContent = 'Blad zapisu';
+        saveStatus.textContent = i18nText("i18n-prompts-save-error");
         saveStatus.className = 'save-status show error';
       } else {
-        saveStatus.textContent = 'Zapisano';
+        saveStatus.textContent = i18nText("i18n-prompts-save-success");
         saveStatus.className = 'save-status show success';
       }
       saveBtn.disabled = false;
@@ -243,6 +252,8 @@
     loadPrompt();
   </script>
 
+  <script type="module" src="../js/language.js"></script>
+  <script type="module" src="../js/auth-bootstrap.js"></script>
   <script type="module" src="../js/sidebar-loader.js"></script>
 
   <!-- Particles -->

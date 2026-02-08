@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Pliki - DaVeri</title>
+  <title data-i18n="files.page.title"></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -167,14 +167,14 @@
       <div class="page" id="pliki_root" data-user-id="CURRENT USER" data-bot-id="">
         <div class="page-header">
           <div class="page-header-text">
-            <div class="page-title">Pliki</div>
-            <div class="page-subtitle">Zarzadzaj plikami wiedzy Twojego bota. Dodaj dokumenty, aby bot uczyl sie z nich.</div>
+            <div class="page-title" data-i18n="files.page.heading"></div>
+            <div class="page-subtitle" data-i18n="files.page.subtitle"></div>
           </div>
           <button class="upload-btn" id="uploadBtn" onclick="document.getElementById('fileInput').click()">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
             </svg>
-            Dodaj plik
+            <span data-i18n="files.actions.upload"></span>
           </button>
           <input type="file" id="fileInput" style="display:none" accept=".pdf,.txt,.doc,.docx,.csv" multiple>
         </div>
@@ -183,18 +183,18 @@
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12H9.75m3 0l-3-3m3 3l3-3M.375 10.125H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
           </svg>
-          <div class="drop-zone-text">Przeciagnij pliki tutaj</div>
-          <div class="drop-zone-hint">PDF, TXT, DOC, DOCX, CSV - maks. 10MB</div>
+          <div class="drop-zone-text" data-i18n="files.dropzone.title"></div>
+          <div class="drop-zone-hint" data-i18n="files.dropzone.hint"></div>
         </div>
 
         <div class="files-card">
           <table class="files-table">
             <thead>
               <tr>
-                <th>Nazwa pliku</th>
-                <th>Rozmiar</th>
-                <th>Data</th>
-                <th>Status</th>
+                <th data-i18n="files.table.name"></th>
+                <th data-i18n="files.table.size"></th>
+                <th data-i18n="files.table.date"></th>
+                <th data-i18n="files.table.status"></th>
                 <th></th>
               </tr>
             </thead>
@@ -207,12 +207,23 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
               </svg>
             </div>
-            <div class="empty-state-title">Brak plikow</div>
-            <div class="empty-state-desc">Dodaj pliki, aby Twoj bot mogl sie z nich uczyc.</div>
+            <div class="empty-state-title" data-i18n="files.empty.title"></div>
+            <div class="empty-state-desc" data-i18n="files.empty.subtitle"></div>
           </div>
         </div>
-      </div>
-    </div>
+  </div>
+  </div>
+  </div>
+
+  <div id="files-i18n" style="display:none">
+    <span id="i18n-files-unit-bytes" data-i18n="files.units.bytes"></span>
+    <span id="i18n-files-unit-kb" data-i18n="files.units.kilobytes"></span>
+    <span id="i18n-files-unit-mb" data-i18n="files.units.megabytes"></span>
+    <span id="i18n-files-status-ready" data-i18n="files.status.ready"></span>
+    <span id="i18n-files-status-processing" data-i18n="files.status.processing"></span>
+    <span id="i18n-files-status-error" data-i18n="files.status.error"></span>
+    <span id="i18n-files-default-name" data-i18n="files.defaults.name"></span>
+    <span id="i18n-files-confirm-delete" data-i18n="files.confirm.delete"></span>
   </div>
 
   <script type="module">
@@ -226,12 +237,19 @@
     const tbody = document.getElementById('filesTableBody');
     const emptyState = document.getElementById('filesEmpty');
     const dropZone = document.getElementById('dropZone');
+    const i18nText = (id) => document.getElementById(id)?.textContent || "";
+
+    function translateDynamicContent() {
+      if (window.DaVeriI18n?.translatePage) {
+        window.DaVeriI18n.translatePage();
+      }
+    }
 
     function fmtSize(bytes) {
       if (!bytes) return '--';
-      if (bytes < 1024) return bytes + ' B';
-      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-      return (bytes / 1048576).toFixed(1) + ' MB';
+      if (bytes < 1024) return `${bytes} ${i18nText("i18n-files-unit-bytes")}`;
+      if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} ${i18nText("i18n-files-unit-kb")}`;
+      return `${(bytes / 1048576).toFixed(1)} ${i18nText("i18n-files-unit-mb")}`;
     }
     function fmtDate(d) {
       if (!d) return '--';
@@ -252,24 +270,29 @@
 
       files.forEach(file => {
         const statusClass = file.status === 'processed' ? 'processed' : file.status === 'processing' ? 'processing' : 'error';
-        const statusLabel = file.status === 'processed' ? 'Gotowy' : file.status === 'processing' ? 'Przetwarzanie' : 'Blad';
+        const statusLabel = file.status === 'processed'
+          ? i18nText("i18n-files-status-ready")
+          : file.status === 'processing'
+            ? i18nText("i18n-files-status-processing")
+            : i18nText("i18n-files-status-error");
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><div class="file-name-cell">
             <div class="file-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg></div>
-            <span class="file-name">${file.name || 'Plik'}</span>
+            <span class="file-name">${file.name || i18nText("i18n-files-default-name")}</span>
           </div></td>
           <td><span class="file-size">${fmtSize(file.size)}</span></td>
           <td><span class="file-date">${fmtDate(file.created_at)}</span></td>
           <td><div class="file-status"><div class="file-status-dot ${statusClass}"></div>${statusLabel}</div></td>
-          <td><button class="delete-btn" onclick="deleteFile('${file.id}')" title="Usun"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg></button></td>
+          <td><button class="delete-btn" onclick="deleteFile('${file.id}')" data-i18n-title="files.actions.delete"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg></button></td>
         `;
         tbody.appendChild(tr);
+        translateDynamicContent();
       });
     }
 
     window.deleteFile = async function(id) {
-      if (!confirm('Na pewno usunac ten plik?')) return;
+      if (!confirm(i18nText("i18n-files-confirm-delete"))) return;
       await supabase.from('bot_files').delete().eq('id', id);
       loadFiles();
     };
@@ -282,6 +305,8 @@
     loadFiles();
   </script>
 
+  <script type="module" src="../js/language.js"></script>
+  <script type="module" src="../js/auth-bootstrap.js"></script>
   <script type="module" src="../js/sidebar-loader.js"></script>
 
   <!-- Particles -->

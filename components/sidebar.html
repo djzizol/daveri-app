@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>DaVeri Sidebar - Synchronizowany</title>
+<title data-i18n="sidebar.title">DaVeri Sidebar</title>
 <style>
 /* ========== PODSTAWOWE STYLE ========== */
 #daveri_sidebar,
@@ -766,7 +766,7 @@
             <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1768755240414x775862930699997600/logo64.png?_gl=1*1xuqcq7*_gcl_aw*R0NMLjE3NjQ4ODcxODcuQ2owS0NRaUFfOFRKQmhETkFSSXNBUFg1cXhSS2s1aWxkS2hydXJydnNXVm9IUGFvT1NTZ3VvTWVFM0NhZmd4WnJqU0t5SG51ZFAtS0FUc2FBaHRkRUFMd193Y0I.*_gcl_au*MTg4MzA5OTI1OC4xNzY0Nzg5MjY0*_ga*OTczNDY5ODUzLjE3NjQ2MDc2MTI.*_ga_BFPVR2DEE2*czE3NzAyMzI2MjgkbzUwJGcxJHQxNzcwMjM5MTY1JGo2MCRsMCRoMA.." alt="DaVeri logo" />
 
             <!-- Ikona rozwiń – zaokrąglony kwadrat z paskiem po lewej (styl ChatGPT/Copilot) -->
-            <div class="mark-ham" role="button" aria-label="Rozwiń sidebar">
+            <div class="mark-ham" role="button" data-i18n-aria-label="sidebar.actions.expand">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="5" y="6" width="14" height="12" rx="3"/>
                 <line x1="9" y1="8" x2="9" y2="16"/>
@@ -776,7 +776,7 @@
         </div>
 
         <div class="brand-right">
-          <button class="icon-btn" id="collapseBtn" aria-label="Zwiń/rozwiń sidebar" type="button">
+          <button class="icon-btn" id="collapseBtn" type="button" data-i18n-aria-label="sidebar.actions.toggle">
             <svg class="sidebar-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="5" y="6" width="14" height="12" rx="3"/>
               <line x1="9" y1="8" x2="9" y2="16"/>
@@ -786,53 +786,53 @@
       </div>
     </div>
 
-    <nav class="nav" aria-label="Nawigacja">
+    <nav class="nav" data-i18n-aria-label="sidebar.navigation.aria">
       <div class="section">
         <div class="nav-item" tabindex="0" data-route="panel">
           <img class="nav-ico" src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249154059x102876966522698510/panel.svg" alt="" width="24" height="24" aria-hidden="true" />
-          <span class="label">Panel</span>
-          <span class="badge">NEW</span>
-          <span class="tip">Panel</span>
+          <span class="label" data-i18n="sidebar.nav.dashboard">Dashboard</span>
+          <span class="badge" data-i18n="sidebar.badge.new">New</span>
+          <span class="tip" data-i18n="sidebar.nav.dashboard">Dashboard</span>
         </div>
       </div>
 
-      <div class="nav-label">Warsztat</div>
+      <div class="nav-label" data-i18n="sidebar.nav.workshop">Workspace</div>
 
       <div class="section">
         <div class="nav-item" tabindex="0" data-route="boty">
           <img class="nav-ico" src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249140796x253773293772721950/boty.svg" alt="" width="24" height="24" aria-hidden="true" />
-          <span class="label">Boty</span>
-          <span class="tip">Boty</span>
+          <span class="label" data-i18n="sidebar.nav.bots">Bots</span>
+          <span class="tip" data-i18n="sidebar.nav.bots">Bots</span>
         </div>
 
         <div class="nav-item" tabindex="0" data-route="historia">
           <img class="nav-ico" src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249131284x840037696645927700/hisotria.svg" alt="" width="24" height="24" aria-hidden="true" />
-          <span class="label">Historia rozmów</span>
-          <span class="tip">Historia rozmów</span>
+          <span class="label" data-i18n="sidebar.nav.history">History</span>
+          <span class="tip" data-i18n="sidebar.nav.history">History</span>
         </div>
 
         <div class="nav-item" tabindex="0" data-route="prompt">
           <img class="nav-ico" src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249125077x656254872647275600/prompt.svg" alt="" width="24" height="24" aria-hidden="true" />
-          <span class="label">Prompt</span>
-          <span class="tip">Prompt</span>
+          <span class="label" data-i18n="sidebar.nav.prompts">Prompts</span>
+          <span class="tip" data-i18n="sidebar.nav.prompts">Prompts</span>
         </div>
 
         <div class="nav-item" tabindex="0" data-route="wyglad">
           <img class="nav-ico" src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249145896x475580076785379700/wyglad.svg" alt="" width="24" height="24" aria-hidden="true" />
-          <span class="label">Wygląd</span>
-          <span class="tip">Wygląd</span>
+          <span class="label" data-i18n="sidebar.nav.appearance">Appearance</span>
+          <span class="tip" data-i18n="sidebar.nav.appearance">Appearance</span>
         </div>
 
         <div class="nav-item" tabindex="0" data-route="pliki">
           <img class="nav-ico" src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249121272x452195540458458100/pliki.svg" alt="" width="24" height="24" aria-hidden="true" />
-          <span class="label">Pliki</span>
-          <span class="tip">Pliki</span>
+          <span class="label" data-i18n="sidebar.nav.files">Files</span>
+          <span class="tip" data-i18n="sidebar.nav.files">Files</span>
         </div>
 
         <div class="nav-item" tabindex="0" data-route="instalacja">
           <img class="nav-ico" src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249115665x192170676080926980/intalacja.svg" alt="" width="24" height="24" aria-hidden="true" />
-          <span class="label">Instalacja</span>
-          <span class="tip">Instalacja</span>
+          <span class="label" data-i18n="sidebar.nav.install">Install</span>
+          <span class="tip" data-i18n="sidebar.nav.install">Install</span>
         </div>
       </div>
     </nav>
@@ -841,10 +841,10 @@
     <div class="plan-card" id="sidebar-plan-card">
       <div class="plan-card-header">
         <div>
-          <div class="plan-label">Twój plan</div>
+          <div class="plan-label" data-i18n="sidebar.plan.label">Your plan</div>
           <div class="plan-name" id="sidebar-plan-name">—</div>
         </div>
-        <span class="plan-pill" id="sidebar-plan-pill">PLAN</span>
+        <span class="plan-pill" id="sidebar-plan-pill" data-i18n="sidebar.plan.pill">PLAN</span>
       </div>
 
       <div class="plan-card-body">
@@ -853,15 +853,15 @@
             <canvas id="planLiquidCanvas" width="220" height="220"></canvas>
             <div class="plan-liquid-ui">
               <div class="plan-liquid-percent" id="sidebar-plan-percent">0%</div>
-              <div class="plan-liquid-sub">ZOSTAŁO</div>
+              <div class="plan-liquid-sub" data-i18n="sidebar.plan.remaining">REMAINING</div>
             </div>
           </div>
         </div>
 
         <div class="plan-credits-box">
-          <div class="plan-credits-main" id="sidebar-plan-credits-main">Ładuję dane…</div>
+          <div class="plan-credits-main" id="sidebar-plan-credits-main" data-i18n="sidebar.plan.loading">Loading data…</div>
           <div class="plan-credits-sub" id="sidebar-plan-credits-sub">
-            Sprawdzamy Twoje kredyty w tym okresie rozliczeniowym.
+            <span data-i18n="sidebar.plan.subtext">Checking your credits for this billing period.</span>
           </div>
         </div>
       </div>
@@ -870,23 +870,23 @@
     <!-- THEME TOGGLE -->
     <div class="theme-toggle-section">
       <div class="theme-toggle-buttons">
-        <button class="theme-btn active" data-theme="system" title="Systemowy">
+        <button class="theme-btn active" data-theme="system" data-i18n-title="sidebar.theme.system">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         </button>
-        <button class="theme-btn" data-theme="light" title="Jasny">
+        <button class="theme-btn" data-theme="light" data-i18n-title="sidebar.theme.light">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
         </button>
-        <button class="theme-btn" data-theme="dark" title="Ciemny">
+        <button class="theme-btn" data-theme="dark" data-i18n-title="sidebar.theme.dark">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
         </button>
       </div>
-      <select class="lang-select" data-language-selector aria-label="Language">
-        <option value="en">EN</option>
-        <option value="pl">PL</option>
-        <option value="de">DE</option>
-        <option value="fr">FR</option>
-        <option value="es">ES</option>
-        <option value="pt">PT</option>
+      <select class="lang-select" data-language-selector data-i18n-aria-label="sidebar.language.aria">
+        <option value="en" data-i18n="sidebar.language.en">EN</option>
+        <option value="pl" data-i18n="sidebar.language.pl">PL</option>
+        <option value="de" data-i18n="sidebar.language.de">DE</option>
+        <option value="fr" data-i18n="sidebar.language.fr">FR</option>
+        <option value="es" data-i18n="sidebar.language.es">ES</option>
+        <option value="pt" data-i18n="sidebar.language.pt">PT</option>
       </select>
     </div>
 
@@ -895,18 +895,18 @@
       <div class="dropdown ck-dropdown dv-dd" id="userDropdown">
         <button class="dd-item" type="button" id="goProfileBtn">
           <svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="8" r="4"/></svg>
-          Profil
+          <span data-i18n="sidebar.user.profile">Profile</span>
         </button>
         <button class="dd-item danger" type="button" id="logoutBtn">
           <svg viewBox="0 0 24 24"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 21V3"/></svg>
-          Wyloguj
+          <span data-i18n="sidebar.user.logout">Log out</span>
         </button>
       </div>
 
-      <button class="user-btn" id="userBtn" type="button" aria-label="Menu użytkownika">
-        <div class="avatar" id="avatarBox" title="Użytkownik"></div>
+      <button class="user-btn" id="userBtn" type="button" data-i18n-aria-label="sidebar.user.menu">
+        <div class="avatar" id="avatarBox" data-i18n-title="sidebar.user.title"></div>
         <div class="user-meta">
-          <strong id="userName">Użytkownik</strong>
+          <strong id="userName" data-i18n="sidebar.user.nameFallback">User</strong>
           <span id="userSub">—</span>
         </div>
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
