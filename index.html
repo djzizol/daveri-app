@@ -1517,7 +1517,7 @@
                     <option value="pt">PT</option>
                 </select>
                 <!-- Przycisk logowania (domyślnie widoczny) -->
-                <button class="nav-btn" id="login-btn" onclick="window.location.href='https://api.daveri.io/auth/google'" data-i18n="nav.login"></button>
+                <button class="nav-btn" id="login-btn" onclick="startGoogleLogin()" data-i18n="nav.login"></button>
                 
                 <!-- Dropdown dla zalogowanego użytkownika (domyślnie ukryty) -->
                 <div id="user-dropdown" style="display: none;">
@@ -1873,6 +1873,7 @@
     <script>
     // ========== SYSTEM AUTORYZACJI ==========
     let isLoggedIn = false;
+    const LOGIN_REDIRECT_KEY = 'daveri_login_redirect';
 
     function getLanguageApi() {
         return window.DaVeriLanguage;
@@ -1913,6 +1914,45 @@
         }
     }
 
+    function rememberLoginRedirect(pathname = '/dashboard/') {
+        try {
+            const targetUrl = buildLangUrl(pathname);
+            localStorage.setItem(LOGIN_REDIRECT_KEY, targetUrl);
+        } catch (error) {
+            console.warn('Nie udało się zapisać przekierowania logowania', error);
+        }
+    }
+
+    function consumeLoginRedirect() {
+        try {
+            const stored = localStorage.getItem(LOGIN_REDIRECT_KEY);
+            if (stored) {
+                localStorage.removeItem(LOGIN_REDIRECT_KEY);
+            }
+            return stored;
+        } catch (error) {
+            console.warn('Nie udało się odczytać przekierowania logowania', error);
+            return '';
+        }
+    }
+
+    function startGoogleLogin() {
+        rememberLoginRedirect('/dashboard/');
+        window.location.href = 'https://api.daveri.io/auth/google';
+    }
+
+    function shouldRedirectAfterLogin() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('auth_success') === '1';
+    }
+
+    function handlePostLoginRedirect() {
+        if (!shouldRedirectAfterLogin()) return false;
+        const redirectUrl = consumeLoginRedirect() || buildLangUrl('/dashboard/');
+        window.location.href = redirectUrl;
+        return true;
+    }
+
     async function checkSession() {
         console.log('🔐 Strona główna: sprawdzam sesję...');
         
@@ -1938,6 +1978,10 @@
                     
                     // Pokaż powiadomienie powitalne
                     showWelcomeNotification(data.user);
+
+                    if (handlePostLoginRedirect()) {
+                        return true;
+                    }
                     
                     return true;
                 }
@@ -2031,7 +2075,7 @@
         if (loginBtn) {
             loginBtn.style.display = 'block';
             loginBtn.onclick = () => {
-                window.location.href = 'https://api.daveri.io/auth/google';
+                startGoogleLogin();
             };
         }
         
@@ -2045,7 +2089,7 @@
             ctaText.textContent = 'Rozpocznij konfigurację • 7 dni bez zobowiązań';
             ctaBtn.onclick = (e) => {
                 e.preventDefault();
-                window.location.href = 'https://api.daveri.io/auth/google';
+                startGoogleLogin();
             };
         }
     }
@@ -2142,10 +2186,10 @@
                         window.location.href = buildLangUrl('/dashboard/');
                     } else {
                         // Nie zalogowany - przekieruj do logowania
-                        window.location.href = 'https://api.daveri.io/auth/google';
+                        startGoogleLogin();
                     }
                 } catch (error) {
-                    window.location.href = 'https://api.daveri.io/auth/google';
+                    startGoogleLogin();
                 }
             });
         });

@@ -227,6 +227,31 @@ src="/assets/logo.png">
 
 <script>
 const i18nText = (id) => document.getElementById(id)?.textContent || "";
+const LOGIN_REDIRECT_KEY = "daveri_login_redirect";
+
+const getLanguageApi = () => window.DaVeriLanguage;
+
+const getActiveLanguage = () =>
+  getLanguageApi()?.getCurrentLanguage?.() || document.documentElement.lang || "en";
+
+const buildLangUrl = (pathname) => {
+  const langApi = getLanguageApi();
+  if (langApi?.buildLanguageUrl) {
+    return langApi.buildLanguageUrl(getActiveLanguage(), { pathname, search: "", hash: "" });
+  }
+  const normalizedPath = pathname.startsWith("/") ? pathname : `/${pathname}`;
+  return `/${getActiveLanguage()}${normalizedPath}`;
+};
+
+const getDashboardUrl = () => buildLangUrl("/dashboard/");
+
+const rememberLoginRedirect = () => {
+  try {
+    localStorage.setItem(LOGIN_REDIRECT_KEY, getDashboardUrl());
+  } catch (e) {
+    console.warn("Unable to store login redirect", e);
+  }
+};
 
 
 /* view switch */
@@ -248,6 +273,7 @@ document
 
 function loginGoogle(){
 
+rememberLoginRedirect();
 window.location.href =
 "https://api.daveri.io/auth/google"
 
@@ -286,7 +312,7 @@ credentials:"include"
 if(res.ok){
 
 window.location.href =
-"/pages/dashboard.html"
+getDashboardUrl()
 
 }else{
 
@@ -332,7 +358,7 @@ credentials:"include"
 if(res.ok){
 
 window.location.href =
-"/pages/dashboard.html"
+getDashboardUrl()
 
 }else{
 
@@ -356,7 +382,7 @@ credentials:"include"
 if(res.ok){
 
 window.location.href =
-"/pages/dashboard.html"
+getDashboardUrl()
 
 }
 
