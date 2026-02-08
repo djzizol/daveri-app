@@ -18,9 +18,26 @@ const loadTranslations = async (lang) => {
   return data || {};
 };
 
-const getTextForKey = (key, translations, fallback) => {
-  if (!key) return fallback;
-  return translations[key] ?? fallback ?? key;
+const isNonEmptyTranslation = (value) => {
+  if (value === null || value === undefined) {
+    return false;
+  }
+  return String(value).trim().length > 0;
+};
+
+const getTextForKey = (key, translations, fallbackTranslations) => {
+  if (!key) {
+    return "[missing-key]";
+  }
+  const primary = translations[key];
+  if (isNonEmptyTranslation(primary)) {
+    return String(primary);
+  }
+  const fallback = fallbackTranslations[key];
+  if (isNonEmptyTranslation(fallback)) {
+    return String(fallback);
+  }
+  return `[${key}]`;
 };
 
 let currentLanguage = "en";
@@ -28,32 +45,27 @@ let currentLanguage = "en";
 const applyTranslations = (translations, fallbackTranslations) => {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.dataset.i18n;
-    const fallback = fallbackTranslations[key] ?? el.textContent;
-    el.textContent = getTextForKey(key, translations, fallback);
+    el.textContent = getTextForKey(key, translations, fallbackTranslations);
   });
 
   document.querySelectorAll("[data-i18n-html]").forEach((el) => {
     const key = el.dataset.i18nHtml;
-    const fallback = fallbackTranslations[key] ?? el.innerHTML;
-    el.innerHTML = getTextForKey(key, translations, fallback);
+    el.innerHTML = getTextForKey(key, translations, fallbackTranslations);
   });
 
   document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
     const key = el.dataset.i18nPlaceholder;
-    const fallback = fallbackTranslations[key] ?? el.placeholder;
-    el.placeholder = getTextForKey(key, translations, fallback);
+    el.placeholder = getTextForKey(key, translations, fallbackTranslations);
   });
 
   document.querySelectorAll("[data-i18n-title]").forEach((el) => {
     const key = el.dataset.i18nTitle;
-    const fallback = fallbackTranslations[key] ?? el.title;
-    el.title = getTextForKey(key, translations, fallback);
+    el.title = getTextForKey(key, translations, fallbackTranslations);
   });
 
   document.querySelectorAll("[data-i18n-aria-label]").forEach((el) => {
     const key = el.dataset.i18nAriaLabel;
-    const fallback = fallbackTranslations[key] ?? el.getAttribute("aria-label");
-    el.setAttribute("aria-label", getTextForKey(key, translations, fallback));
+    el.setAttribute("aria-label", getTextForKey(key, translations, fallbackTranslations));
   });
 };
 
@@ -99,6 +111,12 @@ if (typeof window !== "undefined") {
     translatePage,
     getCurrentLanguage: () => currentLanguage,
   };
+}
+
+if (typeof document !== "undefined") {
+  document.addEventListener("sidebar:mounted", () => {
+    translatePage();
+  });
 }
 
 if (document.readyState === "loading") {

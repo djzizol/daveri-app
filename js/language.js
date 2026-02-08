@@ -1,4 +1,4 @@
-const SUPPORTED_LANGS = ["en", "pl", "de", "fr", "es", "pt"];
+const SUPPORTED_LANGS = ["en", "pl"];
 const COOKIE_NAME = "lang";
 
 const normalizeLang = (value) => {

@@ -57,6 +57,7 @@ const mountSidebar = async () => {
   ensureSidebarStyle(template.style);
   insertSidebarRoot(template.root);
   await initSidebar(template.root);
+  document.dispatchEvent(new CustomEvent("sidebar:mounted"));
 };
 
 if (document.readyState === "loading") {
