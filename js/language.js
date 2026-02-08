@@ -1,5 +1,6 @@
 const SUPPORTED_LANGS = ["en", "pl"];
 const COOKIE_NAME = "lang";
+let currentLanguage = "";
 
 const normalizeLang = (value) => {
   if (!value) return "";
@@ -21,7 +22,7 @@ const setCookie = (name, value) => {
 
 const detectBrowserLang = () => normalizeLang(navigator.language);
 
-export const getInitialLanguage = () => {
+const resolveInitialLanguage = () => {
   const fromCookie = normalizeLang(getCookie(COOKIE_NAME));
   if (fromCookie) return fromCookie;
   const fromBrowser = detectBrowserLang();
@@ -29,9 +30,21 @@ export const getInitialLanguage = () => {
   return "en";
 };
 
-export const persistLanguage = (lang) => {
+export const getCurrentLanguage = () => {
+  if (!currentLanguage) {
+    currentLanguage = resolveInitialLanguage();
+  }
+  return currentLanguage;
+};
+
+export const setCurrentLanguage = (lang) => {
   const normalized = normalizeLang(lang) || "en";
+  currentLanguage = normalized;
   setCookie(COOKIE_NAME, normalized);
+  if (typeof document !== "undefined") {
+    document.dispatchEvent(new CustomEvent("language:changed", { detail: { language: normalized } }));
+  }
+  return normalized;
 };
 
 export const getSupportedLanguages = () => [...SUPPORTED_LANGS];

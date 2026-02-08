@@ -1,4 +1,4 @@
-import { getInitialLanguage, persistLanguage, normalizeLanguage } from "./language.js";
+import { getCurrentLanguage, setCurrentLanguage, normalizeLanguage } from "./language.js";
 
 const TRANSLATION_CACHE = new Map();
 
@@ -77,8 +77,8 @@ const updateLanguageSelectors = (lang) => {
   });
 };
 
-export const setLanguage = async (lang) => {
-  const normalized = normalizeLanguage(lang) || "en";
+const applyLanguage = async (lang) => {
+  const normalized = lang || "en";
   currentLanguage = normalized;
   const [fallbackTranslations, translations] = await Promise.all([
     loadTranslations("en"),
@@ -86,13 +86,19 @@ export const setLanguage = async (lang) => {
   ]);
   applyTranslations(translations, fallbackTranslations);
   updateLanguageSelectors(normalized);
-  persistLanguage(normalized);
   document.dispatchEvent(new CustomEvent("i18n:updated", { detail: { language: normalized } }));
 };
 
+export const setLanguage = async (lang) => {
+  const normalized = normalizeLanguage(lang) || "en";
+  currentLanguage = normalized;
+  setCurrentLanguage(normalized);
+  await applyLanguage(normalized);
+};
+
 export const initI18n = async () => {
-  const initialLang = getInitialLanguage();
-  await setLanguage(initialLang);
+  const initialLang = getCurrentLanguage();
+  await applyLanguage(initialLang);
 
   document.querySelectorAll("[data-language-selector]").forEach((select) => {
     if (select.dataset.languageWired) return;
@@ -103,7 +109,7 @@ export const initI18n = async () => {
   });
 };
 
-export const translatePage = () => setLanguage(currentLanguage);
+export const translatePage = () => applyLanguage(currentLanguage);
 
 if (typeof window !== "undefined") {
   window.DaVeriI18n = {
@@ -114,8 +120,14 @@ if (typeof window !== "undefined") {
 }
 
 if (typeof document !== "undefined") {
+  document.addEventListener("language:changed", (event) => {
+    const language = event.detail?.language;
+    if (!language || language === currentLanguage) return;
+    applyLanguage(language);
+  });
+
   document.addEventListener("sidebar:mounted", () => {
-    translatePage();
+    applyLanguage(currentLanguage);
   });
 }
 
