@@ -1,4 +1,5 @@
 import { getCurrentLanguage, setCurrentLanguage, normalizeLanguage } from "./language.js";
+import { redirectToLanguage } from "./lang-routing.js";
 
 const TRANSLATION_CACHE = new Map();
 
@@ -115,41 +116,9 @@ export const initI18n = async () => {
     return;
   }
   await applyLanguage(initialLang);
-
-  wireLanguageSelectors();
 };
 
 export const translatePage = () => applyLanguage(currentLanguage);
-
-const wireLanguageSelectors = () => {
-  document.querySelectorAll("[data-language-selector]").forEach((select) => {
-    if (select.dataset.languageWired) return;
-    select.dataset.languageWired = "true";
-    select.addEventListener("change", async (event) => {
-      const nextLanguage = event.target.value;
-      const shouldReload = select.dataset.languageReload === "true";
-      if (shouldReload) {
-        const langApi = window?.DaVeriLanguage;
-        const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-        const targetUrl = langApi?.buildLanguageUrl
-          ? langApi.buildLanguageUrl(nextLanguage, {
-              pathname: window.location.pathname,
-              search: window.location.search,
-              hash: window.location.hash,
-            })
-          : "";
-        await setLanguage(nextLanguage);
-        if (targetUrl && targetUrl !== currentUrl) {
-          window.location.href = targetUrl;
-        } else {
-          window.location.reload();
-        }
-        return;
-      }
-      setLanguage(nextLanguage);
-    });
-  });
-};
 
 if (typeof window !== "undefined") {
   window.DaVeriI18n = {
@@ -172,8 +141,29 @@ if (typeof document !== "undefined") {
 
   document.addEventListener("sidebar:mounted", () => {
     applyLanguage(currentLanguage);
-    wireLanguageSelectors();
   });
+
+  if (!document.documentElement.dataset.langSwitchWired) {
+    document.documentElement.dataset.langSwitchWired = "true";
+    document.addEventListener("change", (event) => {
+      const target = event.target;
+      if (!target) return;
+      if (target.matches("#lang-switch") || target.matches("[data-lang-switch]")) {
+        const newLang = target.value || target.dataset.lang;
+        if (!newLang) return;
+        redirectToLanguage(newLang);
+      }
+    });
+    document.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!target) return;
+      if (target.matches("[data-lang-switch]")) {
+        const newLang = target.dataset.lang;
+        if (!newLang) return;
+        redirectToLanguage(newLang);
+      }
+    });
+  }
 }
 
 if (document.readyState === "loading") {
