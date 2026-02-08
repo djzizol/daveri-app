@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Panel DaVeri</title>
+  <title data-i18n="dashboard.page.title"></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1043,8 +1043,8 @@
   <div id="auth-screen">
     <div class="auth-container">
       <div class="auth-spinner"></div>
-      <h3 style="margin-bottom: 10px; color: var(--dv-text);">Weryfikacja sesji</h3>
-      <p style="color: var(--dv-text2); margin-bottom: 20px;">Sprawdzanie logowania...</p>
+      <h3 style="margin-bottom: 10px; color: var(--dv-text);" data-i18n="dashboard.auth.title"></h3>
+      <p style="color: var(--dv-text2); margin-bottom: 20px;" data-i18n="dashboard.auth.subtitle"></p>
       <div id="auth-message" style="font-size: 14px; color: var(--dv-muted);"></div>
     </div>
   </div>
@@ -1065,7 +1065,7 @@
           </svg>
         </div>
         <div class="kpi-value" id="kpi-conversations">0</div>
-        <div class="kpi-label">Rozmowy (7 dni)</div>
+        <div class="kpi-label" data-i18n="dashboard.kpi.conversations"></div>
       </div>
       <div class="kpi-card">
         <div class="kpi-icon">
@@ -1074,7 +1074,7 @@
           </svg>
         </div>
         <div class="kpi-value" id="kpi-messages">0</div>
-        <div class="kpi-label">Wiadomosci</div>
+        <div class="kpi-label" data-i18n="dashboard.kpi.messages"></div>
       </div>
       <div class="kpi-card">
         <div class="kpi-icon">
@@ -1083,7 +1083,7 @@
           </svg>
         </div>
         <div class="kpi-value" id="kpi-sources">0</div>
-        <div class="kpi-label">Zrodla wiedzy</div>
+        <div class="kpi-label" data-i18n="dashboard.kpi.sources"></div>
       </div>
       <div class="kpi-card">
         <div class="kpi-icon">
@@ -1092,7 +1092,7 @@
           </svg>
         </div>
         <div class="kpi-value" id="kpi-avg-time">--</div>
-        <div class="kpi-label">Sr. czas odpowiedzi</div>
+        <div class="kpi-label" data-i18n="dashboard.kpi.avgResponse"></div>
       </div>
     </div>
 
@@ -1109,8 +1109,8 @@
                 </svg>
               </div>
               <div>
-                <div class="card-title">Postep uruchomienia</div>
-                <div class="card-subtitle" id="panel-progress-text">Krotki checklist, zeby Twoj bot dzialal jak trzeba.</div>
+                <div class="card-title" data-i18n="dashboard.checklist.title"></div>
+                <div class="card-subtitle" id="panel-progress-text" data-i18n="dashboard.checklist.subtitle"></div>
               </div>
             </div>
             <div class="card-arrow">
@@ -1125,8 +1125,9 @@
                 <div class="progress-fill" id="panel-progress-fill" style="width: 0%"></div>
               </div>
               <div class="progress-text">
-                <span id="panel-progress-label">0/5 krokow</span>
-                <span>Najpierw wybierz aktywnego bota po prawej.</span>
+                <span id="panel-progress-label">0/5</span>
+                <span data-i18n="dashboard.checklist.stepsSuffix"></span>
+                <span data-i18n="dashboard.checklist.selectBotHint"></span>
               </div>
             </div>
             
@@ -1136,8 +1137,8 @@
                   <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249140796x253773293772721950/boty.svg" alt="Boty" style="width:20px;height:20px;filter:brightness(0) invert(1);opacity:0.7;">
                 </div>
                 <div class="check-content">
-                  <div class="check-title">Stworz bota</div>
-                  <div class="check-hint">Zakladka "Boty" -> Utworz bota</div>
+                  <div class="check-title" data-i18n="dashboard.checklist.createBot.title"></div>
+                  <div class="check-hint" data-i18n="dashboard.checklist.createBot.hint"></div>
                 </div>
                 <div class="check-status">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1150,8 +1151,8 @@
                   <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249125077x656254872647275600/prompt.svg" alt="Prompt" style="width:20px;height:20px;filter:brightness(0) invert(1);opacity:0.7;">
                 </div>
                 <div class="check-content">
-                  <div class="check-title">Ustaw prompt</div>
-                  <div class="check-hint">Zakladka "Prompt" -> zachowanie bota</div>
+                  <div class="check-title" data-i18n="dashboard.checklist.prompt.title"></div>
+                  <div class="check-hint" data-i18n="dashboard.checklist.prompt.hint"></div>
                 </div>
                 <div class="check-status">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1164,8 +1165,8 @@
                   <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249145896x475580076785379700/wyglad.svg" alt="Wyglad" style="width:20px;height:20px;filter:brightness(0) invert(1);opacity:0.7;">
                 </div>
                 <div class="check-content">
-                  <div class="check-title">Skonfiguruj wyglad</div>
-                  <div class="check-hint">Zakladka "Wyglad" -> widzet</div>
+                  <div class="check-title" data-i18n="dashboard.checklist.appearance.title"></div>
+                  <div class="check-hint" data-i18n="dashboard.checklist.appearance.hint"></div>
                 </div>
                 <div class="check-status">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1178,8 +1179,8 @@
                   <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249121272x452195540458458100/pliki.svg" alt="Pliki" style="width:20px;height:20px;filter:brightness(0) invert(1);opacity:0.7;">
                 </div>
                 <div class="check-content">
-                  <div class="check-title">Dodaj pliki wiedzy</div>
-                  <div class="check-hint">Zakladka "Pliki" -> Wgraj plik</div>
+                  <div class="check-title" data-i18n="dashboard.checklist.files.title"></div>
+                  <div class="check-hint" data-i18n="dashboard.checklist.files.hint"></div>
                 </div>
                 <div class="check-status">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1194,8 +1195,8 @@
                   </svg>
                 </div>
                 <div class="check-content">
-                  <div class="check-title">Wstaw widget na strone</div>
-                  <div class="check-hint">Zakladka "Instalacja" -> skopiuj kod</div>
+                  <div class="check-title" data-i18n="dashboard.checklist.install.title"></div>
+                  <div class="check-hint" data-i18n="dashboard.checklist.install.hint"></div>
                 </div>
                 <div class="check-status">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1209,7 +1210,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;stroke-width:2;">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
               </svg>
-              Kontynuuj
+              <span data-i18n="dashboard.checklist.continue"></span>
             </button>
           </div>
         </div>
@@ -1224,8 +1225,8 @@
                 </svg>
               </div>
               <div>
-                <div class="card-title">Pliki wiedzy</div>
-                <div class="card-subtitle">Ostatnio dodane pliki dla aktywnego bota.</div>
+                <div class="card-title" data-i18n="dashboard.files.title"></div>
+                <div class="card-subtitle" data-i18n="dashboard.files.subtitle"></div>
               </div>
             </div>
             <div class="card-arrow">
@@ -1242,7 +1243,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                 </svg>
               </div>
-              <div>Brak plikow - wgraj pierwsze zrodla wiedzy.</div>
+              <div data-i18n="dashboard.files.empty"></div>
             </div>
           </div>
         </div>
@@ -1253,19 +1254,19 @@
             <div class="quick-action-icon">
               <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249140796x253773293772721950/boty.svg" alt="Boty" style="width:20px;height:20px;filter:brightness(0) invert(1);">
             </div>
-            <div class="quick-action-text">Stworz bota</div>
+            <div class="quick-action-text" data-i18n="dashboard.quickActions.createBot"></div>
           </a>
           <a href="#pliki" class="quick-action" data-action="pliki">
             <div class="quick-action-icon">
               <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249121272x452195540458458100/pliki.svg" alt="Pliki" style="width:20px;height:20px;filter:brightness(0) invert(1);">
             </div>
-            <div class="quick-action-text">Dodaj wiedze</div>
+            <div class="quick-action-text" data-i18n="dashboard.quickActions.addKnowledge"></div>
           </a>
           <a href="#wyglad" class="quick-action" data-action="wyglad">
             <div class="quick-action-icon">
               <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249145896x475580076785379700/wyglad.svg" alt="Wyglad" style="width:20px;height:20px;filter:brightness(0) invert(1);">
             </div>
-            <div class="quick-action-text">Wyglad</div>
+            <div class="quick-action-text" data-i18n="dashboard.quickActions.appearance"></div>
           </a>
           <a href="#instalacja" class="quick-action" data-action="instalacja">
             <div class="quick-action-icon">
@@ -1273,7 +1274,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
               </svg>
             </div>
-            <div class="quick-action-text">Instalacja</div>
+            <div class="quick-action-text" data-i18n="dashboard.quickActions.install"></div>
           </a>
         </div>
 
@@ -1286,8 +1287,8 @@
               </svg>
             </div>
             <div class="plans-tile-text">
-              <h3>Plany i limity</h3>
-              <p>Sprawdz dostepne pakiety i zuzycie</p>
+              <h3 data-i18n="dashboard.plans.title"></h3>
+              <p data-i18n="dashboard.plans.subtitle"></p>
             </div>
           </div>
           <div class="plans-tile-arrow">
@@ -1306,8 +1307,8 @@
               <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249131284x840037696645927700/hisotria.svg" alt="Historia" style="width:18px;height:18px;filter:brightness(0) invert(1);">
             </div>
             <div>
-              <div class="card-title">Historia rozmow</div>
-              <div class="card-subtitle" id="ckpConvInfo">Wybierz rozmowe z listy</div>
+              <div class="card-title" data-i18n="dashboard.conversations.title"></div>
+              <div class="card-subtitle" id="ckpConvInfo" data-i18n="dashboard.conversations.selectHint"></div>
             </div>
           </div>
           <div class="card-arrow">
@@ -1320,15 +1321,18 @@
           <div class="conv-header">
             <div class="bot-selector">
               <select id="panel-active-bot" class="bot-select">
-                <option value="">Ladowanie botow...</option>
+                <option value="" data-i18n="dashboard.activeBot.loading"></option>
               </select>
-              <div class="card-subtitle" id="panel-active-bot-label">Aktywny bot: --</div>
+              <div class="card-subtitle" id="panel-active-bot-label">
+                <span data-i18n="dashboard.activeBot.label"></span>
+                <span id="panel-active-bot-name">--</span>
+              </div>
             </div>
           </div>
           <div class="conv-layout">
             <div class="conv-list">
               <div class="conv-list-header">
-                <span>Rozmowy</span>
+                <span data-i18n="dashboard.conversations.listTitle"></span>
                 <span class="conv-count" id="conv-count">0</span>
               </div>
               <div class="conv-items" id="ckpConvList">
@@ -1338,14 +1342,14 @@
                       <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                     </svg>
                   </div>
-                  <div>Brak rozmow</div>
+                  <div data-i18n="dashboard.conversations.empty"></div>
                 </div>
               </div>
             </div>
             <div class="conv-detail">
               <div class="conv-meta" id="ckpConvMeta">
-                <div class="conv-meta-title">Szczegoly rozmowy</div>
-                <div id="ckpConvMetaVisitor" class="conv-meta-visitor">Wybierz rozmowe</div>
+                <div class="conv-meta-title" data-i18n="dashboard.conversations.detailsTitle"></div>
+                <div id="ckpConvMetaVisitor" class="conv-meta-visitor" data-i18n="dashboard.conversations.detailsHint"></div>
               </div>
               <div class="messages-container" id="ckpConvMessages">
                 <div class="empty-state">
@@ -1354,7 +1358,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
                     </svg>
                   </div>
-                  <div>Wybierz rozmowe z listy po lewej</div>
+                  <div data-i18n="dashboard.conversations.selectLeftHint"></div>
                 </div>
               </div>
             </div>
@@ -1365,6 +1369,15 @@
   </div><!-- /page -->
   </div><!-- /main-content -->
   </div><!-- /page-wrapper -->
+
+  <div id="dashboard-i18n" style="display:none">
+    <span id="i18n-dashboard-no-bots" data-i18n="dashboard.activeBot.none"></span>
+    <span id="i18n-dashboard-file-default" data-i18n="dashboard.files.defaultName"></span>
+    <span id="i18n-dashboard-conv-empty-week" data-i18n="dashboard.conversations.emptyWeek"></span>
+    <span id="i18n-dashboard-anonymous" data-i18n="dashboard.conversations.anonymous"></span>
+    <span id="i18n-dashboard-no-preview" data-i18n="dashboard.conversations.noPreview"></span>
+    <span id="i18n-dashboard-conv-count-label" data-i18n="dashboard.conversations.countLabel"></span>
+  </div>
 
   <!-- SYSTEM AUTORYZACJI - wykonuje się jako pierwszy -->
   <script>
@@ -1413,13 +1426,13 @@
       const authMessage = document.getElementById('auth-message');
       if (authMessage) {
         authMessage.innerHTML = `
-          <p style="color: var(--dv-burg); margin-bottom: 15px;">Nie jesteś zalogowany</p>
+          <p style="color: var(--dv-burg); margin-bottom: 15px;" data-i18n="dashboard.auth.notLoggedIn"></p>
           <button onclick="window.location.href='https://api.daveri.io/auth/google'" 
                   style="padding: 10px 20px; background: var(--dv-grad); border: none; border-radius: var(--dv-radius-sm); color: white; font-weight: 600; cursor: pointer;">
             Zaloguj przez Google
           </button>
           <p style="margin-top: 15px; font-size: 12px;">
-            <a href="javascript:location.reload()" style="color: var(--dv-muted); text-decoration: underline;">Odśwież</a>
+            <a href="javascript:location.reload()" style="color: var(--dv-muted); text-decoration: underline;" data-i18n="dashboard.auth.refresh"></a>
           </p>
         `;
       }
@@ -1573,15 +1586,24 @@
       if (window.bubble_fn_j2b_action) window.bubble_fn_j2b_action(String(action || ""));
     }
 
+    const i18nText = (id) => document.getElementById(id)?.textContent || "";
+
+    function translateDynamicContent() {
+      if (window.DaVeriI18n?.translatePage) {
+        window.DaVeriI18n.translatePage();
+      }
+    }
+
     function renderBotsInPanel() {
       if (!botSelect) return;
       botSelect.innerHTML = "";
       if (!state.bots.length) {
         const opt = document.createElement("option");
         opt.value = "";
-        opt.textContent = "Brak botow - najpierw utworz bota.";
+        opt.textContent = i18nText("i18n-dashboard-no-bots");
         botSelect.appendChild(opt);
-        if (botLabel) botLabel.textContent = "Aktywny bot: --";
+        const botNameEl = document.getElementById("panel-active-bot-name");
+        if (botNameEl) botNameEl.textContent = "--";
         return;
       }
       state.bots.forEach(bot => {
@@ -1593,7 +1615,8 @@
       if (!state.activeBotId) state.activeBotId = getInitialActiveBotId() || state.bots[0]?.id;
       botSelect.value = state.activeBotId || "";
       const current = state.bots.find(b => String(b.id) === String(state.activeBotId));
-      if (botLabel) botLabel.textContent = current ? `Aktywny bot: ${current.name || current.id}` : "Aktywny bot: --";
+      const botNameEl = document.getElementById("panel-active-bot-name");
+      if (botNameEl) botNameEl.textContent = current ? (current.name || current.id) : "--";
       updateChecklist();
       loadFilesList();
       loadConversationsAndKpis();
@@ -1631,7 +1654,7 @@
       const doneCount = steps.filter(s => s.done).length;
       const pct = (doneCount / 5) * 100;
       if (progressFill) progressFill.style.width = `${pct}%`;
-      if (progressLabel) progressLabel.textContent = `${doneCount}/5 krokow`;
+      if (progressLabel) progressLabel.textContent = `${doneCount}/5`;
     }
 
     async function loadSourcesKpiAndFileCount() {
@@ -1667,10 +1690,10 @@
         const { data, error } = await q;
         if (error) { filesEmptyEl.style.display = "block"; filesListEl.innerHTML = ""; return; }
         const rows = data || [];
-        if (!rows.length) { filesEmptyEl.style.display = "block"; filesListEl.innerHTML = ""; return; }
-        filesEmptyEl.style.display = "none";
-        filesListEl.innerHTML = "";
-        rows.forEach(row => {
+      if (!rows.length) { filesEmptyEl.style.display = "block"; filesListEl.innerHTML = ""; return; }
+      filesEmptyEl.style.display = "none";
+      filesListEl.innerHTML = "";
+      rows.forEach(row => {
           const fileEl = document.createElement("div");
           fileEl.className = "file-item";
           const icon = document.createElement("div");
@@ -1678,7 +1701,7 @@
           icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>`;
           const name = document.createElement("div");
           name.className = "file-name";
-          name.textContent = row.name || "plik";
+          name.textContent = row.name || i18nText("i18n-dashboard-file-default");
           const date = document.createElement("div");
           date.className = "file-date";
           date.textContent = formatDateTime(row.created_at);
@@ -1701,9 +1724,10 @@
     function renderConversationList() {
       if (!convListEl || !convCountEl) return;
       if (!state.conversations.length) {
-        convListEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg></div><div>Brak rozmow dla tego bota</div></div>`;
+        convListEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg></div><div data-i18n="dashboard.conversations.emptyForBot"></div></div>`;
         convCountEl.textContent = "0";
-        if (convInfoEl) convInfoEl.textContent = "Brak rozmow (7 dni)";
+        if (convInfoEl) convInfoEl.textContent = i18nText("i18n-dashboard-conv-empty-week");
+        translateDynamicContent();
         return;
       }
       convCountEl.textContent = state.conversations.length;
@@ -1714,10 +1738,10 @@
         item.type = "button";
         const visitor = document.createElement("div");
         visitor.className = "conv-visitor";
-        visitor.textContent = conv.visitor_id || "anonim";
+        visitor.textContent = conv.visitor_id || i18nText("i18n-dashboard-anonymous");
         const preview = document.createElement("div");
         preview.className = "conv-preview";
-        preview.textContent = conv.last_message_preview || "(brak podgladu)";
+        preview.textContent = conv.last_message_preview || i18nText("i18n-dashboard-no-preview");
         const date = document.createElement("div");
         date.className = "conv-date";
         date.textContent = formatShortDate(conv.last_message_at) || "";
@@ -1728,21 +1752,25 @@
           state.selectedConversationId = conv.id;
           renderConversationList();
           loadMessages(conv.id);
-          if (convMetaVisitor) convMetaVisitor.textContent = `Visitor: ${conv.visitor_id || "anonim"}`;
+          if (convMetaVisitor) {
+            convMetaVisitor.innerHTML = `<span data-i18n="dashboard.conversations.visitorLabel"></span> <span>${conv.visitor_id || i18nText("i18n-dashboard-anonymous")}</span>`;
+            translateDynamicContent();
+          }
         });
         convListEl.appendChild(item);
       });
-      if (convInfoEl) convInfoEl.textContent = `Rozmow (7 dni): ${state.conversations.length}`;
+      if (convInfoEl) convInfoEl.textContent = `${i18nText("i18n-dashboard-conv-count-label")} ${state.conversations.length}`;
     }
 
     async function loadMessages(conversationId) {
       if (!convMessagesEl) return;
-      convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div><div>Ladowanie...</div></div>';
+      convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div><div data-i18n="dashboard.conversations.loading"></div></div>';
+      translateDynamicContent();
       try {
         const { data, error } = await supabase.from(MESSAGES_TABLE).select("sender, role, content, created_at").eq("conversation_id", conversationId).order("created_at", { ascending: true });
-        if (error) { convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg></div><div>Blad ladowania</div></div>'; return; }
+        if (error) { convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg></div><div data-i18n="dashboard.conversations.loadError"></div></div>'; translateDynamicContent(); return; }
         const msgs = data || [];
-        if (!msgs.length) { convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg></div><div>Brak wiadomosci</div></div>'; return; }
+        if (!msgs.length) { convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg></div><div data-i18n="dashboard.conversations.noMessages"></div></div>'; translateDynamicContent(); return; }
         convMessagesEl.innerHTML = "";
         msgs.forEach(m => {
           const isUser = (m.sender === "user" || m.role === "user");
@@ -1758,32 +1786,34 @@
           convMessagesEl.appendChild(msgEl);
         });
         convMessagesEl.scrollTop = convMessagesEl.scrollHeight;
-      } catch (e) { convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg></div><div>Blad</div></div>'; }
+      } catch (e) { convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg></div><div data-i18n="dashboard.conversations.genericError"></div></div>'; translateDynamicContent(); }
     }
 
     async function loadConversationsAndKpis() {
       const botId = state.activeBotId;
       if (!botId) {
-        if (convListEl) convListEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" /></svg></div><div>Wybierz bota</div></div>';
-        if (convMessagesEl) convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg></div><div>Wybierz rozmowe</div></div>';
+        if (convListEl) convListEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" /></svg></div><div data-i18n="dashboard.conversations.selectBot"></div></div>';
+        if (convMessagesEl) convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg></div><div data-i18n="dashboard.conversations.selectConversation"></div></div>';
         if (kpiConversationsEl) kpiConversationsEl.textContent = "0";
         if (kpiMessagesEl) kpiMessagesEl.textContent = "0";
         if (kpiAvgTimeEl) kpiAvgTimeEl.textContent = "--";
         if (convCountEl) convCountEl.textContent = "0";
         state.conversations = [];
         state.selectedConversationId = null;
+        translateDynamicContent();
         return;
       }
       const now = new Date();
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
       try {
         const { data: convs, error: convErr } = await supabase.from(CONVERSATIONS_TABLE).select("id, visitor_id, last_message_preview, last_message_at, created_at").eq("bot_id", botId).gte("created_at", sevenDaysAgo).order("last_message_at", { ascending: false, nullsLast: true });
-        if (convErr) { convListEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg></div><div>Blad ladowania</div></div>'; return; }
+        if (convErr) { convListEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg></div><div data-i18n="dashboard.conversations.loadError"></div></div>'; translateDynamicContent(); return; }
         state.conversations = convs || [];
         state.selectedConversationId = null;
         if (kpiConversationsEl) kpiConversationsEl.textContent = state.conversations.length;
         renderConversationList();
-        convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg></div><div>Wybierz rozmowe</div></div>';
+        convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg></div><div data-i18n="dashboard.conversations.selectConversation"></div></div>';
+        translateDynamicContent();
         let totalMessages = 0;
         if (state.conversations.length) {
           const convIds = state.conversations.map(c => c.id);
@@ -1793,10 +1823,11 @@
         if (kpiMessagesEl) kpiMessagesEl.textContent = totalMessages;
         if (kpiAvgTimeEl) kpiAvgTimeEl.textContent = "--";
       } catch (e) {
-        convListEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg></div><div>Blad</div></div>';
+        convListEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg></div><div data-i18n="dashboard.conversations.genericError"></div></div>';
         if (kpiConversationsEl) kpiConversationsEl.textContent = "0";
         if (kpiMessagesEl) kpiMessagesEl.textContent = "0";
         if (convCountEl) convCountEl.textContent = "0";
+        translateDynamicContent();
       }
     }
 
@@ -1806,7 +1837,8 @@
         botSelect.addEventListener("change", () => {
           state.activeBotId = botSelect.value || null;
           const current = state.bots.find(b => String(b.id) === String(state.activeBotId));
-          if (botLabel) botLabel.textContent = current ? `Aktywny bot: ${current.name || current.id}` : "Aktywny bot: --";
+          const botNameEl = document.getElementById("panel-active-bot-name");
+          if (botNameEl) botNameEl.textContent = current ? (current.name || current.id) : "--";
           updateChecklist();
           loadFilesList();
           loadConversationsAndKpis();

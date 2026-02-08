@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Instalacja - DaVeri</title>
+  <title data-i18n="install.page.title"></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -140,8 +140,8 @@
     <div id="main-content">
       <div class="page" id="instalacja_root" data-user-id="CURRENT USER" data-bot-id="">
         <div class="page-header">
-          <div class="page-title">Instalacja</div>
-          <div class="page-subtitle">Zainstaluj widget DaVeri na swojej stronie w 3 prostych krokach.</div>
+          <div class="page-title" data-i18n="install.page.heading"></div>
+          <div class="page-subtitle" data-i18n="install.page.subtitle"></div>
         </div>
 
         <div class="steps">
@@ -150,13 +150,13 @@
             <div class="step-header">
               <div class="step-number">1</div>
               <div>
-                <div class="step-title">Skopiuj kod</div>
-                <div class="step-desc">Wklej ten fragment kodu przed zamknieciem tagu &lt;/body&gt; na swojej stronie.</div>
+              <div class="step-title" data-i18n="install.steps.copy.title"></div>
+              <div class="step-desc" data-i18n="install.steps.copy.desc"></div>
               </div>
             </div>
             <div class="step-body">
               <div class="code-block">
-                <button class="copy-btn" onclick="copyCode(this)">Kopiuj</button>
+                <button class="copy-btn" onclick="copyCode(this)" data-i18n="install.actions.copy"></button>
                 <code id="installCode">&lt;script src="https://daveri.app/widget.js"
   data-bot-id="TWOJ_BOT_ID"
   data-position="bottom-right"
@@ -170,16 +170,13 @@
             <div class="step-header">
               <div class="step-number">2</div>
               <div>
-                <div class="step-title">Dostosuj pozycje</div>
-                <div class="step-desc">Zmien atrybut data-position, aby umiescic widget w wybranym rogu.</div>
+                <div class="step-title" data-i18n="install.steps.position.title"></div>
+                <div class="step-desc" data-i18n="install.steps.position.desc"></div>
               </div>
             </div>
             <div class="step-body">
               <div class="code-block">
-                <code>data-position="bottom-right"  // prawy dolny
-data-position="bottom-left"   // lewy dolny
-data-position="top-right"     // prawy gorny
-data-position="top-left"      // lewy gorny</code>
+                <code data-i18n-html="install.steps.position.code"></code>
               </div>
             </div>
           </div>
@@ -189,14 +186,12 @@ data-position="top-left"      // lewy gorny</code>
             <div class="step-header">
               <div class="step-number">3</div>
               <div>
-                <div class="step-title">Przetestuj</div>
-                <div class="step-desc">Odwiedz swoja strone i sprawdz, czy widget wyswietla sie poprawnie.</div>
+                <div class="step-title" data-i18n="install.steps.test.title"></div>
+                <div class="step-desc" data-i18n="install.steps.test.desc"></div>
               </div>
             </div>
             <div class="step-body">
-              <div style="font-size: 13px; color: var(--dv-text2); line-height: 1.7;">
-                Po wklejeniu kodu widget pojawi sie jako ikona czatu w wybranym rogu strony. Kliknij, aby rozpoczac rozmowe testowa. Jesli bot nie odpowiada, sprawdz czy masz skonfigurowany prompt i dodane pliki wiedzy.
-              </div>
+              <div style="font-size: 13px; color: var(--dv-text2); line-height: 1.7;" data-i18n="install.steps.test.note"></div>
             </div>
           </div>
         </div>
@@ -209,21 +204,28 @@ data-position="top-left"      // lewy gorny</code>
             </svg>
           </div>
           <div class="status-info">
-            <div class="status-title" id="statusTitle">Widget niezainstalowany</div>
-            <div class="status-desc" id="statusDesc">Wklej kod na swoja strone, aby aktywowac widget.</div>
+            <div class="status-title" id="statusTitle" data-i18n="install.status.title"></div>
+            <div class="status-desc" id="statusDesc" data-i18n="install.status.desc"></div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
+  <div id="install-i18n" style="display:none">
+    <span id="i18n-install-copy" data-i18n="install.actions.copy"></span>
+    <span id="i18n-install-copied" data-i18n="install.actions.copied"></span>
+  </div>
+
   <script>
     function copyCode(btn) {
       const code = document.getElementById('installCode');
       const text = code.textContent;
+      const copyLabel = document.getElementById('i18n-install-copy')?.textContent || '';
+      const copiedLabel = document.getElementById('i18n-install-copied')?.textContent || '';
       navigator.clipboard.writeText(text).then(() => {
-        btn.textContent = 'Skopiowano!';
-        setTimeout(() => btn.textContent = 'Kopiuj', 2000);
+        btn.textContent = copiedLabel;
+        setTimeout(() => btn.textContent = copyLabel, 2000);
       }).catch(() => {
         const range = document.createRange();
         range.selectNodeContents(code);

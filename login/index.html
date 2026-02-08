@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Login — DaVeri</title>
+<title data-i18n="auth.page.title"></title>
 
 <style>
 
@@ -158,29 +158,25 @@ src="/assets/logo.png">
 
 <div class="auth-view active" id="login-view">
 
-<div class="auth-title">
-Witamy ponownie
-</div>
+<div class="auth-title" data-i18n="auth.login.title"></div>
 
 <button class="btn social" onclick="loginGoogle()">
 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">
-Zaloguj się przez Google
+<span data-i18n="auth.login.google"></span>
 </button>
 
-<div class="divider">lub</div>
+<div class="divider" data-i18n="auth.divider.or"></div>
 
-<input class="input" id="login-email" placeholder="Email">
-<input class="input" id="login-pass" type="password" placeholder="Hasło">
+<input class="input" id="login-email" data-i18n-placeholder="auth.fields.email" placeholder="">
+<input class="input" id="login-pass" type="password" data-i18n-placeholder="auth.fields.password" placeholder="">
 
 <button class="btn primary" onclick="loginEmail()">
-Zaloguj się
+<span data-i18n="auth.login.submit"></span>
 </button>
 
 <div class="footer">
-Nie masz konta?
-<span class="link" onclick="switchView('signup-view')">
-Zarejestruj się
-</span>
+<span data-i18n="auth.login.noAccount"></span>
+<span class="link" onclick="switchView('signup-view')" data-i18n="auth.login.createAccount"></span>
 </div>
 
 </div>
@@ -190,34 +186,30 @@ Zarejestruj się
 
 <div class="auth-view" id="signup-view">
 
-<div class="auth-title">
-Utwórz konto
-</div>
+<div class="auth-title" data-i18n="auth.signup.title"></div>
 
 <button class="btn social" onclick="loginGoogle()">
 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">
-Zarejestruj się przez Google
+<span data-i18n="auth.signup.google"></span>
 </button>
 
-<div class="divider">lub</div>
+<div class="divider" data-i18n="auth.divider.or"></div>
 
-<input class="input" id="signup-email" placeholder="Email">
-<input class="input" id="signup-pass" type="password" placeholder="Hasło">
+<input class="input" id="signup-email" data-i18n-placeholder="auth.fields.email" placeholder="">
+<input class="input" id="signup-pass" type="password" data-i18n-placeholder="auth.fields.password" placeholder="">
 
 <div class="checkbox">
 <input id="signup-legal" type="checkbox">
-<span>Akceptuję regulamin</span>
+<span data-i18n="auth.signup.acceptTerms"></span>
 </div>
 
 <button class="btn primary" onclick="signupEmail()">
-Utwórz konto
+<span data-i18n="auth.signup.submit"></span>
 </button>
 
 <div class="footer">
-Masz konto?
-<span class="link" onclick="switchView('login-view')">
-Zaloguj się
-</span>
+<span data-i18n="auth.signup.haveAccount"></span>
+<span class="link" onclick="switchView('login-view')" data-i18n="auth.signup.goToLogin"></span>
 </div>
 
 </div>
@@ -226,8 +218,15 @@ Zaloguj się
 </div>
 </div>
 
+<div id="auth-i18n" style="display:none">
+  <span id="i18n-auth-missing-credentials" data-i18n="auth.errors.missingCredentials"></span>
+  <span id="i18n-auth-login-error" data-i18n="auth.errors.loginFailed"></span>
+  <span id="i18n-auth-accept-terms" data-i18n="auth.errors.acceptTerms"></span>
+  <span id="i18n-auth-signup-error" data-i18n="auth.errors.signupFailed"></span>
+</div>
 
 <script>
+const i18nText = (id) => document.getElementById(id)?.textContent || "";
 
 
 /* view switch */
@@ -267,7 +266,7 @@ document.getElementById("login-pass").value
 
 if(!email||!pass){
 
-alert("Wpisz email i hasło")
+alert(i18nText("i18n-auth-missing-credentials"))
 return
 
 }
@@ -291,7 +290,7 @@ window.location.href =
 
 }else{
 
-alert("Błąd logowania")
+alert(i18nText("i18n-auth-login-error"))
 
 }
 
@@ -313,7 +312,7 @@ document.getElementById("signup-legal").checked
 
 if(!legal){
 
-alert("Akceptuj regulamin")
+alert(i18nText("i18n-auth-accept-terms"))
 return
 
 }
@@ -337,7 +336,7 @@ window.location.href =
 
 }else{
 
-alert("Błąd rejestracji")
+alert(i18nText("i18n-auth-signup-error"))
 
 }
 

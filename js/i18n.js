@@ -23,6 +23,8 @@ const getTextForKey = (key, translations, fallback) => {
   return translations[key] ?? fallback ?? key;
 };
 
+let currentLanguage = "en";
+
 const applyTranslations = (translations, fallbackTranslations) => {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.dataset.i18n;
@@ -65,6 +67,7 @@ const updateLanguageSelectors = (lang) => {
 
 export const setLanguage = async (lang) => {
   const normalized = normalizeLanguage(lang) || "en";
+  currentLanguage = normalized;
   const [fallbackTranslations, translations] = await Promise.all([
     loadTranslations("en"),
     normalized === "en" ? Promise.resolve({}) : loadTranslations(normalized),
@@ -72,6 +75,7 @@ export const setLanguage = async (lang) => {
   applyTranslations(translations, fallbackTranslations);
   updateLanguageSelectors(normalized);
   persistLanguage(normalized);
+  document.dispatchEvent(new CustomEvent("i18n:updated", { detail: { language: normalized } }));
 };
 
 export const initI18n = async () => {
@@ -86,6 +90,16 @@ export const initI18n = async () => {
     });
   });
 };
+
+export const translatePage = () => setLanguage(currentLanguage);
+
+if (typeof window !== "undefined") {
+  window.DaVeriI18n = {
+    setLanguage,
+    translatePage,
+    getCurrentLanguage: () => currentLanguage,
+  };
+}
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initI18n, { once: true });

@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Chat UI Configurator - SaaS - Gotowy produkt</title>
+  <title data-i18n="appearance.page.metaTitle"></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -3552,15 +3552,15 @@
         <header class="app-header">
           <div class="app-logo">
             <img src="/images/design-mode/ikonawyglad.png" alt="Wygląd" class="app-logo-img" />
-            <h1>Personalizacja Chatu</h1>
+            <h1 data-i18n="appearance.page.title"></h1>
           </div>
           <div class="header-right">
             <div class="control-group">
               <button class="btn btn-secondary" data-role="action-load">
-                <i class="fas fa-folder-open"></i> Wczytaj
+                <i class="fas fa-folder-open"></i> <span data-i18n="appearance.actions.load"></span>
               </button>
               <button class="btn btn-primary" data-role="action-save">
-                <i class="fas fa-save"></i> Zapisz
+                <i class="fas fa-save"></i> <span data-i18n="appearance.actions.save"></span>
               </button>
             </div>
           </div>
@@ -3571,10 +3571,10 @@
           <div class="config-column">
             <!-- Preset Bar inside configurator -->
             <div class="preset-bar">
-              <div class="preset-segment">PRESET /</div>
-              <div class="preset-segment active" data-preset="custom">Custom</div>
-              <div class="preset-segment" data-preset="sales">Sprzedaz</div>
-              <div class="preset-segment" data-preset="support">Support</div>
+              <div class="preset-segment" data-i18n="appearance.presets.label"></div>
+              <div class="preset-segment active" data-preset="custom" data-i18n="appearance.presets.custom"></div>
+              <div class="preset-segment" data-preset="sales" data-i18n="appearance.presets.sales"></div>
+              <div class="preset-segment" data-preset="support" data-i18n="appearance.presets.support"></div>
             </div>
             <section class="config-panel">
               <div class="config-accordion" data-role="accordion">
@@ -3583,71 +3583,71 @@
                   <div class="section-header">
                     <div class="section-icon"><i class="fas fa-shapes"></i></div>
                     <div class="section-title">
-                      <h3>Kształt</h3>
-                      <p>Zaokrąglenie okna i dymków</p>
+                      <h3 data-i18n="appearance.sections.shape.title"></h3>
+                      <p data-i18n="appearance.sections.shape.subtitle"></p>
                     </div>
                     <i class="fas fa-chevron-down arrow"></i>
                   </div>
                   <div class="section-content">
                     <!-- Podsekcja: Okno -->
-                    <div class="subsection-header">Okno chatu</div>
+                    <div class="subsection-header" data-i18n="appearance.sections.shape.window"></div>
                     <div class="option-group">
-                      <h4>Presety</h4>
+                      <h4 data-i18n="appearance.common.presets"></h4>
                       <div class="option-tiles">
                         <button class="option-tile active" data-group="work" data-key="windowPreset" data-value="soft">
                           <div class="tile-preview">
                             <div class="window-preview rounded-soft"></div>
                           </div>
-                          <span class="tile-label">Bardzo zaokrąglony</span>
+                          <span class="tile-label" data-i18n="appearance.shape.window.soft"></span>
                         </button>
                         <button class="option-tile" data-group="work" data-key="windowPreset" data-value="medium">
                           <div class="tile-preview">
                             <div class="window-preview rounded-medium"></div>
                           </div>
-                          <span class="tile-label">Średnio zaokrąglony</span>
+                          <span class="tile-label" data-i18n="appearance.shape.window.medium"></span>
                         </button>
                         <button class="option-tile" data-group="work" data-key="windowPreset" data-value="hard">
                           <div class="tile-preview">
                             <div class="window-preview rounded-hard"></div>
                           </div>
-                          <span class="tile-label">Bardzo kwadratowy</span>
+                          <span class="tile-label" data-i18n="appearance.shape.window.hard"></span>
                         </button>
                       </div>
                     </div>
                     <div class="slider-container">
-                      <label>Zaokrąglenie okna <span class="slider-value"
+                      <label><span data-i18n="appearance.shape.window.radius"></span> <span class="slider-value"
                           data-for="work.windowRadius">12px</span></label>
                       <input type="range" min="0" max="32" value="12" class="slider" data-group="work"
                         data-key="windowRadius" data-role="range">
                     </div>
 
                     <!-- Podsekcja: Dymki -->
-                    <div class="subsection-header" style="margin-top: 24px;">Dymki wiadomości</div>
+                    <div class="subsection-header" style="margin-top: 24px;" data-i18n="appearance.shape.bubbles.label"></div>
                     <div class="option-group">
-                      <h4>Presety</h4>
+                      <h4 data-i18n="appearance.common.presets"></h4>
                       <div class="option-tiles">
                         <button class="option-tile active" data-group="work" data-key="bubblePreset" data-value="pill">
                           <div class="tile-preview">
                             <div class="bubble-preview pill"></div>
                           </div>
-                          <span class="tile-label">Pill</span>
+                          <span class="tile-label" data-i18n="appearance.shape.bubbles.pill"></span>
                         </button>
                         <button class="option-tile" data-group="work" data-key="bubblePreset" data-value="rounded">
                           <div class="tile-preview">
                             <div class="bubble-preview rounded"></div>
                           </div>
-                          <span class="tile-label">Zaokrąglone</span>
+                          <span class="tile-label" data-i18n="appearance.shape.bubbles.rounded"></span>
                         </button>
                         <button class="option-tile" data-group="work" data-key="bubblePreset" data-value="compact">
                           <div class="tile-preview">
                             <div class="bubble-preview compact"></div>
                           </div>
-                          <span class="tile-label">Kompaktowe</span>
+                          <span class="tile-label" data-i18n="appearance.shape.bubbles.compact"></span>
                         </button>
                       </div>
                     </div>
                     <div class="slider-container">
-                      <label>Zaokrąglenie dymków <span class="slider-value"
+                      <label><span data-i18n="appearance.shape.bubbles.radius"></span> <span class="slider-value"
                           data-for="work.bubbleRadius">20px</span></label>
                       <input type="range" min="0" max="40" value="20" class="slider" data-group="work"
                         data-key="bubbleRadius" data-role="range">
@@ -3660,27 +3660,27 @@
                   <div class="section-header">
                     <div class="section-icon"><i class="fas fa-font"></i></div>
                     <div class="section-title">
-                      <h3>Czcionka</h3>
-                      <p>Rodzina i rozmiar tekstu</p>
+                      <h3 data-i18n="appearance.sections.font.title"></h3>
+                      <p data-i18n="appearance.sections.font.subtitle"></p>
                     </div>
                     <i class="fas fa-chevron-down arrow"></i>
                   </div>
                   <div class="section-content">
                     <div class="form-group">
-                      <label>Rodzina czcionki</label>
+                      <label data-i18n="appearance.font.family"></label>
                       <select class="font-select" data-group="work" data-key="fontFamily">
-                        <option value="system">System</option>
-                        <option value="inter">Inter</option>
-                        <option value="roboto">Roboto</option>
-                        <option value="open-sans">Open Sans</option>
-                        <option value="montserrat">Montserrat</option>
-                        <option value="poppins">Poppins</option>
-                        <option value="sf-pro">SF Pro</option>
-                        <option value="geist">Geist</option>
+                        <option value="system" data-i18n="appearance.font.options.system"></option>
+                        <option value="inter" data-i18n="appearance.font.options.inter"></option>
+                        <option value="roboto" data-i18n="appearance.font.options.roboto"></option>
+                        <option value="open-sans" data-i18n="appearance.font.options.openSans"></option>
+                        <option value="montserrat" data-i18n="appearance.font.options.montserrat"></option>
+                        <option value="poppins" data-i18n="appearance.font.options.poppins"></option>
+                        <option value="sf-pro" data-i18n="appearance.font.options.sfPro"></option>
+                        <option value="geist" data-i18n="appearance.font.options.geist"></option>
                       </select>
                     </div>
                     <div class="slider-container">
-                      <label>Rozmiar tekstu <span class="slider-value" data-for="work.fontSize">14px</span></label>
+                      <label><span data-i18n="appearance.font.size"></span> <span class="slider-value" data-for="work.fontSize">14px</span></label>
                       <input type="range" min="12" max="20" value="14" class="slider" data-group="work"
                         data-key="fontSize" data-role="range">
                     </div>
@@ -3693,8 +3693,8 @@
                   <div class="section-header">
                     <div class="section-icon"><i class="fas fa-comments"></i></div>
                     <div class="section-title">
-                      <h3>Chat (UI)</h3>
-                      <p>Tło, nagłówki, interfejs</p>
+                      <h3 data-i18n="appearance.sections.chatUi.title"></h3>
+                      <p data-i18n="appearance.sections.chatUi.subtitle"></p>
                     </div>
                     <i class="fas fa-chevron-down arrow"></i>
                   </div>
@@ -3703,64 +3703,64 @@
                       <button class="color-tile active" data-group="work" data-key="chatBackground"
                         data-value="#0F0F14">
                         <div class="color-preview" style="background-color: #0F0F14;"></div>
-                        <span class="color-label">Tło chatu</span>
+                        <span class="color-label" data-i18n="appearance.chatUi.background"></span>
                       </button>
                       <button class="color-tile" data-group="work" data-key="chatHeader" data-value="#1A1A20">
                         <div class="color-preview" style="background-color: #1A1A20;"></div>
-                        <span class="color-label">Header</span>
+                        <span class="color-label" data-i18n="appearance.chatUi.header"></span>
                       </button>
                       <button class="color-tile" data-group="work" data-key="chatInput" data-value="#1A1A20">
                         <div class="color-preview" style="background-color: #1A1A20;"></div>
-                        <span class="color-label">Input</span>
+                        <span class="color-label" data-i18n="appearance.chatUi.input"></span>
                       </button>
                       <button class="color-tile" data-group="work" data-key="chatAccent" data-value="#7C3AED">
                         <div class="color-preview" style="background-color: #7C3AED;"></div>
-                        <span class="color-label">Akcent</span>
+                        <span class="color-label" data-i18n="appearance.chatUi.accent"></span>
                       </button>
                     </div>
                     <div class="option-group">
-                      <h4>Tło chatu</h4>
+                      <h4 data-i18n="appearance.chatUi.backgroundOptions"></h4>
                       <div class="bg-options">
                         <div class="bg-option active" data-bg-type="color">
                           <div class="bg-option-preview" style="background-color: #0F0F14;"></div>
-                          <div class="bg-option-label">Kolor jednolity</div>
+                          <div class="bg-option-label" data-i18n="appearance.chatUi.backgroundSolid"></div>
                         </div>
                         <div class="bg-option" data-bg-type="image" data-bg-image="sales">
                           <div class="bg-option-preview"
                             style="background-image: url('https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1769988404088x184638242248941000/8k%20white%20opal%20liquid%20glass%20prisma%20%20background%20%281%29.jpg')">
                           </div>
-                          <div class="bg-option-label">Opal (jasny)</div>
+                          <div class="bg-option-label" data-i18n="appearance.chatUi.backgroundOpalLight"></div>
                         </div>
                         <div class="bg-option" data-bg-type="image" data-bg-image="support">
                           <div class="bg-option-preview"
                             style="background-image: url('https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1769988406812x536571790714338370/Minimal%20dark%20background%20with%20subtle%20grain%20texture%2C%20modern%20SaaS%20UI%20style%2C%20%2Celegant%20and%20professional%2C%20soft%20lighting%2C%20abstract%2C%20premium%20software%20background%2C%20with%20red%20marmour%20lightnighs.jpg')">
                           </div>
-                          <div class="bg-option-label">Minimal (ciemny)</div>
+                          <div class="bg-option-label" data-i18n="appearance.chatUi.backgroundMinimalDark"></div>
                         </div>
                         <div class="bg-option" data-bg-type="image" data-bg-image="custom">
                           <div class="bg-option-preview"
                             style="background-image: url('https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1769988400022x612783169203748500/8k%20dark%20green%20opal%20liquid%20glass%20background.jpg')">
                           </div>
-                          <div class="bg-option-label">Green Opal</div>
+                          <div class="bg-option-label" data-i18n="appearance.chatUi.backgroundGreenOpal"></div>
                         </div>
                       </div>
                       <div class="bg-upload-container">
                         <input type="file" accept="image/*" id="bgUpload" hidden />
                         <div class="bg-upload-buttons">
                           <button class="btn btn-secondary btn-sm" id="bgUploadBtn">
-                            <i class="fas fa-image"></i> Własny obraz
+                            <i class="fas fa-image"></i> <span data-i18n="appearance.chatUi.uploadImage"></span>
                           </button>
                           <button class="btn btn-secondary btn-sm" id="bgRemoveBtn">
-                            <i class="fas fa-trash"></i> Usuń tło
+                            <i class="fas fa-trash"></i> <span data-i18n="appearance.chatUi.removeBackground"></span>
                           </button>
                         </div>
                         <div class="bg-preview" id="bgPreview">
-                          <div class="bg-preview-overlay">Podgląd tła</div>
+                          <div class="bg-preview-overlay" data-i18n="appearance.chatUi.previewLabel"></div>
                         </div>
                       </div>
                     </div>
                     <div class="overlay-slider-container">
-                      <label>Przyciemnienie tła <span class="overlay-value" id="overlayValue">0%</span></label>
+                      <label><span data-i18n="appearance.chatUi.overlay"></span> <span class="overlay-value" id="overlayValue">0%</span></label>
                       <input type="range" min="0" max="70" value="0" class="slider" id="bgOverlaySlider">
                     </div>
                   </div>
@@ -3771,35 +3771,35 @@
                   <div class="section-header">
                     <div class="section-icon"><i class="fas fa-comment-dots"></i></div>
                     <div class="section-title">
-                      <h3>Kolory wiadomości</h3>
-                      <p>Kolory dymków i tekstu</p>
+                      <h3 data-i18n="appearance.sections.messageColors.title"></h3>
+                      <p data-i18n="appearance.sections.messageColors.subtitle"></p>
                     </div>
                     <i class="fas fa-chevron-down arrow"></i>
                   </div>
                   <div class="section-content">
                     <!-- Podsekcja: Użytkownik -->
-                    <div class="subsection-header">Użytkownik</div>
+                    <div class="subsection-header" data-i18n="appearance.messageColors.user"></div>
                     <div class="color-tiles-grid">
                       <button class="color-tile active" data-group="work" data-key="userBubble" data-value="#7C3AED">
                         <div class="color-preview" style="background-color: #7C3AED;"></div>
-                        <span class="color-label">Dymek</span>
+                        <span class="color-label" data-i18n="appearance.messageColors.bubble"></span>
                       </button>
                       <button class="color-tile" data-group="work" data-key="userText" data-value="#F8F9FB">
                         <div class="color-preview" style="background-color: #F8F9FB;"></div>
-                        <span class="color-label">Tekst</span>
+                        <span class="color-label" data-i18n="appearance.messageColors.text"></span>
                       </button>
                     </div>
 
                     <!-- Podsekcja: Bot -->
-                    <div class="subsection-header" style="margin-top: 24px;">Bot</div>
+                    <div class="subsection-header" style="margin-top: 24px;" data-i18n="appearance.messageColors.bot"></div>
                     <div class="color-tiles-grid">
                       <button class="color-tile active" data-group="work" data-key="botBubble" data-value="#1E293B">
                         <div class="color-preview" style="background-color: #1E293B;"></div>
-                        <span class="color-label">Dymek</span>
+                        <span class="color-label" data-i18n="appearance.messageColors.bubble"></span>
                       </button>
                       <button class="color-tile" data-group="work" data-key="botText" data-value="#E2E8F0">
                         <div class="color-preview" style="background-color: #E2E8F0;"></div>
-                        <span class="color-label">Tekst</span>
+                        <span class="color-label" data-i18n="appearance.messageColors.text"></span>
                       </button>
                     </div>
                   </div>
@@ -3810,57 +3810,57 @@
                   <div class="section-header">
                     <div class="section-icon"><i class="fas fa-ruler-combined"></i></div>
                     <div class="section-title">
-                      <h3>Pozycja i wymiary</h3>
-                      <p>Pozycja i rozmiar chatu (tylko prawy chat)</p>
+                      <h3 data-i18n="appearance.sections.position.title"></h3>
+                      <p data-i18n="appearance.sections.position.subtitle"></p>
                     </div>
                     <i class="fas fa-chevron-down arrow"></i>
                   </div>
                   <div class="section-content">
                     <!-- Pozycja -->
                     <div class="option-group">
-                      <h4>Pozycja na stronie</h4>
+                      <h4 data-i18n="appearance.position.onPage"></h4>
                       <div class="position-tiles">
                         <button class="position-tile position-bottom-left" data-group="device" data-key="position"
                           data-value="bottom-left">
                           <div class="position-preview">
                             <div class="position-indicator"></div>
                           </div>
-                          <span class="position-label">Lewy dolny</span>
+                          <span class="position-label" data-i18n="appearance.position.bottomLeft"></span>
                         </button>
                         <button class="position-tile position-bottom-right active" data-group="device"
                           data-key="position" data-value="bottom-right">
                           <div class="position-preview">
                             <div class="position-indicator"></div>
                           </div>
-                          <span class="position-label">Prawy dolny</span>
+                          <span class="position-label" data-i18n="appearance.position.bottomRight"></span>
                         </button>
                         <button class="position-tile position-top-left" data-group="device" data-key="position"
                           data-value="top-left">
                           <div class="position-preview">
                             <div class="position-indicator"></div>
                           </div>
-                          <span class="position-label">Lewy górny</span>
+                          <span class="position-label" data-i18n="appearance.position.topLeft"></span>
                         </button>
                         <button class="position-tile position-top-right" data-group="device" data-key="position"
                           data-value="top-right">
                           <div class="position-preview">
                             <div class="position-indicator"></div>
                           </div>
-                          <span class="position-label">Prawy górny</span>
+                          <span class="position-label" data-i18n="appearance.position.topRight"></span>
                         </button>
                       </div>
                     </div>
 
                     <!-- Wymiary -->
-                    <div class="subsection-header" style="margin-top: 24px;">Wymiary chatu</div>
+                    <div class="subsection-header" style="margin-top: 24px;" data-i18n="appearance.position.dimensions"></div>
                     <div class="slider-group">
                       <div class="slider-container">
-                        <label>Szerokość <span class="slider-value" data-for="device.width">360px</span></label>
+                        <label><span data-i18n="appearance.position.width"></span> <span class="slider-value" data-for="device.width">360px</span></label>
                         <input type="range" min="280" max="600" value="360" class="slider" data-group="device"
                           data-key="width" data-role="range">
                       </div>
                       <div class="slider-container">
-                        <label>Wysokość <span class="slider-value" data-for="device.height">520px</span></label>
+                        <label><span data-i18n="appearance.position.height"></span> <span class="slider-value" data-for="device.height">520px</span></label>
                         <input type="range" min="360" max="800" value="520" class="slider" data-group="device"
                           data-key="height" data-role="range">
                       </div>
@@ -3868,7 +3868,7 @@
                     <div class="info-note"
                       style="margin-top: 16px; padding: 12px; background: rgba(96,165,250,.1); border-radius: var(--dv-radius-sm); font-size: 11px; color: var(--dv-text);">
                       <i class="fas fa-info-circle" style="margin-right: 6px;"></i>
-                      Suwaki wpływają TYLKO na monitor 1920×1080 (dolna sekcja). Mobile ma stały rozmiar.
+                      <span data-i18n="appearance.position.note"></span>
                     </div>
                   </div>
                 </div>
@@ -3878,27 +3878,27 @@
                   <div class="section-header">
                     <div class="section-icon"><i class="fas fa-play-circle"></i></div>
                     <div class="section-title">
-                      <h3>Animacje</h3>
-                      <p>Przejścia wiadomości (nie resetuje chatu)</p>
+                      <h3 data-i18n="appearance.sections.animations.title"></h3>
+                      <p data-i18n="appearance.sections.animations.subtitle"></p>
                     </div>
                     <i class="fas fa-chevron-down arrow"></i>
                   </div>
                   <div class="section-content">
                     <div class="option-group">
-                      <h4>Styl animacji</h4>
+                      <h4 data-i18n="appearance.animations.style"></h4>
                       <div class="option-tiles">
                         <button class="option-tile active" data-group="work" data-key="animationPreset"
                           data-value="fade">
                           <div class="tile-preview">
                             <div class="animation-preview fade"></div>
                           </div>
-                          <span class="tile-label">Fade</span>
+                          <span class="tile-label" data-i18n="appearance.animations.fade"></span>
                         </button>
                         <button class="option-tile" data-group="work" data-key="animationPreset" data-value="slide">
                           <div class="tile-preview">
                             <div class="animation-preview slide"></div>
                           </div>
-                          <span class="tile-label">Slide</span>
+                          <span class="tile-label" data-i18n="appearance.animations.slide"></span>
                         </button>
                         <button class="option-tile" data-group="work" data-key="animationPreset" data-value="pop">
                           <div class="tile-preview">
@@ -3906,7 +3906,7 @@
                               style="width:32px;height:24px;background:linear-gradient(90deg,rgba(168,85,247,.3),rgba(96,165,250,.3));border-radius:8px;">
                             </div>
                           </div>
-                          <span class="tile-label">Pop</span>
+                          <span class="tile-label" data-i18n="appearance.animations.pop"></span>
                         </button>
                       </div>
                     </div>
@@ -3914,18 +3914,18 @@
                       <label class="toggle">
                         <input type="checkbox" checked data-group="work" data-key="animationEnabled">
                         <span class="toggle-slider"></span>
-                        <span class="toggle-label">Animacje włączone</span>
+                        <span class="toggle-label" data-i18n="appearance.animations.enabled"></span>
                       </label>
                     </div>
                     <div class="form-group">
                       <button class="btn btn-secondary btn-sm" id="demoAnimationBtn">
-                        <i class="fas fa-play"></i> Dodaj demo wiadomość
+                        <i class="fas fa-play"></i> <span data-i18n="appearance.animations.addDemo"></span>
                       </button>
                     </div>
                     <div class="info-note"
                       style="margin-top: 16px; padding: 12px; background: rgba(168,85,247,.1); border-radius: var(--dv-radius-sm); font-size: 11px; color: var(--dv-text);">
                       <i class="fas fa-info-circle" style="margin-right: 6px;"></i>
-                      Zmiana animacji NIE resetuje chatu, tylko dodaje nową wiadomość demo.
+                      <span data-i18n="appearance.animations.note"></span>
                     </div>
                   </div>
                 </div>
@@ -3935,8 +3935,8 @@
                   <div class="section-header">
                     <div class="section-icon"><i class="fas fa-bolt"></i></div>
                     <div class="section-title">
-                      <h3>Szybkie odpowiedzi</h3>
-                      <p>Gotowe wiadomości i ich wygląd</p>
+                      <h3 data-i18n="appearance.sections.quickReplies.title"></h3>
+                      <p data-i18n="appearance.sections.quickReplies.subtitle"></p>
                     </div>
                     <i class="fas fa-chevron-down arrow"></i>
                   </div>
@@ -3945,44 +3945,44 @@
                       <!-- Rendered by JS -->
                     </div>
                     <button class="btn btn-secondary btn-sm" id="addQuickReply" style="margin-top: 12px;">
-                      <i class="fas fa-plus"></i> Dodaj wiadomość
+                      <i class="fas fa-plus"></i> <span data-i18n="appearance.quickReplies.add"></span>
                     </button>
                     <div class="toggle-group">
                       <label class="toggle">
                         <input type="checkbox" data-group="work" data-key="quickRepliesTop">
                         <span class="toggle-slider"></span>
-                        <span class="toggle-label">Pokaż nad wiadomościami</span>
+                        <span class="toggle-label" data-i18n="appearance.quickReplies.showAbove"></span>
                       </label>
                     </div>
                     
                     <!-- Konfigurator wyglądu kafelków -->
-                    <div class="subsection-header" style="margin-top: 24px;">Wygląd kafelków</div>
+                    <div class="subsection-header" style="margin-top: 24px;" data-i18n="appearance.quickReplies.tiles"></div>
                     <div class="option-group">
-                      <h4>Styl przycisków</h4>
+                      <h4 data-i18n="appearance.quickReplies.style"></h4>
                       <div class="option-tiles">
                         <button class="option-tile active" data-group="work" data-key="quickReplyStyle" data-value="filled">
                           <div class="tile-preview">
                             <div style="width:32px;height:16px;background:var(--dv-accent);border-radius:8px;"></div>
                           </div>
-                          <span class="tile-label">Wypełnione</span>
+                          <span class="tile-label" data-i18n="appearance.quickReplies.filled"></span>
                         </button>
                         <button class="option-tile" data-group="work" data-key="quickReplyStyle" data-value="outline">
                           <div class="tile-preview">
                             <div style="width:32px;height:16px;background:transparent;border:2px solid var(--dv-accent);border-radius:8px;"></div>
                           </div>
-                          <span class="tile-label">Obramowanie</span>
+                          <span class="tile-label" data-i18n="appearance.quickReplies.outline"></span>
                         </button>
                         <button class="option-tile" data-group="work" data-key="quickReplyStyle" data-value="ghost">
                           <div class="tile-preview">
                             <div style="width:32px;height:16px;background:rgba(139,92,246,.2);border-radius:8px;"></div>
                           </div>
-                          <span class="tile-label">Ghost</span>
+                          <span class="tile-label" data-i18n="appearance.quickReplies.ghost"></span>
                         </button>
                       </div>
                     </div>
                     <div class="slider-group" style="margin-top: 16px;">
                       <div class="slider-container">
-                        <label>Zaokrąglenie <span class="slider-value" data-for="work.quickReplyRadius">12px</span></label>
+                        <label><span data-i18n="appearance.quickReplies.radius"></span> <span class="slider-value" data-for="work.quickReplyRadius">12px</span></label>
                         <input type="range" min="0" max="24" value="12" class="slider" data-group="work" data-key="quickReplyRadius" data-role="range">
                       </div>
                     </div>
@@ -3994,28 +3994,29 @@
                   <div class="section-header">
                     <div class="section-icon"><i class="fas fa-user-circle"></i></div>
                     <div class="section-title">
-                      <h3>Avatar Chatbot</h3>
-                      <p>Obrazek awatara i watermark</p>
+                      <h3 data-i18n="appearance.sections.avatar.title"></h3>
+                      <p data-i18n="appearance.sections.avatar.subtitle"></p>
                     </div>
                     <i class="fas fa-chevron-down arrow"></i>
                   </div>
                   <div class="section-content">
                     <!-- Avatar -->
                     <div class="form-group">
-                      <label>Nazwa bota</label>
-                      <input type="text" class="bot-name-input" id="botName" placeholder="Wpisz nazwę bota"
-                        value="Asystent AI">
+                      <label data-i18n="appearance.avatar.botNameLabel"></label>
+                      <input type="text" class="bot-name-input" id="botName" data-i18n-placeholder="appearance.avatar.botNamePlaceholder"
+                        placeholder=""
+                        value="">
                     </div>
                     <div class="option-group">
-                      <h4>Własny avatar</h4>
+                      <h4 data-i18n="appearance.avatar.customAvatar"></h4>
                       <div class="avatar-upload-container">
                         <input type="file" accept="image/*" id="avatarUpload" hidden />
                         <div class="avatar-upload-buttons">
                           <button class="btn btn-secondary btn-sm" id="avatarUploadBtn">
-                            <i class="fas fa-image"></i> Prześlij avatar
+                            <i class="fas fa-image"></i> <span data-i18n="appearance.avatar.upload"></span>
                           </button>
                           <button class="btn btn-secondary btn-sm" id="avatarRemoveBtn">
-                            <i class="fas fa-trash"></i> Usuń
+                            <i class="fas fa-trash"></i> <span data-i18n="appearance.avatar.remove"></span>
                           </button>
                         </div>
                         <div class="avatar-preview" id="avatarPreview">
@@ -4027,17 +4028,17 @@
                       <label class="toggle">
                         <input type="checkbox" checked data-group="work" data-key="avatarEnabled">
                         <span class="toggle-slider"></span>
-                        <span class="toggle-label">Pokaż avatar</span>
+                        <span class="toggle-label" data-i18n="appearance.avatar.show"></span>
                       </label>
                     </div>
 
                     <!-- Watermark -->
-                    <div class="subsection-header" style="margin-top: 24px;">Watermark</div>
+                    <div class="subsection-header" style="margin-top: 24px;" data-i18n="appearance.avatar.watermark"></div>
                     <div class="toggle-group">
                       <label class="toggle">
                         <input type="checkbox" checked data-group="work" data-key="watermarkEnabled">
                         <span class="toggle-slider"></span>
-                        <span class="toggle-label">Pokaż watermark "Powered by DaVeri"</span>
+                        <span class="toggle-label" data-i18n="appearance.avatar.showWatermark"></span>
                       </label>
                     </div>
                   </div>
@@ -4048,8 +4049,8 @@
                   <div class="section-header">
                     <div class="section-icon"><i class="fas fa-window-minimize"></i></div>
                     <div class="section-title">
-                      <h3>Zminimalizowany chat</h3>
-                      <p>Zwijanie chatu do ikony</p>
+                      <h3 data-i18n="appearance.sections.minimized.title"></h3>
+                      <p data-i18n="appearance.sections.minimized.subtitle"></p>
                     </div>
                     <i class="fas fa-chevron-down arrow"></i>
                   </div>
@@ -4058,17 +4059,17 @@
                       <label class="toggle">
                         <input type="checkbox" data-group="work" data-key="iconMode" id="iconModeToggle">
                         <span class="toggle-slider"></span>
-                        <span class="toggle-label">Włącz tryb ikony (zwinięty chat)</span>
+                        <span class="toggle-label" data-i18n="appearance.minimized.enable"></span>
                       </label>
                     </div>
                     <p class="info-note"
                       style="margin: 16px 0; padding: 12px; background: rgba(168,85,247,.1); border-radius: var(--dv-radius-sm); font-size: 11px; color: var(--dv-text);">
                       <i class="fas fa-info-circle" style="margin-right: 6px;"></i>
-                      Włączenie tej opcji powoduje złożenie chatu do ikony. Kliknięcie ikony przywraca chat.
+                      <span data-i18n="appearance.minimized.note"></span>
                     </p>
 
                     <div class="option-group" style="margin-top: 16px;">
-                      <h4>Kształt ikony</h4>
+                      <h4 data-i18n="appearance.minimized.shape"></h4>
                       <div class="option-tiles">
                         <button class="option-tile active" data-group="work" data-key="iconShape" data-value="circle">
                           <div class="tile-preview">
@@ -4077,7 +4078,7 @@
                               <i class="fas fa-comment" style="color: white; font-size: 14px;"></i>
                             </div>
                           </div>
-                          <span class="tile-label">Koło</span>
+                          <span class="tile-label" data-i18n="appearance.minimized.circle"></span>
                         </button>
                         <button class="option-tile" data-group="work" data-key="iconShape" data-value="rounded">
                           <div class="tile-preview">
@@ -4086,7 +4087,7 @@
                               <i class="fas fa-comment" style="color: white; font-size: 14px;"></i>
                             </div>
                           </div>
-                          <span class="tile-label">Zaokrąglony</span>
+                          <span class="tile-label" data-i18n="appearance.minimized.rounded"></span>
                         </button>
                         <button class="option-tile" data-group="work" data-key="iconShape" data-value="square">
                           <div class="tile-preview">
@@ -4095,44 +4096,44 @@
                               <i class="fas fa-comment" style="color: white; font-size: 14px;"></i>
                             </div>
                           </div>
-                          <span class="tile-label">Kwadrat</span>
+                          <span class="tile-label" data-i18n="appearance.minimized.square"></span>
                         </button>
                       </div>
                     </div>
 
                     <div class="option-group">
-                      <h4>Ikona wewnętrzna</h4>
+                      <h4 data-i18n="appearance.minimized.iconInner"></h4>
                       <div class="option-tiles">
                         <button class="option-tile active" data-group="work" data-key="iconType" data-value="robot">
                           <div class="tile-preview">
                             <i class="fas fa-robot" style="font-size: 20px; color: var(--dv-vio);"></i>
                           </div>
-                          <span class="tile-label">Robot</span>
+                          <span class="tile-label" data-i18n="appearance.minimized.icon.robot"></span>
                         </button>
                         <button class="option-tile" data-group="work" data-key="iconType" data-value="comment">
                           <div class="tile-preview">
                             <i class="fas fa-comment" style="font-size: 20px; color: var(--dv-vio);"></i>
                           </div>
-                          <span class="tile-label">Dymek</span>
+                          <span class="tile-label" data-i18n="appearance.minimized.icon.bubble"></span>
                         </button>
                         <button class="option-tile" data-group="work" data-key="iconType" data-value="comments">
                           <div class="tile-preview">
                             <i class="fas fa-comments" style="font-size: 20px; color: var(--dv-vio);"></i>
                           </div>
-                          <span class="tile-label">Dymki</span>
+                          <span class="tile-label" data-i18n="appearance.minimized.icon.bubbles"></span>
                         </button>
                         <button class="option-tile" data-group="work" data-key="iconType" data-value="headset">
                           <div class="tile-preview">
                             <i class="fas fa-headset" style="font-size: 20px; color: var(--dv-vio);"></i>
                           </div>
-                          <span class="tile-label">Słuchawki</span>
+                          <span class="tile-label" data-i18n="appearance.minimized.icon.headset"></span>
                         </button>
                       </div>
                     </div>
 
                     <div class="slider-container" style="margin-top: 16px;">
                       <label>
-                        Rozmiar ikony
+                        <span data-i18n="appearance.minimized.iconSize"></span>
                         <span class="slider-value" id="iconSizeValue">56px</span>
                       </label>
                       <input type="range" class="slider" min="40" max="80" value="56" data-group="work"
@@ -4143,24 +4144,24 @@
                       <button class="color-tile active" data-group="work" data-key="iconBackground"
                         data-value="#7C3AED">
                         <div class="color-preview" style="background-color: #7C3AED;"></div>
-                        <span class="color-label">Tło ikony</span>
+                        <span class="color-label" data-i18n="appearance.minimized.iconBackground"></span>
                       </button>
                       <button class="color-tile" data-group="work" data-key="iconColor" data-value="#FFFFFF">
                         <div class="color-preview" style="background-color: #FFFFFF;"></div>
-                        <span class="color-label">Kolor symbolu</span>
+                        <span class="color-label" data-i18n="appearance.minimized.iconColor"></span>
                       </button>
                     </div>
 
                     <div class="option-group" style="margin-top: 16px;">
-                      <h4>Własna ikona</h4>
+                      <h4 data-i18n="appearance.minimized.customIcon"></h4>
                       <div class="avatar-upload-container">
                         <input type="file" accept="image/*" id="iconUpload" hidden />
                         <div class="avatar-upload-buttons">
                           <button class="btn btn-secondary btn-sm" id="iconUploadBtn">
-                            <i class="fas fa-image"></i> Prześlij własną
+                            <i class="fas fa-image"></i> <span data-i18n="appearance.minimized.uploadIcon"></span>
                           </button>
                           <button class="btn btn-secondary btn-sm" id="iconRemoveBtn">
-                            <i class="fas fa-trash"></i> Usuń
+                            <i class="fas fa-trash"></i> <span data-i18n="appearance.minimized.removeIcon"></span>
                           </button>
                         </div>
                         <div class="avatar-preview" id="iconPreview">
@@ -4178,7 +4179,7 @@
   <div class="preview-area">
     <!-- Desktop Chat Preview - SCALE 0.9 -->
     <div class="preview-section">
-      <div class="section-label">Konfigurator</div>
+      <div class="section-label" data-i18n="appearance.preview.configurator"></div>
       <div class="work-column">
               <div class="chat-scale">
                 <!-- Chat (visible when not minimized) -->
@@ -4186,10 +4187,10 @@
                   <div class="chat-background-overlay" id="workChatOverlay"></div>
                   <div class="chat-header">
                     <div class="chat-brand">
-                      <div class="chat-avatar" id="workChatAvatar">AI</div>
+                      <div class="chat-avatar" id="workChatAvatar" data-i18n="appearance.preview.avatarFallback"></div>
                       <div class="chat-info">
-                        <div class="chat-name" id="workChatName">Asystent AI</div>
-                        <div class="chat-status">Online</div>
+                        <div class="chat-name" id="workChatName" data-i18n="appearance.preview.botName"></div>
+                        <div class="chat-status" data-i18n="appearance.preview.online"></div>
                       </div>
                     </div>
                     <div class="chat-actions">
@@ -4202,15 +4203,14 @@
                   <div class="chat-messages" id="workChatMessages"></div>
                   <div class="quick-replies-bottom" id="workQuickRepliesBottom"></div>
                   <div class="chat-input">
-                    <input type="text" placeholder="Napisz wiadomość..." id="workChatInput">
+                    <input type="text" data-i18n-placeholder="appearance.preview.inputPlaceholder" placeholder="" id="workChatInput">
                     <button class="send-btn" id="workSendBtn">
                       <i class="fas fa-paper-plane"></i>
                     </button>
                   </div>
                   <div class="chat-watermark" id="workChatWatermark">
-                    <span
-                      style="background: linear-gradient(135deg, #fb7185 0%, #a855f7 48%, #60a5fa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 600;">Powered
-                      by DaVeri</span>
+                    <span data-i18n="appearance.preview.watermark"
+                      style="background: linear-gradient(135deg, #fb7185 0%, #a855f7 48%, #60a5fa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 600;"></span>
                   </div>
                 </div>
                 <!-- Minimized icon (LEFT side, hidden by default) -->
@@ -4224,7 +4224,7 @@
     
     <!-- Mobile iPhone Preview - TRUE NATIVE MOBILE UI -->
     <div class="preview-section">
-      <div class="section-label">Urządzenie mobilne</div>
+      <div class="section-label" data-i18n="appearance.preview.mobile"></div>
       <div class="mobile-column">
               <div class="phone-scale">
                 <div class="iphone-frame">
@@ -4235,15 +4235,15 @@
                         <div class="mobile-header-brand">
                           <div class="mobile-header-avatar"><i class="fas fa-robot"></i></div>
                           <div class="mobile-header-info">
-                            <div class="mobile-header-name" id="mobileChatName">Asystent AI</div>
-                            <div class="mobile-header-status">Online</div>
+                            <div class="mobile-header-name" id="mobileChatName" data-i18n="appearance.preview.botName"></div>
+                            <div class="mobile-header-status" data-i18n="appearance.preview.online"></div>
                           </div>
                         </div>
                       </div>
                       <div class="mobile-messages" id="mobileChatMessages"></div>
                       <div class="mobile-quick-replies" id="mobileQuickReplies" style="display: none;"></div>
                       <div class="mobile-input-bar">
-                        <input type="text" class="mobile-input" placeholder="Napisz wiadomość..." id="mobileChatInput"
+                        <input type="text" class="mobile-input" data-i18n-placeholder="appearance.preview.inputPlaceholder" placeholder="" id="mobileChatInput"
                           disabled>
                         <button class="mobile-send-button" id="mobileSendBtn"><i
                             class="fas fa-paper-plane"></i></button>
@@ -4261,7 +4261,7 @@
     
     <!-- Desktop Monitor - SINGLE CLEAN STRUCTURE -->
     <div class="preview-section" style="flex: 1 1 auto;">
-      <div class="section-label">Desktop</div>
+      <div class="section-label" data-i18n="appearance.preview.desktop"></div>
       <div class="monitor-wrapper">
               <div class="monitor-frame">
                 <div class="monitor-screen" id="monitorScreen">
@@ -4282,10 +4282,10 @@
         <!-- Bottom Actions -->
         <div class="bottom-actions">
           <button class="btn btn-secondary" data-role="action-load">
-            <i class="fas fa-folder-open"></i> Wczytaj
+            <i class="fas fa-folder-open"></i> <span data-i18n="appearance.actions.load"></span>
           </button>
           <button class="btn btn-primary" data-role="action-save">
-            <i class="fas fa-save"></i> Zapisz zmiany
+            <i class="fas fa-save"></i> <span data-i18n="appearance.actions.saveChanges"></span>
           </button>
         </div>
         <!-- Color Editor Modal -->
@@ -4293,7 +4293,7 @@
           <div class="modal-backdrop" data-role="editor-backdrop"></div>
           <div class="modal-content">
             <div class="modal-header">
-              <h3 id="editorTitle">Edytuj kolor</h3>
+              <h3 id="editorTitle" data-i18n="appearance.editor.title"></h3>
               <button class="modal-close" data-role="editor-close">
                 <i class="fas fa-times"></i>
               </button>
@@ -4304,25 +4304,73 @@
                 <div class="color-hex" data-role="editor-hex">#0F0F14</div>
               </div>
               <div class="color-controls">
-                <label>Wybierz kolor</label>
+                <label data-i18n="appearance.editor.pickColor"></label>
                 <input type="color" class="color-input" data-role="editor-input" value="#0F0F14">
               </div>
               <div class="color-presets">
-                <label>Presety</label>
+                <label data-i18n="appearance.editor.presets"></label>
                 <div class="preset-grid" data-role="editor-presets">
                   <!-- Presets added by JS -->
                 </div>
               </div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-secondary" data-role="editor-close">Anuluj</button>
-              <button class="btn btn-primary" data-role="editor-apply">Zastosuj</button>
+              <button class="btn btn-secondary" data-role="editor-close" data-i18n="appearance.editor.cancel"></button>
+              <button class="btn btn-primary" data-role="editor-apply" data-i18n="appearance.editor.apply"></button>
             </div>
           </div>
         </div>
       </main>
     </div><!-- #main-content -->
   </div><!-- #page-wrapper -->
+  <div id="appearance-i18n" style="display:none">
+    <span id="i18n-appearance-default-bot-name" data-i18n="appearance.defaults.botName"></span>
+    <span id="i18n-appearance-default-watermark" data-i18n="appearance.defaults.watermark"></span>
+    <span id="i18n-appearance-default-avatar" data-i18n="appearance.defaults.avatar"></span>
+    <span id="i18n-appearance-brand-name" data-i18n="appearance.defaults.brandName"></span>
+    <span id="i18n-appearance-quick-default-1" data-i18n="appearance.defaults.quickReplyOne"></span>
+    <span id="i18n-appearance-quick-default-2" data-i18n="appearance.defaults.quickReplyTwo"></span>
+    <span id="i18n-appearance-quick-placeholder" data-i18n="appearance.quickReplies.placeholder"></span>
+    <span id="i18n-appearance-quick-new" data-i18n="appearance.quickReplies.newMessage"></span>
+    <span id="i18n-appearance-welcome-bot" data-i18n="appearance.defaults.welcomeBot"></span>
+    <span id="i18n-appearance-welcome-user" data-i18n="appearance.defaults.welcomeUser"></span>
+    <span id="i18n-appearance-auto-1" data-i18n="appearance.defaults.autoReplyOne"></span>
+    <span id="i18n-appearance-auto-2" data-i18n="appearance.defaults.autoReplyTwo"></span>
+    <span id="i18n-appearance-auto-3" data-i18n="appearance.defaults.autoReplyThree"></span>
+    <span id="i18n-appearance-auto-4" data-i18n="appearance.defaults.autoReplyFour"></span>
+    <span id="i18n-appearance-auto-5" data-i18n="appearance.defaults.autoReplyFive"></span>
+    <span id="i18n-appearance-animation-prefix" data-i18n="appearance.animations.demoPrefix"></span>
+    <span id="i18n-appearance-scale-chat" data-i18n="appearance.scale.chatLabel"></span>
+    <span id="i18n-appearance-scale-scale" data-i18n="appearance.scale.scaleLabel"></span>
+    <span id="i18n-appearance-scale-fullscreen" data-i18n="appearance.scale.fullscreen"></span>
+    <span id="i18n-appearance-scale-mobile" data-i18n="appearance.scale.mobile"></span>
+    <span id="i18n-appearance-scale-fullscreen-short" data-i18n="appearance.scale.fullscreenShort"></span>
+    <span id="i18n-appearance-scale-fit" data-i18n="appearance.scale.fit"></span>
+    <span id="i18n-appearance-alert-load-success" data-i18n="appearance.alerts.loadSuccess"></span>
+    <span id="i18n-appearance-alert-load-error" data-i18n="appearance.alerts.loadError"></span>
+    <span id="i18n-appearance-preset-custom-desc" data-i18n="appearance.presets.customDesc"></span>
+    <span id="i18n-appearance-preset-sales-desc" data-i18n="appearance.presets.salesDesc"></span>
+    <span id="i18n-appearance-preset-support-desc" data-i18n="appearance.presets.supportDesc"></span>
+    <span id="i18n-appearance-editor-chat-bg" data-i18n="appearance.chatUi.background"></span>
+    <span id="i18n-appearance-editor-chat-header" data-i18n="appearance.chatUi.header"></span>
+    <span id="i18n-appearance-editor-chat-input" data-i18n="appearance.chatUi.input"></span>
+    <span id="i18n-appearance-editor-chat-accent" data-i18n="appearance.chatUi.accent"></span>
+    <span id="i18n-appearance-editor-user-bubble" data-i18n="appearance.messageColors.userBubble"></span>
+    <span id="i18n-appearance-editor-user-text" data-i18n="appearance.messageColors.userText"></span>
+    <span id="i18n-appearance-editor-bot-bubble" data-i18n="appearance.messageColors.botBubble"></span>
+    <span id="i18n-appearance-editor-bot-text" data-i18n="appearance.messageColors.botText"></span>
+    <span id="i18n-appearance-editor-icon-bg" data-i18n="appearance.minimized.iconBackground"></span>
+    <span id="i18n-appearance-editor-icon-color" data-i18n="appearance.minimized.iconColor"></span>
+    <span id="i18n-appearance-editor-prefix" data-i18n="appearance.editor.editPrefix"></span>
+    <span id="i18n-appearance-sales-quick-1" data-i18n="appearance.presets.salesQuickOne"></span>
+    <span id="i18n-appearance-sales-quick-2" data-i18n="appearance.presets.salesQuickTwo"></span>
+    <span id="i18n-appearance-sales-quick-3" data-i18n="appearance.presets.salesQuickThree"></span>
+    <span id="i18n-appearance-sales-quick-4" data-i18n="appearance.presets.salesQuickFour"></span>
+    <span id="i18n-appearance-support-quick-1" data-i18n="appearance.presets.supportQuickOne"></span>
+    <span id="i18n-appearance-support-quick-2" data-i18n="appearance.presets.supportQuickTwo"></span>
+    <span id="i18n-appearance-support-quick-3" data-i18n="appearance.presets.supportQuickThree"></span>
+    <span id="i18n-appearance-support-quick-4" data-i18n="appearance.presets.supportQuickFour"></span>
+  </div>
   <script>
     /* ==========================================================================
     Chat UI Configurator - FINALNA WERSJA PRODUKCYJNA SAAS - NAPRAWIONA
@@ -4335,6 +4383,12 @@
         console.error("Root element not found:", ROOT_ID);
         return;
       }
+      const i18nText = (idOrKey) => {
+        const byId = document.getElementById(idOrKey);
+        if (byId) return byId.textContent || "";
+        const byKey = document.querySelector(`[data-i18n="${idOrKey}"]`);
+        return byKey?.textContent || "";
+      };
       /* ========== DANE PRESETÓW ========== */
       const PRESET_BACKGROUNDS = {
         sales: 'https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1769988404088x184638242248941000/8k%20white%20opal%20liquid%20glass%20prisma%20%20background%20%281%29.jpg',
@@ -4370,17 +4424,17 @@
         animationPreset: "fade",
         animationEnabled: true,
       quickReplies: {
-        messages: ["Pomoc", "Kontakt"],
+        messages: [i18nText("i18n-appearance-quick-default-1"), i18nText("i18n-appearance-quick-default-2")],
         top: false
       },
       quickReplyStyle: "filled",
       quickReplyRadius: 12,
         // 5️⃣ BRANDING
         watermarkEnabled: true,
-        watermarkText: "Powered by DaVeri",
+        watermarkText: i18nText("i18n-appearance-default-watermark"),
         avatarEnabled: true,
         avatarImage: null,
-        botName: "Asystent AI",
+        botName: i18nText("i18n-appearance-default-bot-name"),
         // 6️⃣ IKONA (zwinięty chat)
         iconMode: false,
         iconShape: "circle", // circle, rounded, square
@@ -4402,13 +4456,13 @@
       /* ========== PRESETY - KOMPLETNE ZESTAWY ========== */
       const presets = {
         custom: {
-          name: "Custom",
-          description: "Ręczna konfiguracja",
+          name: i18nText("appearance.presets.custom"),
+          description: i18nText("i18n-appearance-preset-custom-desc"),
           // Custom nie ustawia nic - użytkownik sam wszystko konfiguruje
         },
         sales: {
-          name: "Sprzedaż",
-          description: "Jasny, dynamiczny, z CTA",
+          name: i18nText("appearance.presets.sales"),
+          description: i18nText("i18n-appearance-preset-sales-desc"),
           settings: {
             colors: {
               chatBackground: "#ffffff",
@@ -4426,16 +4480,21 @@
             animationPreset: "pop",
             animationEnabled: true,
             quickReplies: {
-              messages: ["Chcę demo!", "Jaka cena?", "Rozmowa z sales", "Pobierz broszurę"],
+              messages: [
+                i18nText("i18n-appearance-sales-quick-1"),
+                i18nText("i18n-appearance-sales-quick-2"),
+                i18nText("i18n-appearance-sales-quick-3"),
+                i18nText("i18n-appearance-sales-quick-4")
+              ],
               top: false
             },
             watermarkEnabled: true,
-            watermarkText: "Powered by DaVeri"
+            watermarkText: i18nText("i18n-appearance-default-watermark")
           }
         },
         support: {
-          name: "Support",
-          description: "Ciemny, spokojny, pomocowy",
+          name: i18nText("appearance.presets.support"),
+          description: i18nText("i18n-appearance-preset-support-desc"),
           settings: {
             colors: {
               chatBackground: "#0f172a",
@@ -4453,7 +4512,12 @@
             animationPreset: "fade",
             animationEnabled: false,
             quickReplies: {
-              messages: ["Problem techniczny", "Status zgłoszenia", "Jak to działa?", "Kontakt z support"],
+              messages: [
+                i18nText("i18n-appearance-support-quick-1"),
+                i18nText("i18n-appearance-support-quick-2"),
+                i18nText("i18n-appearance-support-quick-3"),
+                i18nText("i18n-appearance-support-quick-4")
+              ],
               top: true
             },
             watermarkEnabled: false,
@@ -4467,8 +4531,8 @@
       let deviceState = deepClone(defaultDeviceState);
       // Inicjalizuj wiadomości startowe - max 2
       workState.messages = [
-        { type: "bot", text: "W czym mogę pomóc?", time: "12:00" },
-        { type: "user", text: "Mam pytanie.", time: "12:01" }
+        { type: "bot", text: i18nText("i18n-appearance-welcome-bot"), time: "12:00" },
+        { type: "user", text: i18nText("i18n-appearance-welcome-user"), time: "12:01" }
       ];
       const subscribers = new Set();
       let lockAccordion = false;
@@ -4544,7 +4608,7 @@
           const bgPreview = document.getElementById('bgPreview');
           if (bgPreview) {
             bgPreview.style.backgroundImage = 'none';
-            bgPreview.querySelector('.bg-preview-overlay').textContent = 'Podgląd tła';
+            bgPreview.querySelector('.bg-preview-overlay').textContent = i18nText("appearance.chatUi.previewLabel");
           }
         }
         // Obsługa avatara
@@ -5014,12 +5078,12 @@
         // Bot name input
         const botNameInput = document.getElementById('botName');
         if (botNameInput) {
-          botNameInput.value = workSnapshot.botName || "Asystent AI";
+          botNameInput.value = workSnapshot.botName || i18nText("i18n-appearance-default-bot-name");
         }
         // Watermark text input
         const watermarkInput = document.getElementById('watermarkText');
         if (watermarkInput) {
-          watermarkInput.value = workSnapshot.watermarkText || "Powered by DaVeri";
+          watermarkInput.value = workSnapshot.watermarkText || i18nText("i18n-appearance-default-watermark");
         }
         // Background options
         updateBackgroundOptions(workSnapshot);
@@ -5085,7 +5149,7 @@
           watermark.style.display = snapshot.watermarkEnabled ? 'block' : 'none';
           const strongElement = watermark.querySelector('strong');
           if (strongElement) {
-            strongElement.textContent = snapshot.watermarkText || "DaVeri";
+            strongElement.textContent = snapshot.watermarkText || i18nText("i18n-appearance-brand-name");
           }
         }
         // Avatar
@@ -5273,7 +5337,7 @@ ${msg.text}
           // Update bot name
           const mobileChatName = mobileRoot.querySelector('#mobileChatName');
           if (mobileChatName) {
-            mobileChatName.textContent = snapshot.botName || 'Asystent AI';
+            mobileChatName.textContent = snapshot.botName || i18nText("i18n-appearance-default-bot-name");
           }
 
           // Update avatar
@@ -5545,8 +5609,8 @@ ${msg.text}
       function generateMonitorChatHTML(snapshot) {
         const messages = snapshot.messages || [];
         const quickReplies = snapshot.quickReplies?.messages || [];
-        const botName = snapshot.botName || 'Asystent AI';
-        const watermarkText = snapshot.watermarkText || 'Powered by DaVeri';
+        const botName = snapshot.botName || i18nText("i18n-appearance-default-bot-name");
+        const watermarkText = snapshot.watermarkText || i18nText("i18n-appearance-default-watermark");
         const watermarkEnabled = snapshot.watermarkEnabled !== false;
         const avatarImage = snapshot.avatarImage;
         const colors = snapshot.colors || {};
@@ -5598,7 +5662,7 @@ ${quickReplies.map(text => `<button>${text}</button>`).join('')}
 ${avatarHTML}
 <div class="chat-info">
 <div class="chat-name" style="color: ${textColor};">${botName}</div>
-<div class="chat-status" style="color: ${textColor}; opacity: 0.7;">Online</div>
+<div class="chat-status" style="color: ${textColor}; opacity: 0.7;">${i18nText("appearance.preview.online")}</div>
 </div>
 </div>
 <div class="chat-actions">
@@ -5610,7 +5674,7 @@ ${messagesHTML}
 </div>
 ${quickRepliesHTML}
 <div class="chat-input" style="background-color: ${inputBg};">
-<input type="text" placeholder="Napisz wiadomość..." disabled style="color: ${textColor};">
+<input type="text" placeholder="${i18nText("appearance.preview.inputPlaceholder")}" disabled style="color: ${textColor};">
 <button class="send-btn" style="background-color: ${accentColor};"><i class="fas fa-paper-plane"></i></button>
 </div>
 ${watermarkHTML}
@@ -5619,8 +5683,8 @@ ${watermarkHTML}
       function generateDeviceChatHTML(snapshot) {
         const messages = snapshot.messages || [];
         const quickReplies = snapshot.quickReplies?.messages || [];
-        const botName = snapshot.botName || 'Asystent AI';
-        const watermarkText = snapshot.watermarkText || 'Powered by DaVeri';
+        const botName = snapshot.botName || i18nText("i18n-appearance-default-bot-name");
+        const watermarkText = snapshot.watermarkText || i18nText("i18n-appearance-default-watermark");
         const watermarkEnabled = snapshot.watermarkEnabled !== false;
         let messagesHTML = messages.map(msg => `
 <div class="message ${msg.type}">
@@ -5649,7 +5713,7 @@ ${quickReplies.map(text => `<button>${text}</button>`).join('')}
 <div class="chat-avatar"><i class="fas fa-robot"></i></div>
 <div class="chat-info">
 <div class="chat-name">${botName}</div>
-<div class="chat-status">Online</div>
+<div class="chat-status">${i18nText("appearance.preview.online")}</div>
 </div>
 </div>
 </div>
@@ -5658,7 +5722,7 @@ ${messagesHTML}
 </div>
 ${quickRepliesHTML}
 <div class="chat-input">
-<input type="text" placeholder="Napisz wiadomość..." disabled>
+<input type="text" placeholder="${i18nText("appearance.preview.inputPlaceholder")}" disabled>
 <button class="send-btn"><i class="fas fa-paper-plane"></i></button>
 </div>
 ${watermarkHTML}
@@ -5832,7 +5896,7 @@ ${watermarkHTML}
         // Aktualizuj nazwę bota
         const deviceName = deviceChat.querySelector('.chat-name');
         if (deviceName) {
-          deviceName.textContent = workState.botName || "Asystent AI";
+          deviceName.textContent = workState.botName || i18nText("i18n-appearance-default-bot-name");
         }
         // Aktualizuj watermark
         const deviceWatermark = deviceChat.querySelector('.chat-watermark');
@@ -5840,7 +5904,7 @@ ${watermarkHTML}
           deviceWatermark.style.display = workState.watermarkEnabled ? 'block' : 'none';
           const strongElement = deviceWatermark.querySelector('strong');
           if (strongElement) {
-            strongElement.textContent = workState.watermarkText || "DaVeri";
+            strongElement.textContent = workState.watermarkText || i18nText("i18n-appearance-brand-name");
           }
         }
         // Dodaj przycisk X do device chat
@@ -5852,7 +5916,7 @@ ${watermarkHTML}
         }
       }
       function getInitialsFromName(name) {
-        if (!name || typeof name !== 'string') return 'AI';
+        if (!name || typeof name !== 'string') return i18nText("i18n-appearance-default-avatar");
         const parts = name.trim().split(' ');
         if (parts.length === 1) {
           return parts[0].substring(0, 2).toUpperCase();
@@ -5872,13 +5936,13 @@ ${watermarkHTML}
           const scale = calculateAndApplyScale() || 1;
           info.innerHTML = `
 <i class="fas fa-ruler-combined"></i>
-<span>Chat: ${deviceState.width}×${deviceState.height}px | Skala: ${(scale * 100).toFixed(0)}%</span>
+<span>${i18nText("i18n-appearance-scale-chat")}: ${deviceState.width}×${deviceState.height}px | ${i18nText("i18n-appearance-scale-scale")}: ${(scale * 100).toFixed(0)}%</span>
 `;
           info.style.display = 'flex';
         } else {
           info.innerHTML = `
 <i class="fas fa-mobile-alt"></i>
-<span>Chat: Fullscreen (idealne dopasowanie do telefonu)</span>
+<span>${i18nText("i18n-appearance-scale-fullscreen")}</span>
 `;
           info.style.display = 'flex';
         }
@@ -5895,19 +5959,19 @@ ${watermarkHTML}
 <span class="dimension">${deviceState.height}px</span>
 </div>
 <div class="scale-percent">
-Skala: ${(scale * 100).toFixed(0)}%
+${i18nText("i18n-appearance-scale-scale")}: ${(scale * 100).toFixed(0)}%
 </div>
 `;
           overlay.style.display = 'block';
         } else {
           overlay.innerHTML = `
 <div class="scale-dimensions">
-<span class="dimension">Mobile</span>
+<span class="dimension">${i18nText("i18n-appearance-scale-mobile")}</span>
 <span class="separator">•</span>
-<span class="dimension">Fullscreen</span>
+<span class="dimension">${i18nText("i18n-appearance-scale-fullscreen-short")}</span>
 </div>
 <div class="scale-percent">
-Idealnie dopasowany
+${i18nText("i18n-appearance-scale-fit")}
 </div>
 `;
           overlay.style.display = 'block';
@@ -5946,18 +6010,18 @@ Idealnie dopasowany
         const title = document.getElementById('editorTitle');
         if (title) {
           const labelMap = {
-            chatBackground: 'Tło chatu',
-            chatHeader: 'Header',
-            chatInput: 'Pole wprowadzania',
-            chatAccent: 'Kolor akcentu',
-            userBubble: 'Dymek użytkownika',
-            userText: 'Tekst użytkownika',
-            botBubble: 'Dymek bota',
-            botText: 'Tekst bota',
-            iconBackground: 'Tło ikony',
-            iconColor: 'Kolor symbolu ikony'
+            chatBackground: i18nText("i18n-appearance-editor-chat-bg"),
+            chatHeader: i18nText("i18n-appearance-editor-chat-header"),
+            chatInput: i18nText("i18n-appearance-editor-chat-input"),
+            chatAccent: i18nText("i18n-appearance-editor-chat-accent"),
+            userBubble: i18nText("i18n-appearance-editor-user-bubble"),
+            userText: i18nText("i18n-appearance-editor-user-text"),
+            botBubble: i18nText("i18n-appearance-editor-bot-bubble"),
+            botText: i18nText("i18n-appearance-editor-bot-text"),
+            iconBackground: i18nText("i18n-appearance-editor-icon-bg"),
+            iconColor: i18nText("i18n-appearance-editor-icon-color")
           };
-          title.textContent = `Edytuj ${labelMap[key] || key}`;
+          title.textContent = `${i18nText("i18n-appearance-editor-prefix")} ${labelMap[key] || key}`;
         }
         // Wypełnij presety kolorów
         const presetContainer = editor.querySelector('[data-role="editor-presets"]');
@@ -6138,7 +6202,7 @@ Idealnie dopasowany
             setWorkOption('backgroundPreset', null);
             if (bgPreview) {
               bgPreview.style.backgroundImage = 'none';
-              bgPreview.querySelector('.bg-preview-overlay').textContent = 'Podgląd tła';
+            bgPreview.querySelector('.bg-preview-overlay').textContent = i18nText("appearance.chatUi.previewLabel");
             }
             if (bgUpload) bgUpload.value = '';
             // Zaznacz opcję "kolor"
@@ -6235,12 +6299,12 @@ Idealnie dopasowany
         // LEWY CHAT
         const workName = document.querySelector('#workChat .chat-name');
         if (workName) {
-          workName.textContent = name || "Asystent AI";
+          workName.textContent = name || i18nText("i18n-appearance-default-bot-name");
         }
         // PRAWY CHAT
         const deviceName = document.querySelector('#deviceChat .chat-name');
         if (deviceName) {
-          deviceName.textContent = name || "Asystent AI";
+          deviceName.textContent = name || i18nText("i18n-appearance-default-bot-name");
         }
         // Aktualizuj avatar jeśli nie ma obrazka
         if (!workState.avatarImage) {
@@ -6259,12 +6323,12 @@ Idealnie dopasowany
         // LEWY CHAT
         const workWatermark = document.querySelector('#workChat .chat-watermark strong');
         if (workWatermark) {
-          workWatermark.textContent = text || "DaVeri";
+          workWatermark.textContent = text || i18nText("i18n-appearance-brand-name");
         }
         // PRAWY CHAT
         const deviceWatermark = document.querySelector('#deviceChat .chat-watermark strong');
         if (deviceWatermark) {
-          deviceWatermark.textContent = text || "DaVeri";
+          deviceWatermark.textContent = text || i18nText("i18n-appearance-brand-name");
         }
       }
       /* ========== QUICK REPLIES ========== */
@@ -6340,7 +6404,7 @@ Idealnie dopasowany
           const input = document.createElement('input');
           input.type = 'text';
           input.value = text;
-          input.placeholder = 'Wpisz wiadomość...';
+          input.placeholder = i18nText("i18n-appearance-quick-placeholder");
           input.setAttribute('data-index', index);
           // Zmiana na blur zamiast input - aktualizuj dopiero po opuszczeniu pola
           input.addEventListener('blur', (e) => {
@@ -6375,7 +6439,7 @@ Idealnie dopasowany
         if (addBtn) {
           addBtn.addEventListener('click', () => {
             const current = workState.quickReplies.messages;
-            const next = [...current, 'Nowa wiadomość'];
+            const next = [...current, i18nText("i18n-appearance-quick-new")];
             setWorkOption('quickReplies.messages', next);
           });
         }
@@ -6397,11 +6461,11 @@ Idealnie dopasowany
         // Automatyczna odpowiedź bota
         setTimeout(() => {
           const responses = [
-            "Rozumiem! Co jeszcze mogę dla Ciebie zrobić?",
-            "Dziękuję za wiadomość!",
-            "Zanotowałem to.",
-            "Świetnie!",
-            "Dzięki za test!"
+            i18nText("i18n-appearance-auto-1"),
+            i18nText("i18n-appearance-auto-2"),
+            i18nText("i18n-appearance-auto-3"),
+            i18nText("i18n-appearance-auto-4"),
+            i18nText("i18n-appearance-auto-5")
           ];
           const botTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           workState.messages.push({
@@ -6417,7 +6481,7 @@ Idealnie dopasowany
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         workState.messages.push({
           type: 'bot',
-          text: `Animacja: ${workState.animationPreset}`,
+          text: `${i18nText("i18n-appearance-animation-prefix")} ${workState.animationPreset}`,
           time: time
         });
         renderWorkChatMessages();
@@ -6588,9 +6652,9 @@ Idealnie dopasowany
               reader.onload = (event) => {
                 const result = importState(event.target.result);
                 if (result) {
-                  alert('Konfiguracja wczytana pomyślnie!');
+                  alert(i18nText("i18n-appearance-alert-load-success"));
                 } else {
-                  alert('Błąd wczytywania konfiguracji.');
+                  alert(i18nText("i18n-appearance-alert-load-error"));
                 }
               };
               reader.readAsText(file);
