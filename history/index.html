@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Historia rozmow - DaVeri</title>
+  <title data-i18n="history.page.title"></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -155,14 +155,14 @@
     <div id="main-content">
       <div class="page" id="historia_root" data-user-id="CURRENT USER" data-bot-id="">
         <div class="page-header">
-          <div class="page-title">Historia rozmow</div>
-          <div class="page-subtitle">Przegladaj wszystkie rozmowy Twoich uzytkownikow z botem.</div>
+          <div class="page-title" data-i18n="history.page.heading"></div>
+          <div class="page-subtitle" data-i18n="history.page.subtitle"></div>
         </div>
 
         <div class="conv-layout">
           <div class="conv-list">
             <div class="conv-list-header">
-              <span>Rozmowy</span>
+              <span data-i18n="history.list.title"></span>
               <span class="conv-count" id="convCount">0</span>
             </div>
             <div class="conv-items" id="convItems">
@@ -172,15 +172,15 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                   </svg>
                 </div>
-                <div class="empty-state-text">Brak rozmow</div>
+                <div class="empty-state-text" data-i18n="history.list.empty"></div>
               </div>
             </div>
           </div>
 
           <div class="conv-detail">
             <div class="conv-meta" id="convMeta">
-              <div class="conv-meta-title">Szczegoly rozmowy</div>
-              <div class="conv-meta-visitor" id="convMetaVisitor">Wybierz rozmowe</div>
+              <div class="conv-meta-title" data-i18n="history.details.title"></div>
+              <div class="conv-meta-visitor" id="convMetaVisitor" data-i18n="history.details.selectHint"></div>
             </div>
             <div class="messages-container" id="convMessages">
               <div class="empty-state">
@@ -189,13 +189,18 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
                   </svg>
                 </div>
-                <div class="empty-state-text">Wybierz rozmowe z listy po lewej</div>
+                <div class="empty-state-text" data-i18n="history.details.selectLeftHint"></div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+  </div>
+  </div>
+  </div>
+
+  <div id="history-i18n" style="display:none">
+    <span id="i18n-history-visitor" data-i18n="history.conversation.visitorFallback"></span>
+    <span id="i18n-history-preview" data-i18n="history.conversation.previewFallback"></span>
   </div>
 
   <script type="module">
@@ -210,6 +215,13 @@
     const convCount = document.getElementById('convCount');
     const convMessages = document.getElementById('convMessages');
     const convMetaVisitor = document.getElementById('convMetaVisitor');
+    const i18nText = (id) => document.getElementById(id)?.textContent || "";
+
+    function translateDynamicContent() {
+      if (window.DaVeriI18n?.translatePage) {
+        window.DaVeriI18n.translatePage();
+      }
+    }
 
     function fmtDate(d) {
       if (!d) return '';
@@ -227,15 +239,16 @@
       convCount.textContent = convs.length;
       convItems.innerHTML = '';
       if (!convs.length) {
-        convItems.innerHTML = '<div class="empty-state"><div class="empty-state-text">Brak rozmow</div></div>';
+        convItems.innerHTML = '<div class="empty-state"><div class="empty-state-text" data-i18n="history.list.empty"></div></div>';
+        translateDynamicContent();
         return;
       }
       convs.forEach(conv => {
         const el = document.createElement('div');
         el.className = 'conv-item';
         el.innerHTML = `
-          <div class="conv-visitor">${conv.visitor_name || 'Odwiedzajacy'}</div>
-          <div class="conv-preview">${conv.last_message || '...'}</div>
+          <div class="conv-visitor">${conv.visitor_name || i18nText("i18n-history-visitor")}</div>
+          <div class="conv-preview">${conv.last_message || i18nText("i18n-history-preview")}</div>
           <div class="conv-date">${fmtDate(conv.created_at)}</div>
         `;
         el.onclick = () => {
@@ -248,7 +261,7 @@
     }
 
     async function loadMessages(convId, visitorName) {
-      convMetaVisitor.textContent = visitorName || 'Odwiedzajacy';
+      convMetaVisitor.textContent = visitorName || i18nText("i18n-history-visitor");
       const { data: msgs, error } = await supabase
         .from('messages')
         .select('*')
@@ -257,7 +270,8 @@
 
       convMessages.innerHTML = '';
       if (!msgs?.length) {
-        convMessages.innerHTML = '<div class="empty-state"><div class="empty-state-text">Brak wiadomosci</div></div>';
+        convMessages.innerHTML = '<div class="empty-state"><div class="empty-state-text" data-i18n="history.messages.empty"></div></div>';
+        translateDynamicContent();
         return;
       }
       msgs.forEach(msg => {
@@ -272,6 +286,7 @@
     loadConversations();
   </script>
 
+  <script type="module" src="../js/auth-bootstrap.js"></script>
   <script type="module" src="../js/sidebar-loader.js"></script>
 
   <!-- Particles -->

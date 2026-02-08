@@ -1867,9 +1867,52 @@
         </section>
     </main>
 
+    <script type="module" src="/js/language.js"></script>
+
     <!-- SYSTEM AUTORYZACJI I INTERAKCJI -->
     <script>
     // ========== SYSTEM AUTORYZACJI ==========
+    let isLoggedIn = false;
+
+    function getLanguageApi() {
+        return window.DaVeriLanguage;
+    }
+
+    function getActiveLanguage() {
+        return getLanguageApi()?.getCurrentLanguage?.() || document.documentElement.lang || 'en';
+    }
+
+    function buildLangUrl(pathname, hash = '') {
+        const langApi = getLanguageApi();
+        const hashValue = hash ? (hash.startsWith('#') ? hash : `#${hash}`) : '';
+        if (langApi?.buildLanguageUrl) {
+            return langApi.buildLanguageUrl(getActiveLanguage(), { pathname, search: '', hash: hashValue });
+        }
+        const normalizedPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
+        return `/${getActiveLanguage()}${normalizedPath}${hashValue}`;
+    }
+
+    function updateLandingLinks() {
+        const dashboardUrl = buildLangUrl('/dashboard/');
+        const botsUrl = buildLangUrl('/dashboard/', '#boty');
+        const filesUrl = buildLangUrl('/dashboard/', '#pliki');
+
+        document.querySelectorAll('#user-dropdown-menu a[href="/dashboard/"]').forEach(link => {
+            link.href = dashboardUrl;
+        });
+        document.querySelectorAll('#user-dropdown-menu a[href="/dashboard/#boty"]').forEach(link => {
+            link.href = botsUrl;
+        });
+        document.querySelectorAll('#user-dropdown-menu a[href="/dashboard/#pliki"]').forEach(link => {
+            link.href = filesUrl;
+        });
+
+        const welcomeDashboard = document.querySelector('.welcome-btn-primary[href="/dashboard/"]');
+        if (welcomeDashboard) {
+            welcomeDashboard.href = dashboardUrl;
+        }
+    }
+
     async function checkSession() {
         console.log('🔐 Strona główna: sprawdzam sesję...');
         
@@ -1885,6 +1928,7 @@
                 
                 if (data.logged) {
                     console.log('✅ ZALOGOWANY jako:', data.user.email);
+                    isLoggedIn = true;
                     
                     // Aktualizuj navbar dla zalogowanego użytkownika
                     updateNavbarForLoggedUser(data.user);
@@ -1900,6 +1944,7 @@
             }
             
             // Nie zalogowany - ustaw domyślny stan
+            isLoggedIn = false;
             setDefaultState();
             return false;
             
@@ -1959,6 +2004,8 @@
                 }
             });
         }
+
+        updateLandingLinks();
     }
     
     function updateCTAButton(user) {
@@ -1969,7 +2016,7 @@
             ctaText.textContent = 'Przejdź do dashboardu';
             ctaBtn.onclick = (e) => {
                 e.preventDefault();
-                window.location.href = '/dashboard/';
+                window.location.href = buildLangUrl('/dashboard/');
             };
         }
     }
@@ -2029,7 +2076,7 @@
                     </div>
                 </div>
                 <div class="welcome-actions">
-                    <a href="/dashboard/" class="welcome-btn welcome-btn-primary">Dashboard</a>
+                    <a href="${buildLangUrl('/dashboard/')}" class="welcome-btn welcome-btn-primary">Dashboard</a>
                     <a href="https://api.daveri.io/auth/logout" class="welcome-btn welcome-btn-secondary">Wyloguj</a>
                 </div>
             </div>
@@ -2053,6 +2100,22 @@
         
         // Sprawdź sesję po załadowaniu
         setTimeout(checkSession, 500);
+
+        const languageSelect = document.querySelector('[data-language-selector]');
+        if (languageSelect) {
+            languageSelect.value = getActiveLanguage();
+            languageSelect.addEventListener('change', (event) => {
+                const lang = event.target.value;
+                const langApi = getLanguageApi();
+                if (langApi?.setCurrentLanguage) {
+                    langApi.setCurrentLanguage(lang, { updateUrl: false });
+                }
+                const targetPath = isLoggedIn ? '/dashboard/' : '/login/';
+                window.location.href = buildLangUrl(targetPath);
+            });
+        }
+
+        updateLandingLinks();
         
         // Obsługa nawigacji
         const navbar = document.getElementById("navbar");
@@ -2076,7 +2139,7 @@
                     
                     if (response.ok) {
                         // Już zalogowany - idź do dashboardu
-                        window.location.href = '/dashboard/';
+                        window.location.href = buildLangUrl('/dashboard/');
                     } else {
                         // Nie zalogowany - przekieruj do logowania
                         window.location.href = 'https://api.daveri.io/auth/google';
@@ -2086,6 +2149,10 @@
                 }
             });
         });
+    });
+
+    document.addEventListener('language:changed', () => {
+        updateLandingLinks();
     });
     
     // ========== CHATBOT WIDGET ==========

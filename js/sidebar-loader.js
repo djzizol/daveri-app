@@ -4,6 +4,18 @@ const SIDEBAR_STYLE_ID = "daveri-sidebar-style";
 const SIDEBAR_ROOT_ID = "daveri_sidebar";
 const SIDEBAR_TEMPLATE_URL = new URL("../components/sidebar.html", import.meta.url);
 
+const waitForAuthReady = async () => {
+  const authReady = window?.DaVeriAuth?.ready;
+  if (authReady && typeof authReady.then === "function") {
+    try {
+      await authReady;
+    } catch (error) {
+      return false;
+    }
+  }
+  return true;
+};
+
 const loadSidebarTemplate = async () => {
   const response = await fetch(SIDEBAR_TEMPLATE_URL);
   if (!response.ok) {
@@ -45,6 +57,11 @@ const insertSidebarRoot = (root) => {
 };
 
 const mountSidebar = async () => {
+  const authReady = await waitForAuthReady();
+  if (!authReady) {
+    return;
+  }
+
   if (document.getElementById(SIDEBAR_ROOT_ID)) {
     return;
   }
@@ -57,6 +74,7 @@ const mountSidebar = async () => {
   ensureSidebarStyle(template.style);
   insertSidebarRoot(template.root);
   await initSidebar(template.root);
+  document.dispatchEvent(new CustomEvent("sidebar:mounted"));
 };
 
 if (document.readyState === "loading") {
