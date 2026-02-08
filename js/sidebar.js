@@ -198,7 +198,7 @@ const loadUser = async (root, authEndpoint) => {
 export const initSidebar = async (root, options = {}) => {
   if (!root) return;
   const routes = { ...DEFAULT_ROUTES, ...options.routes };
-  const authEndpoint = options.authEndpoint || "/auth/me";
+  const authEndpoint = options.authEndpoint || "https://api.daveri.io/auth/me";
 
   const sidebar = root.querySelector(".sidebar");
   if (!sidebar) return;

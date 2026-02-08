@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Boty - DaVeri</title>
+  <title data-i18n="bots.page.title"></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -145,15 +145,15 @@
       <div id="bots" hidden></div>
       <div class="page" id="boty_root" data-user-id="CURRENT USER">
         <div class="page-header">
-          <div class="page-title">Boty</div>
-          <div class="page-subtitle">Twoje boty AI. Wybierz bota, aby go skonfigurowac lub utworz nowego.</div>
+          <div class="page-title" data-i18n="bots.page.heading"></div>
+          <div class="page-subtitle" data-i18n="bots.page.subtitle"></div>
         </div>
         <div class="bot-grid" id="botGrid">
           <div class="bot-card-create" id="createBotBtn" onclick="openCreatePopup()">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            <span>Stworz nowego bota</span>
+            <span data-i18n="bots.actions.create"></span>
           </div>
         </div>
       </div>
@@ -170,6 +170,12 @@
     /* boty.html communicates with popup-create-bot.html and popup-edit-bot.html
        via Bubble's JS bridge: window.bubble_fn_j2b_action / window.bubble_fn_j2b_payload
        Bubble listens for actions and shows/hides the popup HTML containers accordingly. */
+
+    function translateDynamicContent() {
+      if (window.DaVeriI18n?.translatePage) {
+        window.DaVeriI18n.translatePage();
+      }
+    }
 
     function sendToBubble(action, payload) {
       const payloadStr = payload === undefined || payload === null ? ""
@@ -231,9 +237,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
-        <span>Stworz nowego bota</span>
+        <span data-i18n="bots.actions.create"></span>
       `;
       grid.appendChild(createCard);
+      translateDynamicContent();
 
       for (const bot of bots) {
         const card = document.createElement('div');
@@ -242,13 +249,23 @@
         card.onclick = () => openEditPopup(bot.id);
 
         const statusRaw = (bot.status || (bot.is_active !== false ? 'active' : 'draft')).toLowerCase();
-        const statusMap = { active: { cls: 'online', label: 'Aktywny' }, draft: { cls: 'offline', label: 'Szkic' }, disabled: { cls: 'offline', label: 'Wylaczony' } };
+        const statusMap = {
+          active: { cls: 'online', key: 'bots.status.active' },
+          draft: { cls: 'offline', key: 'bots.status.draft' },
+          disabled: { cls: 'offline', key: 'bots.status.disabled' }
+        };
         const st = statusMap[statusRaw] || statusMap.draft;
+        const botNameMarkup = bot.name
+          ? `<div class="bot-name">${bot.name}</div>`
+          : `<div class="bot-name" data-i18n="bots.card.unnamed"></div>`;
+        const botModelMarkup = bot.model
+          ? `<div class="bot-model">${bot.model}</div>`
+          : `<div class="bot-model" data-i18n="bots.model.default"></div>`;
 
         card.innerHTML = `
           <div class="bot-status">
             <div class="bot-status-dot ${st.cls}"></div>
-            <span style="color: var(--dv-muted)">${st.label}</span>
+            <span style="color: var(--dv-muted)" data-i18n="${st.key}"></span>
           </div>
           <div class="bot-card-header">
             <div class="bot-avatar">
@@ -258,28 +275,30 @@
               }
             </div>
             <div>
-              <div class="bot-name">${bot.name || 'Bot bez nazwy'}</div>
-              <div class="bot-model">${bot.model || 'chatekai-1.5'}</div>
+              ${botNameMarkup}
+              ${botModelMarkup}
             </div>
           </div>
           <div class="bot-stats">
             <div>
-              <div class="bot-stat-label">Rozmowy</div>
+              <div class="bot-stat-label" data-i18n="bots.stats.conversations"></div>
               <div class="bot-stat-value">${bot.conversation_count || 0}</div>
             </div>
             <div>
-              <div class="bot-stat-label">Pliki</div>
+              <div class="bot-stat-label" data-i18n="bots.stats.files"></div>
               <div class="bot-stat-value">${bot.file_count || 0}</div>
             </div>
           </div>
         `;
         grid.appendChild(card);
+        translateDynamicContent();
       }
     }
 
     loadBots();
   </script>
 
+  <script type="module" src="../js/auth-bootstrap.js"></script>
   <script type="module" src="../js/sidebar-loader.js"></script>
 
   <!-- Sidebar Observer -->
