@@ -1500,11 +1500,11 @@
             </div>
             
             <div class="nav-menu">
-                <a href="https://daveri.io/plan" class="menu-item">Plany</a>
-                <a href="https://daveri.io/jak_to_dzia_a" class="menu-item">Jak to działa?</a>
-                <a href="https://daveri.io/kontakt" class="menu-item">Kontakt</a>
-                <a href="https://daveri.io/polityka" class="menu-item">Polityka prywatnośći</a>
-                <a href="https://daveri.io/regulamin" class="menu-item">Regulamin</a>
+                <a href="https://daveri.io/plan" class="menu-item" data-i18n="nav.plans"></a>
+                <a href="https://daveri.io/jak_to_dzia_a" class="menu-item" data-i18n="nav.howItWorks"></a>
+                <a href="https://daveri.io/kontakt" class="menu-item" data-i18n="nav.contact"></a>
+                <a href="https://daveri.io/polityka" class="menu-item" data-i18n="nav.privacy"></a>
+                <a href="https://daveri.io/regulamin" class="menu-item" data-i18n="nav.terms"></a>
             </div>
             
             <div class="btn-area">
@@ -1517,9 +1517,7 @@
                     <option value="pt">PT</option>
                 </select>
                 <!-- Przycisk logowania (domyślnie widoczny) -->
-                <button class="nav-btn" id="login-btn" onclick="window.location.href='https://api.daveri.io/auth/google'">
-                    Logowanie
-                </button>
+                <button class="nav-btn" id="login-btn" onclick="window.location.href='https://api.daveri.io/auth/google'" data-i18n="nav.login"></button>
                 
                 <!-- Dropdown dla zalogowanego użytkownika (domyślnie ukryty) -->
                 <div id="user-dropdown" style="display: none;">

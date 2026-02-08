@@ -1,1 +1,8 @@
-{}
+{
+  "nav.plans": "Plany",
+  "nav.howItWorks": "Jak to działa?",
+  "nav.contact": "Kontakt",
+  "nav.privacy": "Polityka prywatności",
+  "nav.terms": "Regulamin",
+  "nav.login": "Logowanie"
+}
