@@ -2145,20 +2145,6 @@
         // Sprawdź sesję po załadowaniu
         setTimeout(checkSession, 500);
 
-        const languageSelect = document.querySelector('[data-language-selector]');
-        if (languageSelect) {
-            languageSelect.value = getActiveLanguage();
-            languageSelect.addEventListener('change', (event) => {
-                const lang = event.target.value;
-                const langApi = getLanguageApi();
-                if (langApi?.setCurrentLanguage) {
-                    langApi.setCurrentLanguage(lang, { updateUrl: false });
-                }
-                const targetPath = isLoggedIn ? '/dashboard/' : '/login/';
-                window.location.href = buildLangUrl(targetPath);
-            });
-        }
-
         updateLandingLinks();
         
         // Obsługa nawigacji

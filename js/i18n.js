@@ -119,8 +119,28 @@ export const initI18n = async () => {
   document.querySelectorAll("[data-language-selector]").forEach((select) => {
     if (select.dataset.languageWired) return;
     select.dataset.languageWired = "true";
-    select.addEventListener("change", (event) => {
-      setLanguage(event.target.value);
+    select.addEventListener("change", async (event) => {
+      const nextLanguage = event.target.value;
+      const shouldReload = select.dataset.languageReload === "true";
+      if (shouldReload) {
+        const langApi = window?.DaVeriLanguage;
+        const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        const targetUrl = langApi?.buildLanguageUrl
+          ? langApi.buildLanguageUrl(nextLanguage, {
+              pathname: window.location.pathname,
+              search: window.location.search,
+              hash: window.location.hash,
+            })
+          : "";
+        await setLanguage(nextLanguage);
+        if (targetUrl && targetUrl !== currentUrl) {
+          window.location.href = targetUrl;
+        } else {
+          window.location.reload();
+        }
+        return;
+      }
+      setLanguage(nextLanguage);
     });
   });
 };
