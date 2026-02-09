@@ -28,7 +28,7 @@
   --sb-muted2:#6a6a6a;
   
   /* ===== BRAND GRADIENTS ===== */
-  --sb-grad:linear-gradient(135deg, #fb7185 0%, #a855f7 48%, #60a5fa 100%);
+  --sb-grad:linear-gradient(135deg, #8b5cf6 0%, #ec4899 48%, #3b82f6 100%);
   --sb-gradGlow:0 0 12px rgba(168,85,247,.3);
   
   /* ===== ACCENT ===== */
@@ -56,6 +56,7 @@
   --sb-text:#1a1a1a;
   --sb-muted:#5a5a5a;
   --sb-muted2:#8a8a8a;
+  --sb-grad:linear-gradient(135deg, #7c3aed 0%, #db2777 48%, #2563eb 100%);
   color:#1a1a1a;
 }
 /* Light mode - specific element overrides */
@@ -82,7 +83,10 @@
   inset:0 auto 0 0;
   width:260px;
   height:100vh;
-  background: var(--sb-bg);
+  background:
+    radial-gradient(120% 84% at 16% -8%, rgba(139,92,246,.22) 0%, rgba(139,92,246,0) 62%),
+    radial-gradient(102% 78% at 86% 108%, rgba(59,130,246,.16) 0%, rgba(59,130,246,0) 62%),
+    var(--sb-bg);
   border-right:1px solid rgba(255,255,255,0.05);
   display:flex;
   flex-direction:column;
@@ -90,6 +94,12 @@
   z-index:100;
   overflow:hidden;
   color:var(--sb-text);
+}
+[data-theme="light"] #daveri_sidebar .sidebar{
+  background:
+    radial-gradient(120% 86% at 16% -8%, rgba(124,58,237,.12) 0%, rgba(124,58,237,0) 62%),
+    radial-gradient(104% 78% at 86% 110%, rgba(37,99,235,.10) 0%, rgba(37,99,235,0) 62%),
+    var(--sb-bg);
 }
 #daveri_sidebar .sidebar.collapsed{width:72px;}
 #daveri_sidebar .sidebar.hidden{transform:translateX(-100%);}
@@ -250,7 +260,7 @@
   background:rgba(255,255,255,0.04);
 }
 #daveri_sidebar .nav-item.active {
-  background:rgba(124,58,237,0.18);
+  background:linear-gradient(135deg, rgba(139,92,246,.24), rgba(236,72,153,.20), rgba(59,130,246,.24));
   color:#ffffff;
 }
 
@@ -319,7 +329,7 @@
   width:2px;
   height:20px;
   border-radius:999px;
-  background:#ffffff;
+  background:var(--sb-grad);
   opacity:0.9;
 }
 
@@ -439,9 +449,9 @@
   box-shadow:0 2px 8px rgba(168,85,247,.3);
   }
   [data-theme="light"] #daveri_sidebar .theme-btn.active{
-  background:var(--sb-text);
+  background:var(--sb-grad);
   color:#fff;
-  box-shadow:0 2px 6px rgba(0,0,0,.15);
+  box-shadow:0 2px 8px rgba(88,95,205,.24);
   }
 #daveri_sidebar .sidebar.collapsed .theme-toggle-section{
   padding:0;

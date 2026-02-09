@@ -27,6 +27,18 @@
   --bg-primary: var(--main-bg);
   --bg-secondary: #151821;
   --bg-tertiary: #1c1f26;
+  --daveri-accent-gradient: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.95) 0%,
+    rgba(236, 72, 153, 0.92) 48%,
+    rgba(59, 130, 246, 0.95) 100%
+  );
+  --daveri-accent-gradient-soft: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.24) 0%,
+    rgba(236, 72, 153, 0.2) 48%,
+    rgba(59, 130, 246, 0.24) 100%
+  );
 }
 
 [data-theme="light"] {
@@ -50,6 +62,18 @@
   --bg-primary: #f4f5f9;
   --bg-secondary: #eceef4;
   --bg-tertiary: #e4e7ef;
+  --daveri-accent-gradient: linear-gradient(
+    135deg,
+    rgba(124, 58, 237, 0.95) 0%,
+    rgba(219, 39, 119, 0.92) 48%,
+    rgba(37, 99, 235, 0.95) 100%
+  );
+  --daveri-accent-gradient-soft: linear-gradient(
+    135deg,
+    rgba(124, 58, 237, 0.16) 0%,
+    rgba(219, 39, 119, 0.14) 48%,
+    rgba(37, 99, 235, 0.16) 100%
+  );
 }
 
 .app-layout-root {
@@ -117,9 +141,19 @@ body.app-layout-root .card-icon img {
 
 /* Sidebar hierarchy */
 #daveri_sidebar .sidebar {
-  background: var(--sidebar-bg) !important;
+  background:
+    radial-gradient(110% 82% at 14% -6%, rgba(139, 92, 246, 0.2) 0%, rgba(139, 92, 246, 0) 60%),
+    radial-gradient(96% 78% at 88% 108%, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0) 62%),
+    var(--sidebar-bg) !important;
   border-right: 1px solid var(--border-subtle) !important;
   z-index: 100 !important;
+}
+
+[data-theme="light"] #daveri_sidebar .sidebar {
+  background:
+    radial-gradient(120% 86% at 16% -8%, rgba(124, 58, 237, 0.12) 0%, rgba(124, 58, 237, 0) 62%),
+    radial-gradient(104% 78% at 86% 110%, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0) 62%),
+    var(--sidebar-bg) !important;
 }
 
 #daveri_sidebar .nav {
@@ -180,7 +214,7 @@ body.app-layout-root .card-icon img {
 }
 
 #daveri_sidebar .nav-item.active {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--daveri-accent-gradient-soft);
   box-shadow: none;
   position: relative;
 }
@@ -192,7 +226,7 @@ body.app-layout-root .card-icon img {
   top: 8px;
   bottom: 8px;
   width: 2px;
-  background: var(--accent-primary);
+  background: var(--daveri-accent-gradient);
 }
 
 #daveri_sidebar .sidebar-icon {
@@ -228,14 +262,15 @@ body.app-layout-root .card-icon img {
 }
 
 #daveri_sidebar .theme-btn.active {
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: none;
+  background: var(--daveri-accent-gradient);
+  box-shadow: 0 8px 22px rgba(98, 65, 210, 0.28);
+  color: #fff;
 }
 
 [data-theme="light"] #daveri_sidebar .theme-btn.active {
-  background: rgba(15, 23, 42, 0.14);
-  color: rgba(15, 23, 42, 0.94);
-  box-shadow: none;
+  background: var(--daveri-accent-gradient);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(73, 82, 202, 0.2);
 }
 
 [data-theme="light"] #daveri_sidebar .nav-item {
@@ -244,7 +279,7 @@ body.app-layout-root .card-icon img {
 
 [data-theme="light"] #daveri_sidebar .nav-item:hover,
 [data-theme="light"] #daveri_sidebar .nav-item.active {
-  background: rgba(15, 23, 42, 0.06);
+  background: var(--daveri-accent-gradient-soft);
   color: rgba(15, 23, 42, 0.94);
 }
 
@@ -572,6 +607,31 @@ body.app-layout-root .card-icon img {
 
 #aiWindow.ai-window.is-collapsed .chat-minimize {
   opacity: 0.9;
+}
+
+#aiWindow.ai-window.is-collapsed .chat-input-row {
+  gap: 6px;
+  padding: 10px 10px 10px 46px;
+}
+
+#aiWindow.ai-window.is-collapsed .chat-minimize {
+  left: 10px;
+  right: auto;
+}
+
+#aiWindow.ai-window.is-collapsed .chat-input-row .ai-icon-btn {
+  display: none;
+}
+
+#aiWindow.ai-window.is-collapsed .chat-input {
+  height: 36px;
+  min-height: 36px;
+  padding: 8px 2px;
+}
+
+#aiWindow.ai-window.is-collapsed .send-button {
+  width: 34px;
+  height: 34px;
 }
 
 [data-theme="light"] #aiWindow.ai-window.is-collapsed .chat-minimize {
