@@ -628,10 +628,15 @@ body.app-layout-root .card-icon img {
 }
 
 .powered-by img {
-  width: 14px;
-  height: 14px;
+  width: 58px;
+  height: auto;
   object-fit: contain;
   display: block;
+}
+
+.powered-by .powered-by-brand {
+  width: 58px;
+  height: auto;
 }
 
 .powered-by span {

@@ -44,24 +44,17 @@ const createAIWindowNode = () => {
   const poweredBy = document.createElement("div");
   poweredBy.className = "powered-by";
 
-  const poweredLogo = document.createElement("img");
-  poweredLogo.src = "/assets/icons/logo.svg";
-  poweredLogo.alt = "";
-  poweredLogo.width = 14;
-  poweredLogo.height = 14;
-
-  const poweredAi = document.createElement("img");
-  poweredAi.src = "/assets/icons/ai.svg";
-  poweredAi.alt = "";
-  poweredAi.width = 14;
-  poweredAi.height = 14;
-
   const poweredText = document.createElement("span");
-  poweredText.textContent = "Powered by DaVeri AI";
+  poweredText.textContent = "Powered by";
 
-  poweredBy.appendChild(poweredLogo);
-  poweredBy.appendChild(poweredAi);
+  const poweredBrand = document.createElement("img");
+  poweredBrand.src = "/assets/icons/poweredby.svg";
+  poweredBrand.alt = "DaVeri";
+  poweredBrand.className = "powered-by-brand";
+  poweredBrand.decoding = "async";
+
   poweredBy.appendChild(poweredText);
+  poweredBy.appendChild(poweredBrand);
   footer.appendChild(poweredBy);
 
   const minimize = document.createElement("button");
