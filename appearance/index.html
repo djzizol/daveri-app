@@ -3603,73 +3603,122 @@
 
     #dv-configurator .appearance-layout {
       display: grid;
-      grid-template-columns: 340px 360px minmax(0, 1fr);
-      grid-template-rows: auto 1fr;
-      gap: 40px;
+      grid-template-columns: minmax(430px, 1.1fr) 360px minmax(520px, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 22px 34px;
       align-items: start;
-      height: calc(100vh - 132px);
-      min-height: 0;
-      overflow: visible;
+      height: calc(100vh - 134px);
+      min-height: 700px;
+      overflow: hidden;
       background: transparent;
     }
 
-    #dv-configurator .appearance-sidebar {
-      width: 340px !important;
-      min-width: 340px !important;
-      max-width: 340px !important;
-      height: calc(100vh - 80px);
-      overflow-y: auto;
-      overflow-x: hidden;
-      border-right: none;
-      padding-right: 4px;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
-    }
-
-    #dv-configurator .appearance-sidebar::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    #dv-configurator .appearance-sidebar::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.16);
-      border-radius: 999px;
-    }
-
     #dv-configurator .steps-nav {
+      grid-column: 1 / -1;
+      grid-row: 1;
       display: flex;
-      flex-direction: column;
-      gap: 0;
-      margin-bottom: 16px;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+      padding: 2px 0 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    #dv-configurator .steps-nav::-webkit-scrollbar {
+      display: none;
     }
 
     #dv-configurator .step-item {
-      width: 100%;
+      flex: 1 1 0;
+      min-width: 174px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
       text-align: left;
       position: relative;
-      padding: 10px 14px;
-      border-radius: 8px;
+      padding: 10px 12px;
+      border-radius: 10px;
       cursor: pointer;
       color: var(--dv-text2);
       border: 1px solid rgba(255, 255, 255, 0.05);
       background: transparent;
-      font-size: 13px;
-      line-height: 1.2;
       transition: all 120ms ease;
     }
 
+    #dv-configurator .step-badge {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--dv-text2);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex: 0 0 24px;
+      transition: all 120ms ease;
+    }
+
+    #dv-configurator .step-copy {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      gap: 2px;
+    }
+
+    #dv-configurator .step-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: currentColor;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #dv-configurator .step-caption {
+      font-size: 11px;
+      color: var(--dv-muted2);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     #dv-configurator .step-item.active {
-      background: rgba(139, 92, 246, 0.08);
       border: 1px solid rgba(139, 92, 246, 0.35);
+      background: rgba(139, 92, 246, 0.08);
       color: #fff;
     }
 
     #dv-configurator .step-item.completed {
       border: 1px solid rgba(139, 92, 246, 0.25);
       color: var(--dv-text);
+      background: rgba(255, 255, 255, 0.02);
     }
 
     #dv-configurator .step-item.upcoming {
       color: var(--dv-text2);
+    }
+
+    #dv-configurator .step-item.active .step-badge {
+      border-color: rgba(139, 92, 246, 0.55);
+      background: rgba(139, 92, 246, 0.2);
+      color: #fff;
+    }
+
+    #dv-configurator .step-item.completed .step-badge {
+      border-color: rgba(139, 92, 246, 0.45);
+      background: rgba(139, 92, 246, 0.14);
+      color: #fff;
+    }
+
+    #dv-configurator .step-item.active .step-caption,
+    #dv-configurator .step-item.completed .step-caption {
+      color: rgba(226, 232, 240, 0.82);
     }
 
     #dv-configurator .step-item:hover {
@@ -3677,8 +3726,8 @@
     }
 
     #dv-configurator .step-connector {
+      flex: 0 0 clamp(22px, 2vw, 34px);
       height: 2px;
-      margin: 6px 0;
       border-radius: 2px;
       background: rgba(255, 255, 255, 0.06);
       position: relative;
@@ -3698,23 +3747,76 @@
       );
     }
 
+    #dv-configurator .appearance-sidebar {
+      grid-column: 1;
+      grid-row: 2;
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: none !important;
+      height: calc(100vh - 214px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      border: none;
+      padding-right: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+    }
+
+    #dv-configurator .appearance-sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #dv-configurator .appearance-sidebar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+    }
+
+    #dv-configurator .appearance-sidebar .preset-bar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      height: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      background: #111217;
+      padding: 4px;
+      gap: 4px;
+      margin: 0 0 14px;
+    }
+
+    #dv-configurator .appearance-sidebar .preset-segment {
+      margin: 0;
+      border: none;
+      border-radius: 8px;
+      height: 30px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    #dv-configurator .appearance-sidebar .preset-segment.active {
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      color: #fff;
+    }
+
     #dv-configurator .step-content {
-      margin-top: 16px;
+      margin-top: 0;
       padding-top: 0;
       padding-bottom: 40px;
     }
 
     #dv-configurator .appearance-sidebar .config-accordion {
-      gap: 12px;
+      gap: 14px;
     }
 
     #dv-configurator .appearance-sidebar .setting-card {
       padding: 0;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
       background: #181a20;
       position: relative;
       overflow: hidden;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.26);
       transition: all 120ms ease;
     }
 
@@ -3736,12 +3838,17 @@
       pointer-events: none;
     }
 
+    #dv-configurator .appearance-sidebar .setting-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+    }
+
     #dv-configurator .appearance-sidebar .setting-card[data-step-hidden="true"] {
       display: none !important;
     }
 
     #dv-configurator .appearance-sidebar .section-header {
-      padding: 12px 14px;
+      padding: 14px 16px;
       border-bottom: 1px solid transparent;
       transition: all 120ms ease;
     }
@@ -3754,8 +3861,20 @@
       border-bottom-color: rgba(255, 255, 255, 0.08);
     }
 
+    #dv-configurator .appearance-sidebar .section-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    #dv-configurator .appearance-sidebar .section-icon i {
+      color: #c7ccd8;
+    }
+
     #dv-configurator .appearance-sidebar .section-content {
-      padding: 14px;
+      padding: 14px 16px 16px;
     }
 
     #dv-configurator .appearance-sidebar .setting-card .section-title h3 {
@@ -3768,22 +3887,26 @@
       color: var(--dv-muted);
     }
 
-    #dv-configurator .appearance-preview-grid {
-      display: contents;
+    #dv-configurator .preview-area.appearance-preview-grid {
+      grid-column: 2 / 4;
+      grid-row: 2;
+      display: grid;
+      grid-template-columns: 360px minmax(520px, 1fr);
+      gap: 32px;
+      align-items: start;
+      min-width: 0;
+      min-height: 0;
+      padding: 0;
+      background: transparent;
     }
 
-    #dv-configurator .live-preview-section {
-      grid-column: 2;
-      grid-row: 1 / span 2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-width: 0;
+    #dv-configurator .preview-section {
+      height: auto;
+      min-height: 0;
     }
 
     #dv-configurator .live-preview-section .section-label {
       margin-bottom: 10px;
-      width: 100%;
       text-align: left;
     }
 
@@ -3792,8 +3915,8 @@
       align-items: center;
       justify-content: center;
       width: 100%;
-      height: calc(100vh - 140px);
-      min-height: 520px;
+      height: calc(100vh - 226px);
+      min-height: 540px;
     }
 
     #dv-configurator .chat-live-preview {
@@ -3829,15 +3952,18 @@
       margin: 0 !important;
     }
 
+    #dv-configurator .preview-device-column {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
     #dv-configurator .device-toggle {
-      grid-column: 3;
-      grid-row: 1;
       display: flex;
       gap: 8px;
+      margin: 0 0 14px;
       align-items: center;
       justify-content: flex-start;
-      margin-top: 0;
-      margin-bottom: 16px;
     }
 
     #dv-configurator .device-toggle .device-button {
@@ -3867,31 +3993,44 @@
       background: rgba(255, 255, 255, 0.04);
     }
 
+    #dv-configurator .device-preview-stage {
+      height: calc(100vh - 246px);
+      min-height: 540px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #181a20;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
     #dv-configurator .device-preview-mode {
-      grid-column: 3;
-      grid-row: 2;
-      min-width: 0;
       width: 100%;
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
-    }
-
-    #dv-configurator[data-device-preview="desktop"] .device-preview-mobile {
-      display: none;
-    }
-
-    #dv-configurator[data-device-preview="mobile"] .device-preview-desktop {
-      display: none;
+      align-items: center;
+      justify-content: center;
     }
 
     #dv-configurator .device-preview-desktop .section-label,
     #dv-configurator .device-preview-mobile .section-label {
       margin-bottom: 10px;
+      width: 100%;
+      text-align: center;
+    }
+
+    #dv-configurator[data-device-preview="desktop"] .device-preview-mobile {
+      display: none !important;
+    }
+
+    #dv-configurator[data-device-preview="mobile"] .device-preview-desktop {
+      display: none !important;
     }
 
     #dv-configurator .device-preview-desktop .desktop-preview {
-      width: 520px;
+      width: min(520px, 100%);
       height: 340px;
       border-radius: 14px;
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -3903,6 +4042,13 @@
       display: flex;
       align-items: stretch;
       justify-content: stretch;
+    }
+
+    #dv-configurator .device-preview-desktop .monitor-wrapper {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
     }
 
     #dv-configurator .device-preview-desktop .monitor-frame {
@@ -3924,6 +4070,7 @@
     #dv-configurator .device-preview-mobile .mobile-column {
       width: 260px;
       height: 520px;
+      padding: 0;
       display: flex;
       align-items: stretch;
       justify-content: center;
@@ -3985,83 +4132,67 @@
       box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.42), 0 0 0 4px rgba(139, 92, 246, 0.18);
     }
 
-    @media (max-width: 1560px) {
+    @media (max-width: 1700px) {
       #dv-configurator .appearance-layout {
-        grid-template-columns: 340px 340px minmax(300px, 1fr);
-        gap: 28px;
+        grid-template-columns: minmax(380px, 1fr) 340px minmax(460px, 1fr);
+        gap: 20px 24px;
+      }
+
+      #dv-configurator .preview-area.appearance-preview-grid {
+        grid-template-columns: 340px minmax(420px, 1fr);
+        gap: 24px;
       }
     }
 
-    @media (max-width: 1280px) {
+    @media (max-width: 1380px) {
       #dv-configurator .appearance-layout {
-        grid-template-columns: 340px minmax(0, 1fr);
+        grid-template-columns: 1fr;
         grid-template-rows: auto auto auto;
-        gap: 20px;
-        height: auto;
-      }
-
-      #dv-configurator .live-preview-section {
-        grid-column: 2;
-        grid-row: 1;
-      }
-
-      #dv-configurator .device-toggle {
-        grid-column: 2;
-        grid-row: 2;
-      }
-
-      #dv-configurator .device-preview-mode {
-        grid-column: 2;
-        grid-row: 3;
-      }
-
-      #dv-configurator .chat-preview-wrapper {
         height: auto;
         min-height: 0;
+        overflow: visible;
       }
 
-      #dv-configurator .device-preview-desktop .desktop-preview {
-        width: min(520px, 100%);
+      #dv-configurator .appearance-sidebar {
+        grid-column: 1;
+        grid-row: 2;
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        padding-right: 0;
+      }
+
+      #dv-configurator .preview-area.appearance-preview-grid {
+        grid-column: 1;
+        grid-row: 3;
+        grid-template-columns: 360px minmax(0, 1fr);
+      }
+
+      #dv-configurator .chat-preview-wrapper,
+      #dv-configurator .device-preview-stage {
+        height: auto;
+        min-height: 540px;
       }
     }
 
     @media (max-width: 1080px) {
-      #dv-configurator .appearance-layout {
+      #dv-configurator .preview-area.appearance-preview-grid {
         grid-template-columns: 1fr;
-        grid-template-rows: auto;
         gap: 16px;
-        height: auto;
       }
 
-      #dv-configurator .appearance-sidebar {
-        width: 100% !important;
-        min-width: 0 !important;
-        max-width: none !important;
-        height: auto;
-        max-height: calc(100vh - 80px);
-      }
-
-      #dv-configurator .live-preview-section,
-      #dv-configurator .device-toggle,
-      #dv-configurator .device-preview-mode {
-        grid-column: 1;
-        grid-row: auto;
-      }
-
-      #dv-configurator .chat-preview-wrapper {
+      #dv-configurator .chat-preview-wrapper,
+      #dv-configurator .device-preview-stage {
+        min-height: 0;
         height: auto;
       }
 
       #dv-configurator .chat-live-preview {
-        width: 100% !important;
-        min-width: 0;
-        max-width: 360px;
         margin: 0 auto;
       }
 
-      #dv-configurator .device-preview-desktop .monitor-wrapper,
-      #dv-configurator .device-preview-mobile .mobile-column {
-        margin: 0 auto;
+      #dv-configurator .device-preview-desktop .desktop-preview {
+        width: min(520px, 100%);
       }
     }
   </style>
@@ -4107,6 +4238,55 @@
         </header>
         <!-- Main Content Area - FULL HEIGHT CONFIGURATOR LEFT -->
         <div class="content-area appearance-layout">
+          <nav class="steps-nav steps-nav-top" aria-label="Appearance Builder Steps">
+            <button type="button" class="step-item active" data-step="layout">
+              <span class="step-badge">1</span>
+              <span class="step-copy">
+                <span class="step-title">Layout</span>
+                <span class="step-caption">Ksztalt i typografia</span>
+              </span>
+            </button>
+            <div class="step-connector" aria-hidden="true"></div>
+            <button type="button" class="step-item" data-step="colors">
+              <span class="step-badge">2</span>
+              <span class="step-copy">
+                <span class="step-title">Colors</span>
+                <span class="step-caption">Babelki i tlo</span>
+              </span>
+            </button>
+            <div class="step-connector" aria-hidden="true"></div>
+            <button type="button" class="step-item" data-step="position">
+              <span class="step-badge">3</span>
+              <span class="step-copy">
+                <span class="step-title">Position &amp; Size</span>
+                <span class="step-caption">Osadzenie widgetu</span>
+              </span>
+            </button>
+            <div class="step-connector" aria-hidden="true"></div>
+            <button type="button" class="step-item" data-step="branding">
+              <span class="step-badge">4</span>
+              <span class="step-copy">
+                <span class="step-title">Avatar &amp; Branding</span>
+                <span class="step-caption">Marka i tozsamosc</span>
+              </span>
+            </button>
+            <div class="step-connector" aria-hidden="true"></div>
+            <button type="button" class="step-item" data-step="animations">
+              <span class="step-badge">5</span>
+              <span class="step-copy">
+                <span class="step-title">Animations</span>
+                <span class="step-caption">Ruch i zachowanie</span>
+              </span>
+            </button>
+            <div class="step-connector" aria-hidden="true"></div>
+            <button type="button" class="step-item" data-step="advanced">
+              <span class="step-badge">6</span>
+              <span class="step-copy">
+                <span class="step-title">Advanced</span>
+                <span class="step-caption">Quick replies i dodatki</span>
+              </span>
+            </button>
+          </nav>
           <!-- LEFT - Configurator Panel (FULL HEIGHT) -->
           <div class="config-column appearance-sidebar">
             <!-- Preset Bar inside configurator -->
@@ -4116,19 +4296,6 @@
               <div class="preset-segment" data-preset="sales" data-i18n="appearance.presets.sales"></div>
               <div class="preset-segment" data-preset="support" data-i18n="appearance.presets.support"></div>
             </div>
-            <nav class="steps-nav" aria-label="Appearance Builder Steps">
-              <button type="button" class="step-item active" data-step="layout">Step 1 - Layout</button>
-              <div class="step-connector" aria-hidden="true"></div>
-              <button type="button" class="step-item" data-step="colors">Step 2 - Colors</button>
-              <div class="step-connector" aria-hidden="true"></div>
-              <button type="button" class="step-item" data-step="position">Step 3 - Position &amp; Size</button>
-              <div class="step-connector" aria-hidden="true"></div>
-              <button type="button" class="step-item" data-step="branding">Step 4 - Avatar &amp; Branding</button>
-              <div class="step-connector" aria-hidden="true"></div>
-              <button type="button" class="step-item" data-step="animations">Step 5 - Animations</button>
-              <div class="step-connector" aria-hidden="true"></div>
-              <button type="button" class="step-item" data-step="advanced">Step 6 - Quick Replies &amp; Advanced</button>
-            </nav>
             <section class="config-panel step-content">
               <div class="config-accordion" data-role="accordion">
                 <!-- 1️⃣ KSZTAŁT (okno + dymki) -->
@@ -4727,116 +4894,115 @@
               </div>
             </section>
           </div><!-- /config-column -->
-
-  <!-- RIGHT CANVAS - Single horizontal row: CHAT | PHONE | MONITOR -->
+  <!-- RIGHT CANVAS - Single horizontal row: CHAT | DEVICE -->
   <div class="preview-area appearance-preview-grid">
-    <!-- Desktop Chat Preview - SCALE 0.9 -->
+    <!-- Desktop Chat Preview -->
     <div class="preview-section live-preview-section">
       <div class="section-label" data-i18n="appearance.preview.configurator"></div>
       <div class="chat-preview-wrapper">
-      <div class="work-column chat-live-preview">
-              <div class="chat-scale">
-                <!-- Chat (visible when not minimized) -->
-                <div class="work-chat" id="workChat">
-                  <div class="chat-background-overlay" id="workChatOverlay"></div>
-                  <div class="chat-header">
-                    <div class="chat-brand">
-                      <div class="chat-avatar" id="workChatAvatar" data-i18n="appearance.preview.avatarFallback"></div>
-                      <div class="chat-info">
-                        <div class="chat-name" id="workChatName" data-i18n="appearance.preview.botName"></div>
-                        <div class="chat-status" data-i18n="appearance.preview.online"></div>
-                      </div>
-                    </div>
-                    <div class="chat-actions">
-                      <button class="close-btn" id="workChatCloseBtn">
-                        <i class="fas fa-times"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div class="quick-replies-top" id="workQuickRepliesTop" style="display: none;"></div>
-                  <div class="chat-messages" id="workChatMessages"></div>
-                  <div class="quick-replies-bottom" id="workQuickRepliesBottom"></div>
-                  <div class="chat-input">
-                    <input type="text" data-i18n-placeholder="appearance.preview.inputPlaceholder" placeholder="" id="workChatInput">
-                    <button class="send-btn" id="workSendBtn">
-                      <i class="fas fa-paper-plane"></i>
-                    </button>
-                  </div>
-                  <div class="chat-watermark" id="workChatWatermark">
-                    <span data-i18n="appearance.preview.watermark"
-                      style="background: linear-gradient(135deg, #fb7185 0%, #a855f7 48%, #60a5fa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 600;"></span>
+        <div class="work-column chat-live-preview">
+          <div class="chat-scale">
+            <!-- Chat (visible when not minimized) -->
+            <div class="work-chat" id="workChat">
+              <div class="chat-background-overlay" id="workChatOverlay"></div>
+              <div class="chat-header">
+                <div class="chat-brand">
+                  <div class="chat-avatar" id="workChatAvatar" data-i18n="appearance.preview.avatarFallback"></div>
+                  <div class="chat-info">
+                    <div class="chat-name" id="workChatName" data-i18n="appearance.preview.botName"></div>
+                    <div class="chat-status" data-i18n="appearance.preview.online"></div>
                   </div>
                 </div>
-                <!-- Minimized icon (LEFT side, hidden by default) -->
-                <div class="chat-icon small" id="workChatIcon"
-                  style="display: none; position: absolute; left: 32px; bottom: 32px;">
-                  <i class="fas fa-comment"></i>
+                <div class="chat-actions">
+                  <button class="close-btn" id="workChatCloseBtn">
+                    <i class="fas fa-times"></i>
+                  </button>
                 </div>
-    </div><!-- /chat-scale -->
-    </div><!-- /work-column -->
-    </div><!-- /chat-preview-wrapper -->
+              </div>
+              <div class="quick-replies-top" id="workQuickRepliesTop" style="display: none;"></div>
+              <div class="chat-messages" id="workChatMessages"></div>
+              <div class="quick-replies-bottom" id="workQuickRepliesBottom"></div>
+              <div class="chat-input">
+                <input type="text" data-i18n-placeholder="appearance.preview.inputPlaceholder" placeholder="" id="workChatInput">
+                <button class="send-btn" id="workSendBtn">
+                  <i class="fas fa-paper-plane"></i>
+                </button>
+              </div>
+              <div class="chat-watermark" id="workChatWatermark">
+                <span data-i18n="appearance.preview.watermark"
+                  style="background: linear-gradient(135deg, #fb7185 0%, #a855f7 48%, #60a5fa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 600;"></span>
+              </div>
+            </div>
+            <!-- Minimized icon (LEFT side, hidden by default) -->
+            <div class="chat-icon small" id="workChatIcon"
+              style="display: none; position: absolute; left: 32px; bottom: 32px;">
+              <i class="fas fa-comment"></i>
+            </div>
+          </div><!-- /chat-scale -->
+        </div><!-- /work-column -->
+      </div><!-- /chat-preview-wrapper -->
     </div><!-- /preview-section Konfigurator -->
-    
-    <div class="device-toggle" id="appearanceDeviceToggle">
-      <button type="button" class="device-btn device-button device-toggle-btn active" data-device="desktop">Desktop</button>
-      <button type="button" class="device-btn device-button device-toggle-btn" data-device="mobile">Mobile</button>
-    </div>
 
-    <!-- Mobile iPhone Preview - TRUE NATIVE MOBILE UI -->
-    <div class="preview-section device-preview-mode device-preview-mobile">
-      <div class="section-label" data-i18n="appearance.preview.mobile"></div>
-      <div class="mobile-column mobile-preview">
-              <div class="phone-scale">
-                <div class="iphone-frame">
-                  <div class="iphone-screen">
-                    <!-- Mobile chat (true native mobile layout, NOT scaled desktop) -->
-                    <div class="mobile-chat-root" id="mobileChatRoot">
-                      <div class="mobile-header">
-                        <div class="mobile-header-brand">
-                          <div class="mobile-header-avatar"><i class="fas fa-robot"></i></div>
-                          <div class="mobile-header-info">
-                            <div class="mobile-header-name" id="mobileChatName" data-i18n="appearance.preview.botName"></div>
-                            <div class="mobile-header-status" data-i18n="appearance.preview.online"></div>
-                          </div>
+    <div class="preview-device-column">
+      <div class="device-toggle" id="appearanceDeviceToggle">
+        <button type="button" class="device-btn device-button device-toggle-btn active" data-device="desktop">Desktop</button>
+        <button type="button" class="device-btn device-button device-toggle-btn" data-device="mobile">Mobile</button>
+      </div>
+      <div class="device-preview-stage">
+        <!-- Mobile iPhone Preview -->
+        <div class="preview-section device-preview-mode device-preview-mobile">
+          <div class="section-label" data-i18n="appearance.preview.mobile"></div>
+          <div class="mobile-column mobile-preview">
+            <div class="phone-scale">
+              <div class="iphone-frame">
+                <div class="iphone-screen">
+                  <!-- Mobile chat -->
+                  <div class="mobile-chat-root" id="mobileChatRoot">
+                    <div class="mobile-header">
+                      <div class="mobile-header-brand">
+                        <div class="mobile-header-avatar"><i class="fas fa-robot"></i></div>
+                        <div class="mobile-header-info">
+                          <div class="mobile-header-name" id="mobileChatName" data-i18n="appearance.preview.botName"></div>
+                          <div class="mobile-header-status" data-i18n="appearance.preview.online"></div>
                         </div>
                       </div>
-                      <div class="mobile-messages" id="mobileChatMessages"></div>
-                      <div class="mobile-quick-replies" id="mobileQuickReplies" style="display: none;"></div>
-                      <div class="mobile-input-bar">
-                        <input type="text" class="mobile-input" data-i18n-placeholder="appearance.preview.inputPlaceholder" placeholder="" id="mobileChatInput"
-                          disabled>
-                        <button class="mobile-send-button" id="mobileSendBtn"><i
-                            class="fas fa-paper-plane"></i></button>
-                      </div>
                     </div>
-                    <!-- Minimized icon (BOTTOM-LEFT of phone, hidden by default) -->
-                    <div class="chat-icon small mobile-icon" id="mobileChatIcon" style="display: none;">
-                      <i class="fas fa-comment"></i>
+                    <div class="mobile-messages" id="mobileChatMessages"></div>
+                    <div class="mobile-quick-replies" id="mobileQuickReplies" style="display: none;"></div>
+                    <div class="mobile-input-bar">
+                      <input type="text" class="mobile-input" data-i18n-placeholder="appearance.preview.inputPlaceholder" placeholder="" id="mobileChatInput"
+                        disabled>
+                      <button class="mobile-send-button" id="mobileSendBtn"><i class="fas fa-paper-plane"></i></button>
                     </div>
+                  </div>
+                  <!-- Minimized icon -->
+                  <div class="chat-icon small mobile-icon" id="mobileChatIcon" style="display: none;">
+                    <i class="fas fa-comment"></i>
+                  </div>
+                </div>
+              </div>
+            </div><!-- /phone-scale -->
+          </div><!-- /mobile-column -->
+        </div><!-- /preview-section Mobile -->
+
+        <!-- Desktop Monitor -->
+        <div class="preview-section device-preview-mode device-preview-desktop">
+          <div class="section-label" data-i18n="appearance.preview.desktop"></div>
+          <div class="monitor-wrapper desktop-preview">
+            <div class="monitor-frame" id="monitorFrame">
+              <div class="monitor-screen" id="monitorScreen">
+                <div class="monitor-viewport" id="monitorViewport">
+                  <div class="monitor-chat" id="monitorChat"></div>
+                  <div class="chat-icon monitor-icon" id="monitorChatIcon" style="display: none;">
+                    <i class="fas fa-comment"></i>
+                  </div>
+                </div>
+              </div>
+            </div><!-- /monitor-frame -->
+          </div><!-- /monitor-wrapper -->
+        </div><!-- /preview-section Desktop -->
+      </div>
     </div>
-    </div>
-    </div><!-- /phone-scale -->
-    </div><!-- /mobile-column -->
-    </div><!-- /preview-section Urządzenie mobilne -->
-    
-    <!-- Desktop Monitor - SINGLE CLEAN STRUCTURE -->
-    <div class="preview-section device-preview-mode device-preview-desktop" style="flex: 1 1 auto;">
-      <div class="section-label" data-i18n="appearance.preview.desktop"></div>
-      <div class="monitor-wrapper desktop-preview">
-              <div class="monitor-frame" id="monitorFrame">
-                <div class="monitor-screen" id="monitorScreen">
-                  <div class="monitor-viewport" id="monitorViewport">
-                    <!-- Chat at real pixel dimensions (420x640) relative to 1920x1080 -->
-                    <div class="monitor-chat" id="monitorChat"></div>
-                    <!-- Minimized icon at real pixel position -->
-                    <div class="chat-icon monitor-icon" id="monitorChatIcon" style="display: none;">
-                      <i class="fas fa-comment"></i>
-    </div>
-    </div>
-    </div>
-    </div><!-- /monitor-frame -->
-    </div><!-- /monitor-wrapper -->
-    </div><!-- /preview-section Desktop -->
   </div><!-- /preview-area -->
         </div>
         <!-- Bottom Actions -->
@@ -7680,5 +7846,6 @@ ${i18nText("i18n-appearance-scale-fit")}
 </body>
 
 </html>
+
 
 
