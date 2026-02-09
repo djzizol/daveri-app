@@ -91,7 +91,7 @@
 
     /* Conversation List */
     .conv-list {
-      background: var(--dv-surface); border: 1px solid var(--dv-stroke);
+      background: var(--dv-bg2); border: 1px solid var(--dv-stroke);
       border-radius: var(--dv-radius-xl); overflow: hidden; display: flex; flex-direction: column;
     }
     .conv-list-header {
@@ -107,30 +107,41 @@
     .conv-items::-webkit-scrollbar { width: 4px; }
     .conv-items::-webkit-scrollbar-thumb { background: var(--dv-stroke2); border-radius: 4px; }
 
-    .conv-item {
+    .conversation-item {
       width: 100%;
-      height: 64px;
-      padding: 10px;
+      min-height: 64px;
+      border-radius: 10px;
+      padding: 12px;
+      position: relative;
       background: transparent;
       border: 1px solid transparent;
-      border-radius: 10px;
       text-align: left;
       cursor: pointer;
       margin-bottom: 6px;
-      transition: all 0.15s var(--dv-ease);
-      position: relative;
+      transition: all 120ms ease;
       display: flex;
       flex-direction: column;
       justify-content: center;
     }
-    .conv-item:hover { background: rgba(255,255,255,0.04); }
-    .conv-item.active {
+    .conversation-item:hover {
+      background: rgba(255,255,255,0.04);
+    }
+    .conversation-item.active {
       background: rgba(139,92,246,0.12);
       border: 1px solid rgba(139,92,246,0.35);
+      box-shadow:
+        0 0 0 1px rgba(139,92,246,0.25),
+        0 0 16px rgba(139,92,246,0.15);
     }
-    .conv-item.active::before {
-      content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-      width: 3px; height: 24px; background: var(--dv-grad); border-radius: 999px; box-shadow: var(--dv-gradGlow);
+    .conversation-item.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      background: linear-gradient(to bottom, #8b5cf6, #ec4899, #3b82f6);
+      border-radius: 2px;
     }
     .conv-visitor { font-size: 13px; font-weight: 600; color: var(--dv-text); margin-bottom: 1px; }
     .conv-preview { font-size: 12px; color: var(--dv-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
@@ -138,7 +149,7 @@
 
     /* Conversation Detail */
     .conv-detail {
-      background: var(--dv-surface); border: 1px solid var(--dv-stroke);
+      background: var(--dv-bg2); border: 1px solid var(--dv-stroke);
       border-radius: var(--dv-radius-xl); overflow: hidden; display: flex; flex-direction: column;
     }
     .conv-meta {
@@ -192,25 +203,27 @@
       display: block;
     }
     .msg-bubble-wrap {
-      max-width: min(76%, 640px);
       display: flex;
       flex-direction: column;
+      width: 100%;
     }
-    .msg {
+    .chat-message {
       padding: 10px 12px;
       font-size: 13px;
       line-height: 1.6;
       white-space: pre-wrap;
       word-break: break-word;
+      max-width: 60%;
     }
-    .chat-msg-row.user .msg {
+    .chat-message.user {
       background: rgba(139,92,246,0.18);
       border: 1px solid rgba(139,92,246,0.35);
       border-radius: 14px 14px 4px 14px;
+      margin-left: auto;
     }
-    .chat-msg-row.bot .msg {
+    .chat-message.bot {
       background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.06);
       border-radius: 14px 14px 14px 4px;
     }
     .chat-msg-row.user .msg-bubble-wrap {
@@ -310,13 +323,11 @@
 
   <script type="module">
     import { getApiUrl } from "../js/api.js";
-    import { getActiveBotId, setActiveBotId, resolveActiveBot } from "../js/active-bot.js";
 
     const API_CONVERSATIONS = getApiUrl("/api/conversations");
     const API_MESSAGES = getApiUrl("/api/messages");
     const API_BOTS = getApiUrl("/api/bots");
 
-    const root = document.getElementById("historia_root");
     const convItems = document.getElementById("convItems");
     const convCount = document.getElementById("convCount");
     const convMessages = document.getElementById("convMessages");
@@ -328,6 +339,8 @@
 
     let allConversations = [];
     let selectedConversationId = null;
+    let selectedBotId = "";
+    let selectedTimeRange = historyRangeFilter?.value || "7d";
     let botsById = new Map();
 
     function translateDynamicContent() {
@@ -381,24 +394,6 @@
       });
     };
 
-    const ensureActiveBotId = async () => {
-      const dataBotId = String(root?.dataset?.botId || "").trim();
-      if (dataBotId) {
-        setActiveBotId(dataBotId);
-        return dataBotId;
-      }
-      try {
-        const resolved = await resolveActiveBot({ apiBots: API_BOTS });
-        const botId = resolved?.botId || null;
-        root.dataset.botId = botId || "";
-        return botId;
-      } catch {
-        const fallbackBotId = getActiveBotId();
-        root.dataset.botId = fallbackBotId || "";
-        return fallbackBotId || null;
-      }
-    };
-
     function fmtDate(d) {
       if (!d) return "";
       const dt = new Date(d);
@@ -438,7 +433,7 @@
     }
 
     function getConversationList() {
-      const rangeValue = historyRangeFilter?.value || "7d";
+      const rangeValue = selectedTimeRange || "7d";
       return allConversations
         .filter((conv) => isConversationInRange(conv, rangeValue))
         .sort((a, b) => getConversationTimestamp(b) - getConversationTimestamp(a));
@@ -479,14 +474,22 @@
       `;
     }
 
+    function setActiveConversation(id) {
+      selectedConversationId = id != null ? String(id) : null;
+      convItems.querySelectorAll(".conversation-item").forEach((item) => {
+        const isActive = selectedConversationId && String(item.dataset.conversationId) === selectedConversationId;
+        item.classList.toggle("active", Boolean(isActive));
+      });
+    }
+
     function renderConversationList() {
       const conversations = getConversationList();
       convCount.textContent = String(conversations.length);
       convItems.innerHTML = "";
 
       if (!conversations.length) {
-        convItems.innerHTML = '<div class="empty-state"><div class="empty-state-text" data-i18n="history.list.empty"></div></div>';
-        translateDynamicContent();
+        convItems.innerHTML = '<div class="empty-state"><div class="empty-state-text">No conversations found for selected bot and time range</div></div>';
+        setActiveConversation(null);
         renderNoConversationSelected();
         return;
       }
@@ -495,29 +498,31 @@
         ? conversations.some((conv) => String(conv?.id) === String(selectedConversationId))
         : false;
       if (!exists) {
-        selectedConversationId = null;
+        setActiveConversation(null);
         renderNoConversationSelected();
       }
 
       conversations.forEach((conv) => {
         const el = document.createElement("button");
         el.type = "button";
-        el.className = String(conv?.id) === String(selectedConversationId) ? "conv-item active" : "conv-item";
+        el.className = "conversation-item";
+        el.dataset.conversationId = String(conv?.id || "");
         el.innerHTML = `
           <div class="conv-visitor">${escapeHtml(conv.visitor_id || conv.visitor_name || i18nText("i18n-history-visitor"))}</div>
           <div class="conv-preview">${escapeHtml(conv.last_message_preview || conv.last_message || i18nText("i18n-history-preview"))}</div>
           <div class="conv-date">${escapeHtml(fmtDate(conv.updated_at || conv.last_message_at || conv.created_at))}</div>
         `;
         el.onclick = () => {
-          selectedConversationId = conv.id;
-          renderConversationList();
+          setActiveConversation(conv.id);
           loadMessages(conv);
         };
         convItems.appendChild(el);
       });
+
+      setActiveConversation(selectedConversationId);
     }
 
-    async function loadBotsFilterOptions(defaultBotId) {
+    async function loadBotsFilterOptions() {
       let bots = [];
       try {
         const payload = await fetchJson(API_BOTS);
@@ -543,13 +548,16 @@
         historyBotFilter.appendChild(opt);
       });
 
-      if (defaultBotId && botsById.has(String(defaultBotId))) {
-        historyBotFilter.value = String(defaultBotId);
+      if (selectedBotId && botsById.has(String(selectedBotId))) {
+        historyBotFilter.value = String(selectedBotId);
+      } else {
+        historyBotFilter.value = "";
+        selectedBotId = "";
       }
     }
 
     async function loadConversations() {
-      const botId = historyBotFilter?.value || await ensureActiveBotId();
+      const botId = selectedBotId;
       let endpoint = `${API_CONVERSATIONS}?limit=50`;
       if (botId) endpoint += `&bot_id=${encodeURIComponent(botId)}`;
 
@@ -602,7 +610,7 @@
         bubbleWrap.className = "msg-bubble-wrap";
 
         const bubble = document.createElement("div");
-        bubble.className = "msg";
+        bubble.className = `chat-message ${isUser ? "user" : "bot"}`;
         bubble.textContent = msg?.content || "";
 
         const time = document.createElement("div");
@@ -629,27 +637,21 @@
       convMessages.scrollTop = convMessages.scrollHeight;
     }
 
-    window.addEventListener("daveri:active-bot-changed", (event) => {
-      const nextBotId = String(event?.detail?.botId || "").trim();
-      root.dataset.botId = nextBotId;
-      if (historyBotFilter && nextBotId) {
-        historyBotFilter.value = nextBotId;
-      }
-      selectedConversationId = null;
-      loadConversations();
-    });
-
     historyBotFilter?.addEventListener("change", async () => {
-      selectedConversationId = null;
+      selectedBotId = String(historyBotFilter.value || "").trim();
+      setActiveConversation(null);
       await loadConversations();
     });
-    historyRangeFilter?.addEventListener("change", () => {
-      renderConversationList();
+    historyRangeFilter?.addEventListener("change", async () => {
+      selectedTimeRange = String(historyRangeFilter.value || "7d");
+      setActiveConversation(null);
+      await loadConversations();
     });
 
     await waitForAuthReady();
-    const defaultBotId = await ensureActiveBotId();
-    await loadBotsFilterOptions(defaultBotId);
+    await loadBotsFilterOptions();
+    selectedBotId = String(historyBotFilter?.value || "").trim();
+    selectedTimeRange = String(historyRangeFilter?.value || "7d");
     await loadConversations();
     renderNoConversationSelected();
   </script>
