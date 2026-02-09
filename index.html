@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/main.css">
     <style>
         * {
             margin: 0;
@@ -1508,14 +1509,39 @@
             </div>
             
             <div class="btn-area">
-                <select class="lang-select" data-language-selector data-lang-switch aria-label="Language">
-                    <option value="en">EN</option>
-                    <option value="pl">PL</option>
-                    <option value="de">DE</option>
-                    <option value="fr">FR</option>
-                    <option value="es">ES</option>
-                    <option value="pt">PT</option>
-                </select>
+                <div class="lang-dropdown" data-lang-dropdown>
+                    <button class="lang-current" data-lang-current>
+                        <img class="lang-flag" data-lang-current-flag src="/assets/flags/en.svg">
+                        <span data-lang-current-label>English</span>
+                        <span class="lang-arrow">▼</span>
+                    </button>
+                    <div class="lang-menu" data-lang-menu>
+                        <button class="lang-option" data-lang="en">
+                            <img src="/assets/flags/en.svg" class="lang-flag">
+                            English
+                        </button>
+                        <button class="lang-option" data-lang="pl">
+                            <img src="/assets/flags/pl.svg" class="lang-flag">
+                            Polski
+                        </button>
+                        <button class="lang-option" data-lang="de">
+                            <img src="/assets/flags/de.svg" class="lang-flag">
+                            Deutsch
+                        </button>
+                        <button class="lang-option" data-lang="fr">
+                            <img src="/assets/flags/fr.svg" class="lang-flag">
+                            Français
+                        </button>
+                        <button class="lang-option" data-lang="es">
+                            <img src="/assets/flags/es.svg" class="lang-flag">
+                            Español
+                        </button>
+                        <button class="lang-option" data-lang="pt">
+                            <img src="/assets/flags/pt.svg" class="lang-flag">
+                            Português
+                        </button>
+                    </div>
+                </div>
                 <!-- Przycisk logowania (domyślnie widoczny) -->
                 <button class="nav-btn" id="login-btn" onclick="startGoogleLogin()" data-i18n="nav.login"></button>
                 
@@ -1868,6 +1894,7 @@
     </main>
 
     <script type="module" src="/js/language.js"></script>
+    <script type="module" src="/js/lang-dropdown.js"></script>
 
     <!-- SYSTEM AUTORYZACJI I INTERAKCJI -->
     <script>

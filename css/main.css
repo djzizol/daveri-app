@@ -1,0 +1,52 @@
+.lang-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.lang-current {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.lang-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: #111;
+  border-radius: 8px;
+  margin-top: 4px;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.lang-menu.open {
+  display: block;
+}
+
+.lang-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.lang-option:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.lang-flag {
+  width: 18px;
+}
