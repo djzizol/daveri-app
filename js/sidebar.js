@@ -12,12 +12,32 @@ const THEME_KEY = "daveri_theme";
 const COLLAPSE_KEY = "daveri_sidebar_collapsed";
 const SIDEBAR_EXPANDED = 260;
 const SIDEBAR_COLLAPSED = 72;
+const SUPPORTED_LANGS = new Set(["en", "pl", "de", "fr", "es", "pt"]);
 
 const normalizePath = (path) => {
   if (!path) return "/";
   const withoutIndex = path.replace(/\/index\.html$/, "");
   const trimmed = withoutIndex.replace(/\/$/, "");
   return trimmed || "/";
+};
+
+const stripLanguagePrefix = (path) => {
+  const normalized = normalizePath(path);
+  const segments = normalized.split("/").filter(Boolean);
+  if (segments.length > 0 && SUPPORTED_LANGS.has(segments[0])) {
+    segments.shift();
+  }
+  return segments.length ? `/${segments.join("/")}` : "/";
+};
+
+const getLocalizedRoute = (routePath) => {
+  const normalized = normalizePath(routePath);
+  const languageApi = window?.DaVeriLanguage;
+  const currentLang = languageApi?.getCurrentLanguage?.();
+  if (languageApi?.buildLanguageUrl && currentLang) {
+    return languageApi.buildLanguageUrl(currentLang, { pathname: normalized });
+  }
+  return normalized;
 };
 
 const getInitials = (value) => {
@@ -83,14 +103,14 @@ const setCollapsed = (sidebar, collapsed) => {
 
 const initNavigation = (root, routes) => {
   const navItems = root.querySelectorAll(".nav-item[data-route]");
-  const currentPath = normalizePath(window.location.pathname);
+  const currentPath = stripLanguagePrefix(window.location.pathname);
 
   navItems.forEach((item) => {
     const routeKey = item.dataset.route;
     const routePath = routes[routeKey];
     if (!routePath) return;
 
-    const normalizedRoute = normalizePath(routePath);
+    const normalizedRoute = stripLanguagePrefix(routePath);
     if (currentPath === normalizedRoute) {
       item.classList.add("active");
     }
@@ -98,7 +118,7 @@ const initNavigation = (root, routes) => {
     item.addEventListener("click", () => {
       navItems.forEach((nav) => nav.classList.remove("active"));
       item.classList.add("active");
-      window.location.href = routePath;
+      window.location.href = getLocalizedRoute(routePath);
     });
 
     item.addEventListener("keydown", (event) => {
@@ -137,7 +157,7 @@ const initDropdowns = (root) => {
   });
 
   profileBtn?.addEventListener("click", () => {
-    window.location.href = "/settings";
+    window.location.href = getLocalizedRoute("/settings");
   });
 };
 
