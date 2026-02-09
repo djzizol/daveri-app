@@ -273,8 +273,8 @@ const applyPlanData = (root, plan) => {
   planPercentEl.textContent = `${remainingPercent}%`;
 
   if (hasLimit) {
-    creditsMainEl.textContent = `${formatNumber(safeRemaining)} / ${formatNumber(limit)} credits`;
-    creditsSubEl.textContent = `Used ${formatNumber(safeUsed)} credits this billing period.`;
+    creditsMainEl.textContent = `${formatNumber(safeRemaining)} credits left`;
+    creditsSubEl.textContent = `${formatNumber(safeUsed)} used from ${formatNumber(limit)} this period.`;
   } else {
     creditsMainEl.textContent = `${formatNumber(safeUsed)} credits used`;
     creditsSubEl.textContent = "No monthly limit available.";
@@ -285,13 +285,27 @@ const applyPlanData = (root, plan) => {
 
 const loadUser = async (root, authEndpoint) => {
   try {
-    const response = await fetch(authEndpoint, { credentials: "include" });
-    if (!response.ok) {
-      applyPlanData(root, null);
-      return;
+    const endpointCandidates = Array.from(
+      new Set(
+        [
+          authEndpoint,
+          "https://api.daveri.io/auth/me",
+          "https://api.daveri.io/api/me",
+        ].filter(Boolean)
+      )
+    );
+
+    let data = null;
+    for (const endpoint of endpointCandidates) {
+      const response = await fetch(endpoint, { credentials: "include" });
+      if (!response.ok) continue;
+      const payload = await response.json();
+      if (payload?.logged) {
+        data = payload;
+        break;
+      }
     }
 
-    const data = await response.json();
     if (!data?.logged) {
       applyPlanData(root, null);
       return;
@@ -326,7 +340,22 @@ const loadUser = async (root, authEndpoint) => {
       }
     }
 
-    applyPlanData(root, data.plan || null);
+    let planPayload = data.plan || null;
+    if (!planPayload) {
+      try {
+        const fallback = await fetch("https://api.daveri.io/api/me", { credentials: "include" });
+        if (fallback.ok) {
+          const fallbackData = await fallback.json();
+          if (fallbackData?.logged && fallbackData?.plan) {
+            planPayload = fallbackData.plan;
+          }
+        }
+      } catch (error) {
+        console.warn("[Sidebar] plan fallback failed", error);
+      }
+    }
+
+    applyPlanData(root, planPayload);
   } catch (error) {
     console.error("[Sidebar] auth load failed", error);
     applyPlanData(root, null);

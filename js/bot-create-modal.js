@@ -1,4 +1,6 @@
-const API_BASE = "/api/bots";
+import { getApiUrl } from "./api.js";
+
+const API_BASE = getApiUrl("/api/bots");
 
 let onReloadBots = () => {};
 let selectedPreset = "support";

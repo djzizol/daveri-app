@@ -1,7 +1,8 @@
 import { initCreateBotModal, openCreateModal } from "./bot-create-modal.js";
 import { initEditBotModal, openEditBotModal } from "./bot-edit-modal.js";
+import { getApiUrl } from "./api.js";
 
-const API_BASE = "/api/bots";
+const API_BASE = getApiUrl("/api/bots");
 const CREATE_MODAL_URL = new URL("../components/bot-create-modal.html", import.meta.url);
 const EDIT_MODAL_URL = new URL("../components/bot-edit-modal.html", import.meta.url);
 const BOT_ICON_URL = "https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249140796x253773293772721950/boty.svg";
