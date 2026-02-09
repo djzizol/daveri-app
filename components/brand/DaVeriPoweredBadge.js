@@ -1,41 +1,24 @@
 const ICON_BASE_PATH = "/assets/icons";
 const BADGE_MARKER = "data-daveri-powered";
 
-const createPoweredIcon = () => {
-  const icon = document.createElement("div");
-  icon.className = "daveri-powered-icon";
-
-  const logo = document.createElement("img");
-  logo.src = `${ICON_BASE_PATH}/logo.svg`;
-  logo.alt = "";
-  logo.width = 12;
-  logo.height = 12;
-  logo.decoding = "async";
-
-  const overlay = document.createElement("img");
-  overlay.src = `${ICON_BASE_PATH}/ai.svg`;
-  overlay.alt = "";
-  overlay.width = 8;
-  overlay.height = 8;
-  overlay.className = "ai-overlay";
-  overlay.decoding = "async";
-
-  icon.appendChild(logo);
-  icon.appendChild(overlay);
-  return icon;
-};
-
 export const createDaVeriPoweredBadge = ({ className = "", label = "Powered by DaVeri AI" } = {}) => {
   const wrapper = document.createElement("div");
   wrapper.className = `daveri-powered${className ? ` ${className}` : ""}`;
   wrapper.setAttribute(BADGE_MARKER, "true");
 
-  const icon = createPoweredIcon();
   const text = document.createElement("span");
   text.textContent = label;
 
-  wrapper.appendChild(icon);
+  const image = document.createElement("img");
+  image.src = `${ICON_BASE_PATH}/poweredby.svg`;
+  image.alt = "";
+  image.className = "daveri-powered-image";
+  image.width = 72;
+  image.height = 72;
+  image.decoding = "async";
+
   wrapper.appendChild(text);
+  wrapper.appendChild(image);
 
   return wrapper;
 };
@@ -55,4 +38,3 @@ export const mountDaVeriPoweredBadge = (container, options = {}) => {
   }
   return badge;
 };
-
