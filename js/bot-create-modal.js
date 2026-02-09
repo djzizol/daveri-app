@@ -7,11 +7,21 @@ let selectedPreset = "support";
 
 const getCreateModal = () => document.getElementById("create-bot-modal");
 
+const getCreateStatusEl = () => document.getElementById("create-bot-status");
+
+const setCreateStatus = (message, type = "info") => {
+  const statusEl = getCreateStatusEl();
+  if (!statusEl) return;
+  statusEl.textContent = message || "";
+  statusEl.style.color = type === "error" ? "#fca5a5" : "var(--dv-muted)";
+};
+
 const closeCreateModal = () => {
   const modal = getCreateModal();
   if (!modal) return;
   modal.hidden = true;
   document.body.classList.remove("modal-open");
+  setCreateStatus("");
 };
 
 const openCreateModal = () => {
@@ -25,6 +35,7 @@ const openCreateModal = () => {
   });
   if (nameInput) nameInput.value = "";
   if (enabledInput) enabledInput.checked = true;
+  setCreateStatus("Appearance and widget settings can be configured later in the Appearance tab.");
   modal.hidden = false;
   document.body.classList.add("modal-open");
 };
@@ -60,6 +71,13 @@ const submitCreateBot = async () => {
   }
 
   try {
+    const submitBtn = document.getElementById("create-bot-submit");
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Creating...";
+    }
+    setCreateStatus("");
+
     const response = await fetch(API_BASE, {
       method: "POST",
       credentials: "include",
@@ -74,6 +92,7 @@ const submitCreateBot = async () => {
     if (!response.ok) {
       const details = await getJsonError(response);
       console.error("[CreateBot] API failed:", details);
+      setCreateStatus("Could not create bot. Check console / API response.", "error");
       return;
     }
 
@@ -81,6 +100,13 @@ const submitCreateBot = async () => {
     await onReloadBots();
   } catch (error) {
     console.error("[CreateBot] Request failed:", error);
+    setCreateStatus("Network/API error while creating bot.", "error");
+  } finally {
+    const submitBtn = document.getElementById("create-bot-submit");
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Create Bot";
+    }
   }
 };
 

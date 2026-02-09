@@ -1541,10 +1541,12 @@
 
   <!-- Application Data API -->
   <script type="module">
-    const API_BOTS = "/api/bots";
-    const API_FILES = "/api/files";
-    const API_CONVERSATIONS = "/api/conversations";
-    const API_MESSAGES = "/api/messages";
+    import { getApiUrl } from "../js/api.js";
+
+    const API_BOTS = getApiUrl("/api/bots");
+    const API_FILES = getApiUrl("/api/files");
+    const API_CONVERSATIONS = getApiUrl("/api/conversations");
+    const API_MESSAGES = getApiUrl("/api/messages");
     const root = document.getElementById("panel_root");
     const botSelect = document.getElementById("panel-active-bot");
     const kpiConversationsEl = document.getElementById("kpi-conversations");
@@ -1577,13 +1579,16 @@
     };
 
     const fetchJson = async (url, options = {}) => {
+      const method = String(options.method || "GET").toUpperCase();
+      const headers = { ...(options.headers || {}) };
+      if (method !== "GET" && method !== "HEAD" && !("Content-Type" in headers)) {
+        headers["Content-Type"] = "application/json";
+      }
+
       const response = await fetch(url, {
         credentials: "include",
         ...options,
-        headers: {
-          "Content-Type": "application/json",
-          ...(options.headers || {})
-        }
+        headers
       });
 
       let payload = null;

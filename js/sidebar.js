@@ -49,8 +49,48 @@ const getInitials = (value) => {
 const getSystemTheme = () =>
   window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 
+let themeTransitionTimeout = null;
+
+const ensureThemeTransitionStyles = () => {
+  if (document.getElementById("daveri-theme-transition-style")) return;
+  const style = document.createElement("style");
+  style.id = "daveri-theme-transition-style";
+  style.textContent = `
+    html.theme-transitioning,
+    html.theme-transitioning body,
+    html.theme-transitioning body::before,
+    html.theme-transitioning body::after,
+    html.theme-transitioning * {
+      transition:
+        background-color .34s var(--dv-ease, ease),
+        color .34s var(--dv-ease, ease),
+        border-color .34s var(--dv-ease, ease),
+        box-shadow .34s var(--dv-ease, ease),
+        opacity .34s var(--dv-ease, ease),
+        fill .34s var(--dv-ease, ease),
+        stroke .34s var(--dv-ease, ease);
+    }
+  `;
+  document.head.appendChild(style);
+};
+
+const animateThemeTransition = () => {
+  ensureThemeTransitionStyles();
+  document.documentElement.classList.add("theme-transitioning");
+  if (themeTransitionTimeout) {
+    window.clearTimeout(themeTransitionTimeout);
+  }
+  themeTransitionTimeout = window.setTimeout(() => {
+    document.documentElement.classList.remove("theme-transitioning");
+  }, 420);
+};
+
 const applyTheme = (theme, root) => {
   const actualTheme = theme === "system" ? getSystemTheme() : theme;
+  const previousTheme = document.documentElement.getAttribute("data-theme");
+  if (previousTheme && previousTheme !== actualTheme) {
+    animateThemeTransition();
+  }
   document.documentElement.setAttribute("data-theme", actualTheme);
 
   root.querySelectorAll(".theme-btn").forEach((button) => {
@@ -186,11 +226,88 @@ const formatNumber = (value) => {
   return new Intl.NumberFormat("en-US").format(numeric);
 };
 
+const liquidRenderState = new WeakMap();
+
+const createLiquidGradient = (ctx, size, topY, bottomY) => {
+  const gradient = ctx.createLinearGradient(size * 0.15, topY, size * 0.85, bottomY);
+  gradient.addColorStop(0, "rgba(251, 113, 133, 0.95)");
+  gradient.addColorStop(0.5, "rgba(168, 85, 247, 0.9)");
+  gradient.addColorStop(1, "rgba(96, 165, 250, 0.85)");
+  return gradient;
+};
+
+const drawLiquidWave = (ctx, config) => {
+  const { size, radius, levelY, amplitude, frequency, phase } = config;
+  ctx.beginPath();
+  ctx.moveTo(-2, size + 2);
+  for (let x = -2; x <= size + 2; x += 2) {
+    const y = levelY + Math.sin(x * frequency + phase) * amplitude;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(size + 2, size + 2);
+  ctx.closePath();
+
+  const topY = Math.max(levelY - amplitude * 2, size / 2 - radius);
+  const bottomY = size / 2 + radius;
+  ctx.fillStyle = createLiquidGradient(ctx, size, topY, bottomY);
+  ctx.fill();
+};
+
+const paintLiquidProgress = (ctx, size, percent, phase) => {
+  const center = size / 2;
+  const radius = 92;
+  const clamped = Math.max(0, Math.min(100, percent));
+  const levelY = center + radius - (clamped / 100) * (radius * 2);
+  const amplitude = 4 + (1 - clamped / 100) * 2;
+
+  ctx.clearRect(0, 0, size, size);
+
+  ctx.beginPath();
+  ctx.arc(center, center, radius + 7, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(255,255,255,0.14)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(center, center, radius, 0, Math.PI * 2);
+  ctx.clip();
+
+  ctx.fillStyle = "rgba(255,255,255,0.05)";
+  ctx.fillRect(center - radius, center - radius, radius * 2, radius * 2);
+
+  drawLiquidWave(ctx, {
+    size,
+    radius,
+    levelY,
+    amplitude,
+    frequency: 0.05,
+    phase,
+  });
+
+  ctx.globalAlpha = 0.46;
+  drawLiquidWave(ctx, {
+    size,
+    radius,
+    levelY: levelY + 4,
+    amplitude: amplitude * 0.75,
+    frequency: 0.07,
+    phase: -phase * 1.25,
+  });
+  ctx.globalAlpha = 1;
+
+  ctx.restore();
+
+  ctx.beginPath();
+  ctx.arc(center, center, radius, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(255,255,255,0.24)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+};
+
 const drawPlanProgress = (root, remainingPercent) => {
   const canvas = root.querySelector("#planLiquidCanvas");
   if (!canvas || typeof canvas.getContext !== "function") return;
-
-  const pct = Math.max(0, Math.min(100, Number.isFinite(remainingPercent) ? remainingPercent : 0));
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
@@ -205,31 +322,41 @@ const drawPlanProgress = (root, remainingPercent) => {
     canvas.style.width = `${size}px`;
     canvas.style.height = `${size}px`;
   }
-
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, size, size);
 
-  const center = size / 2;
-  const radius = 92;
-  const start = -Math.PI / 2;
-  const end = start + (Math.PI * 2 * pct) / 100;
+  let state = liquidRenderState.get(canvas);
+  if (!state) {
+    state = {
+      value: 0,
+      target: 0,
+      phase: 0,
+      rafId: null,
+    };
+    liquidRenderState.set(canvas, state);
+  }
+  state.target = Math.max(0, Math.min(100, Number.isFinite(remainingPercent) ? remainingPercent : 0));
 
-  ctx.lineWidth = 12;
-  ctx.strokeStyle = "rgba(255,255,255,0.13)";
-  ctx.beginPath();
-  ctx.arc(center, center, radius, 0, Math.PI * 2);
-  ctx.stroke();
+  if (state.rafId != null) return;
 
-  const gradient = ctx.createLinearGradient(0, 0, size, size);
-  gradient.addColorStop(0, "#fb7185");
-  gradient.addColorStop(0.5, "#a855f7");
-  gradient.addColorStop(1, "#60a5fa");
-  ctx.strokeStyle = gradient;
-  ctx.lineCap = "round";
-  ctx.beginPath();
-  ctx.arc(center, center, radius, start, end);
-  ctx.stroke();
+  const loop = () => {
+    state.value += (state.target - state.value) * 0.08;
+    state.phase += 0.045;
+    if (state.phase > Math.PI * 2) state.phase -= Math.PI * 2;
+    paintLiquidProgress(ctx, size, state.value, state.phase);
+
+    if (Math.abs(state.target - state.value) > 0.08) {
+      state.rafId = window.requestAnimationFrame(loop);
+      return;
+    }
+
+    state.value = state.target;
+    paintLiquidProgress(ctx, size, state.value, state.phase);
+    state.rafId = null;
+  };
+
+  state.rafId = window.requestAnimationFrame(loop);
 };
+
 
 const applyPlanData = (root, plan) => {
   const planNameEl = root.querySelector("#sidebar-plan-name");

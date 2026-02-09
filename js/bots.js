@@ -64,6 +64,13 @@ const renderCreateCard = () => {
   return card;
 };
 
+const ensureCreateButtonBound = () => {
+  const button = document.getElementById(createBtnId);
+  if (!button || button.dataset.boundCreate === "1") return;
+  button.dataset.boundCreate = "1";
+  button.addEventListener("click", () => openCreateModal());
+};
+
 const renderBotCard = (bot) => {
   const card = document.createElement("button");
   card.type = "button";
@@ -110,6 +117,16 @@ const renderEmptyState = () => {
   return wrap;
 };
 
+const renderLoadError = () => {
+  const wrap = document.createElement("div");
+  wrap.className = "empty-state";
+  wrap.innerHTML = `
+    <div class="empty-state-title">Could not load bots</div>
+    <div class="empty-state-desc">You can still create a new bot now.</div>
+  `;
+  return wrap;
+};
+
 const loadBots = async () => {
   if (!grid) return;
 
@@ -117,6 +134,9 @@ const loadBots = async () => {
     const response = await fetch(API_BASE, { method: "GET", credentials: "include" });
     if (!response.ok) {
       console.error("[Bots] GET failed:", response.status, response.statusText);
+      grid.innerHTML = "";
+      grid.appendChild(renderCreateCard());
+      grid.appendChild(renderLoadError());
       return;
     }
 
@@ -134,6 +154,9 @@ const loadBots = async () => {
     });
   } catch (error) {
     console.error("[Bots] Request failed:", error);
+    grid.innerHTML = "";
+    grid.appendChild(renderCreateCard());
+    grid.appendChild(renderLoadError());
   }
 };
 
@@ -156,6 +179,8 @@ const ensureModalsMounted = async () => {
 };
 
 const init = async () => {
+  ensureCreateButtonBound();
+
   try {
     await ensureModalsMounted();
   } catch (error) {
