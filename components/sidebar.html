@@ -16,7 +16,7 @@
   color:#e5e7eb;
 
   /* ===== CHATGPT STYLE - DARK SIDEBAR ===== */
-  --sb-bg:#171717;
+  --sb-bg:#0b0c10;
   --sb-bg2:#1e1e1e;
   --sb-panel:#262626;
   --sb-surface:#2a2a2a;
@@ -83,11 +83,11 @@
   width:260px;
   height:100vh;
   background: var(--sb-bg);
-  border-right:1px solid var(--sb-stroke);
+  border-right:1px solid rgba(255,255,255,0.05);
   display:flex;
   flex-direction:column;
   transition:width .2s var(--sb-ease), transform .2s var(--sb-ease);
-  z-index:1000;
+  z-index:100;
   overflow:hidden;
   color:var(--sb-text);
 }
@@ -163,7 +163,7 @@
   transform:scale(1);
   background:rgba(255,255,255,.05);
 }
-/* W zwiniętym sidebarze przy hover na logo – chowaj logo, pokazuj ikonę rozwiń */
+/* W zwiniÄ™tym sidebarze przy hover na logo â€“ chowaj logo, pokazuj ikonÄ™ rozwiĹ„ */
 #daveri_sidebar .sidebar.collapsed .mark:hover img{
   opacity:0;
   pointer-events:none;
@@ -212,7 +212,7 @@
 #daveri_sidebar .nav::-webkit-scrollbar{width:0;height:0;}
 #daveri_sidebar .section{margin-top:2px;}
 #daveri_sidebar .section:first-child{margin-top:0;}
-/* Section headers – Microsoft 365 style */
+/* Section headers â€“ Microsoft 365 style */
 #daveri_sidebar .nav-label{
   font-size:10px;
   font-weight:500;
@@ -223,14 +223,15 @@
 }
 #daveri_sidebar .sidebar.collapsed .nav-label{display:none;}
 
-/* NAV ITEM – typography, spacing, no transform */
+/* NAV ITEM â€“ typography, spacing, no transform */
 #daveri_sidebar .nav-item{
   position:relative;
   display:flex;
   align-items:center;
   gap:12px;
-  padding:12px 14px;
-  border-radius:var(--sb-radius-md);
+  min-height:40px;
+  padding:8px 14px;
+  border-radius:8px;
   cursor:pointer;
   user-select:none;
   border:none;
@@ -239,7 +240,7 @@
   font-size:14px;
   font-weight:500;
   letter-spacing:0.2px;
-  transition:background 120ms ease;
+  transition:all 120ms ease;
 }
 #daveri_sidebar .nav-item:hover{ 
   background:rgba(255,255,255,0.04);
@@ -249,11 +250,11 @@
   background:rgba(255,255,255,0.04);
 }
 #daveri_sidebar .nav-item.active {
-  background:rgba(255,255,255,0.04);
+  background:rgba(124,58,237,0.18);
   color:#ffffff;
 }
 
-/* Icons – vector SVG, aligned with text */
+/* Icons â€“ vector SVG, aligned with text */
 #daveri_sidebar .nav-ico{
   width:24px;
   height:24px;
@@ -290,7 +291,7 @@
   text-overflow:ellipsis;
 }
 
-/* badge NEW – reduced weight */
+/* badge NEW â€“ reduced weight */
 #daveri_sidebar .badge{
   font-size:10px;
   font-weight:600;
@@ -303,7 +304,7 @@
   border-radius:999px;
 }
 
-/* ACTIVE STATE – subtle 2px left accent, no gradient */
+/* ACTIVE STATE â€“ subtle 2px left accent, no gradient */
 #daveri_sidebar .nav-item.active{ opacity:1; }
 #daveri_sidebar .nav-item.active .label{
   color:#ffffff;
@@ -380,10 +381,14 @@
 
 /* ===== THEME TOGGLE - SINGLE DARK BAR ===== */
 #daveri_sidebar .theme-toggle-section{
-  margin:8px 12px;
+  margin:24px 12px 0;
   padding:0;
   border-radius:var(--sb-radius);
   background:transparent;
+  display:flex;
+  flex-direction:column-reverse;
+  gap:12px;
+  order:4;
 }
 #daveri_sidebar .theme-toggle-label{
   display:none;
@@ -458,7 +463,7 @@
   width:100%;
   min-width:0;
   max-width:none;
-  margin-top:10px;
+  margin-top:0;
 }
 #daveri_sidebar .language-selector{
   display:flex;
@@ -540,7 +545,7 @@
 
 /* ===== PLAN CARD - CLEAN ===== */
 #daveri_sidebar .plan-card{
-  margin:8px 12px;
+  margin:8px 12px 0;
   padding:12px;
   border-radius:var(--sb-radius);
   border:1px solid var(--sb-stroke);
@@ -551,6 +556,7 @@
   position:relative;
   color:var(--sb-text);
   margin-top:auto;
+  order:1;
 }
 
 #daveri_sidebar .plan-card-header,
@@ -590,7 +596,7 @@
   white-space:nowrap;
 }
 
-/* BODY – orb + tekst */
+/* BODY â€“ orb + tekst */
 #daveri_sidebar .plan-card-body{
   display:flex;
   align-items:center;
@@ -617,12 +623,17 @@
   text-overflow:ellipsis;
 }
 
-/* ===== USER / FOOTER – reduced visual weight ===== */
+/* ===== USER / FOOTER â€“ reduced visual weight ===== */
 #daveri_sidebar .user{
   position:relative;
   padding:10px 12px 12px;
   border-top:1px solid rgba(255,255,255,0.06);
-  margin-top:8px;
+  margin-top:24px;
+  order:2;
+}
+
+#daveri_sidebar .language-section{
+  margin:24px 12px 0;
 }
 #daveri_sidebar .user-btn{
   width:100%;
@@ -644,7 +655,7 @@
 #daveri_sidebar .user-btn:active{
   background:rgba(255,255,255,0.04);
 }
-/* User card text – lower contrast */
+/* User card text â€“ lower contrast */
 #daveri_sidebar .user-meta .name{
   color:rgba(255,255,255,0.78);
   font-weight:500;
@@ -851,7 +862,7 @@
             <!-- ZAKTUALIZOWANE LOGO -->
             <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1768755240414x775862930699997600/logo64.png?_gl=1*1xuqcq7*_gcl_aw*R0NMLjE3NjQ4ODcxODcuQ2owS0NRaUFfOFRKQmhETkFSSXNBUFg1cXhSS2s1aWxkS2hydXJydnNXVm9IUGFvT1NTZ3VvTWVFM0NhZmd4WnJqU0t5SG51ZFAtS0FUc2FBaHRkRUFMd193Y0I.*_gcl_au*MTg4MzA5OTI1OC4xNzY0Nzg5MjY0*_ga*OTczNDY5ODUzLjE3NjQ2MDc2MTI.*_ga_BFPVR2DEE2*czE3NzAyMzI2MjgkbzUwJGcxJHQxNzcwMjM5MTY1JGo2MCRsMCRoMA.." alt="DaVeri logo" />
 
-            <!-- Ikona rozwiń – zaokrąglony kwadrat z paskiem po lewej (styl ChatGPT/Copilot) -->
+            <!-- Ikona rozwiĹ„ â€“ zaokrÄ…glony kwadrat z paskiem po lewej (styl ChatGPT/Copilot) -->
             <div class="mark-ham" role="button" data-i18n-aria-label="sidebar.actions.expand">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="5" y="6" width="14" height="12" rx="3"/>
@@ -928,7 +939,7 @@
       <div class="plan-card-header">
         <div>
           <div class="plan-label" data-i18n="sidebar.plan.label">Your plan</div>
-          <div class="plan-name" id="sidebar-plan-name">—</div>
+          <div class="plan-name" id="sidebar-plan-name">â€”</div>
         </div>
         <span class="plan-pill" id="sidebar-plan-pill" data-i18n="sidebar.plan.pill">PLAN</span>
       </div>
@@ -945,7 +956,7 @@
         </div>
 
         <div class="plan-credits-box">
-          <div class="plan-credits-main" id="sidebar-plan-credits-main" data-i18n="sidebar.plan.loading">Loading data…</div>
+          <div class="plan-credits-main" id="sidebar-plan-credits-main" data-i18n="sidebar.plan.loading">Loading dataâ€¦</div>
           <div class="plan-credits-sub" id="sidebar-plan-credits-sub">
             <span data-i18n="sidebar.plan.subtext">Checking your credits for this billing period.</span>
           </div>
@@ -970,7 +981,7 @@
         <div class="language-selector" data-lang-current>
           <img class="language-flag" data-lang-current-flag src="/assets/flags/en.svg" alt="" width="20" height="14" />
           <span data-lang-current-label>English</span>
-          <span class="lang-arrow">▼</span>
+          <span class="lang-arrow">â–Ľ</span>
         </div>
         <div class="language-dropdown" data-lang-menu>
           <div class="language-option" data-lang="en">
@@ -987,15 +998,15 @@
           </div>
           <div class="language-option" data-lang="fr">
             <img src="/assets/flags/fr.svg" class="language-flag" alt="" width="20" height="14" />
-            <span>Français</span>
+            <span>FranĂ§ais</span>
           </div>
           <div class="language-option" data-lang="es">
             <img src="/assets/flags/es.svg" class="language-flag" alt="" width="20" height="14" />
-            <span>Español</span>
+            <span>EspaĂ±ol</span>
           </div>
           <div class="language-option" data-lang="pt">
             <img src="/assets/flags/pt.svg" class="language-flag" alt="" width="20" height="14" />
-            <span>Português</span>
+            <span>PortuguĂŞs</span>
           </div>
         </div>
       </div>
@@ -1018,7 +1029,7 @@
         <div class="avatar" id="avatarBox" data-i18n-title="sidebar.user.title"></div>
         <div class="user-meta">
           <strong id="userName" data-i18n="sidebar.user.nameFallback">User</strong>
-          <span id="userSub">—</span>
+          <span id="userSub">â€”</span>
         </div>
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M6 9l6 6 6-6"/>

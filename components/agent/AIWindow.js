@@ -3,7 +3,7 @@ import { createAIMessages } from "./AIMessages.js";
 import { createAIInput } from "./AIInput.js";
 
 const AI_WINDOW_ID = "aiWindow";
-const COLLAPSED_HEIGHT = 64;
+const COLLAPSED_HEIGHT = 56;
 
 const applyState = (windowNode, state) => {
   const targetHeight = state.isExpanded ? state.height : COLLAPSED_HEIGHT;
@@ -20,6 +20,19 @@ const createAIWindowNode = () => {
 
   const shell = document.createElement("div");
   shell.className = "ai-window-shell";
+
+  const minimize = document.createElement("button");
+  minimize.type = "button";
+  minimize.className = "ai-window-minimize";
+  minimize.setAttribute("aria-label", "Minimize AI window");
+  minimize.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+    </svg>
+  `;
+  minimize.addEventListener("click", () => {
+    agentDockStore.setExpanded(false);
+  });
 
   const messagesWrap = document.createElement("div");
   messagesWrap.className = "ai-messages-wrap";
@@ -39,6 +52,7 @@ const createAIWindowNode = () => {
   });
 
   messagesWrap.appendChild(messages.node);
+  shell.appendChild(minimize);
   shell.appendChild(messagesWrap);
   shell.appendChild(input.node);
   windowNode.appendChild(shell);
