@@ -16,6 +16,10 @@ const sendIcon = `
 </svg>`;
 
 export const createAIInput = ({ onSend, onActivate }) => {
+  const path = (typeof window !== "undefined" ? window.location.pathname : "").toLowerCase();
+  const isBotsRoute = /\/(en|pl|de|fr|es|pt)?\/?bots\/?$/.test(path) || path.includes("/bots");
+  const isDashboardRoute = /\/(en|pl|de|fr|es|pt)?\/?dashboard\/?$/.test(path) || path.includes("/dashboard");
+
   const row = document.createElement("div");
   row.className = "chat-input-row ai-input-row";
 
@@ -28,7 +32,11 @@ export const createAIInput = ({ onSend, onActivate }) => {
   const input = document.createElement("textarea");
   input.className = "chat-input ai-input";
   input.rows = 1;
-  input.placeholder = "Ask AI anything...";
+  input.placeholder = isBotsRoute
+    ? "Ask AI to create or modify a bot..."
+    : isDashboardRoute
+      ? "Ask AI anything..."
+      : "Ask AI anything...";
 
   const micBtn = document.createElement("button");
   micBtn.type = "button";

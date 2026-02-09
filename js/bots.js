@@ -6,7 +6,7 @@ import { getActiveBotId, setActiveBotId } from "./active-bot.js";
 const API_BASE = getApiUrl("/api/bots");
 const CREATE_MODAL_URL = new URL("../components/bot-create-modal.html", import.meta.url);
 const EDIT_MODAL_URL = new URL("../components/bot-edit-modal.html", import.meta.url);
-const BOT_ICON_URL = "/assets/icons/bot.svg";
+const BOT_ICON_URL = "/icons/default-bot.svg";
 
 const grid = document.getElementById("botGrid");
 const createBtnId = "create-bot-button";
@@ -77,11 +77,12 @@ const renderBotCard = (bot, isActive = false) => {
   card.type = "button";
   card.className = isActive ? "bot-card active" : "bot-card";
   card.dataset.botId = bot.id;
+  const avatarUrl = bot?.icon_url ? String(bot.icon_url) : BOT_ICON_URL;
   card.innerHTML = `
     ${createStatusMarkup(!!bot.enabled)}
     <div class="bot-card-header">
       <div class="bot-avatar">
-        <img src="${BOT_ICON_URL}" alt="Bot" />
+        <img src="${escapeHtml(avatarUrl)}" alt="Bot avatar" onerror="this.onerror=null;this.src='${BOT_ICON_URL}';" />
       </div>
       <div>
         <div class="bot-name">${escapeHtml(bot.name || "Unnamed Bot")}</div>
@@ -104,6 +105,34 @@ const renderBotCard = (bot, isActive = false) => {
     openEditBotModal(bot);
   });
   return card;
+};
+
+const placeChatDockForBotsPage = () => {
+  const host = document.getElementById("bots-chat-container");
+  const dock = document.getElementById("aiWindow");
+  if (!host || !dock) return false;
+
+  if (dock.parentElement !== host) {
+    host.appendChild(dock);
+  }
+  return true;
+};
+
+const bindChatDockPlacement = () => {
+  document.body.classList.add("page-bots");
+  if (placeChatDockForBotsPage()) return;
+
+  const observer = new MutationObserver(() => {
+    if (placeChatDockForBotsPage()) {
+      observer.disconnect();
+    }
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+  window.setTimeout(() => observer.disconnect(), 6000);
+  document.addEventListener("sidebar:mounted", () => {
+    placeChatDockForBotsPage();
+  });
 };
 
 const renderEmptyState = () => {
@@ -211,6 +240,7 @@ const waitForAuthReady = async () => {
 };
 
 const init = async () => {
+  bindChatDockPlacement();
   ensureCreateButtonBound();
 
   try {

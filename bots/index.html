@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --dv-bg: #0d0e13; --dv-bg2: #0f1114;
+      --dv-bg: #111217; --dv-bg2: #181a20;
       --dv-surface: rgba(255,255,255,.03); --dv-surface2: rgba(255,255,255,.05);
       --dv-stroke: rgba(255,255,255,.08); --dv-stroke2: rgba(255,255,255,.12);
       --dv-text: rgba(255,255,255,.92); --dv-text2: rgba(255,255,255,.65);
@@ -58,6 +58,12 @@
     #sidebar-spacer { width: var(--dv-sidebar-w, 0px); flex-shrink: 0; transition: width .22s var(--dv-ease); }
     #main-content { flex: 1; min-width: 0; max-width: 100%; transition: all .22s var(--dv-ease); overflow-x: hidden; }
     .page { max-width: var(--page-max); margin: 0 auto; padding: var(--page-pad); min-height: 100vh; position: relative; }
+    .content-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+      padding-bottom: 180px;
+    }
 
     /* Page Header */
     .page-header { margin-bottom: 32px; }
@@ -87,11 +93,11 @@
 
     .bot-card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; position: relative; z-index: 1; }
     .bot-avatar {
-      width: 48px; height: 48px; border-radius: 14px;
-      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.10);
+      width: 40px; height: 40px; border-radius: 10px;
+      background: rgba(255,255,255,.04);
       display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;
     }
-    .bot-avatar img { width: 32px; height: 32px; object-fit: contain; }
+    .bot-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .bot-name { font-size: 16px; font-weight: 700; color: var(--dv-text); }
     .bot-model { font-size: 12px; color: var(--dv-muted); margin-top: 2px; }
 
@@ -143,12 +149,32 @@
     .modal-overlay { position: absolute; inset: 0; background: rgba(2, 6, 23, .7); backdrop-filter: blur(4px); }
     .modal-content {
       position: relative; z-index: 1; width: min(780px, 100%); max-height: 90vh; overflow: auto;
-      background: linear-gradient(180deg, rgba(13, 17, 24, .98), rgba(11, 15, 22, .98));
-      border: 1px solid rgba(255,255,255,.14); border-radius: 16px; box-shadow: 0 24px 60px rgba(2,6,23,.6);
+      background: rgba(24,26,32,.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.6);
       padding: 22px;
     }
+    .modal-content::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(139,92,246,0.6),
+        rgba(236,72,153,0.6),
+        rgba(59,130,246,0.6),
+        transparent
+      );
+    }
     [data-theme="light"] .modal-content {
-      background: linear-gradient(180deg, rgba(255, 255, 255, .98), rgba(248, 250, 253, .98));
+      background: rgba(255, 255, 255, .94);
+      backdrop-filter: blur(16px);
       border-color: rgba(0,0,0,.12);
       box-shadow: 0 18px 36px rgba(15, 23, 42, .18);
     }
@@ -211,6 +237,26 @@
     .meta-label { font-size: 12px; color: var(--dv-muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
     .meta-value { font-size: 13px; font-weight: 700; color: var(--dv-text); word-break: break-all; text-align: right; }
 
+    body.page-bots #bots-chat-container.chat-container {
+      position: absolute;
+      bottom: -80px;
+      left: 50%;
+      width: min(720px, calc(100% - 24px));
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 30;
+    }
+    body.page-bots #bots-chat-container.chat-container > #aiWindow.ai-window {
+      position: relative;
+      inset: auto;
+      left: auto;
+      bottom: auto;
+      transform: none;
+      width: 100%;
+      max-width: 100%;
+      pointer-events: auto;
+    }
+
     @media (max-width: 768px) { .bot-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -221,17 +267,20 @@
     <div id="main-content">
       <div id="bots" hidden></div>
       <div class="page" id="boty_root" data-user-id="CURRENT USER">
-        <div class="page-header">
-          <div class="page-title" data-i18n="bots.page.heading"></div>
-          <div class="page-subtitle" data-i18n="bots.page.subtitle"></div>
-        </div>
-        <div class="bot-grid" id="botGrid">
-          <button type="button" class="bot-card-create" id="create-bot-button">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            <span>Create Bot</span>
-          </button>
+        <div class="content-container">
+          <div class="page-header">
+            <div class="page-title" data-i18n="bots.page.heading"></div>
+            <div class="page-subtitle" data-i18n="bots.page.subtitle"></div>
+          </div>
+          <div class="bot-grid" id="botGrid">
+            <button type="button" class="bot-card-create" id="create-bot-button">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              <span>Create Bot</span>
+            </button>
+          </div>
+          <div class="chat-container" id="bots-chat-container"></div>
         </div>
       </div>
     </div>
