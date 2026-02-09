@@ -1,4 +1,5 @@
 {
+  "lang.label": "Langue",
   "appearance.actions.load": "Charger",
   "appearance.actions.save": "Sauvegarder",
   "appearance.actions.saveChanges": "Sauvegarder les modifications",

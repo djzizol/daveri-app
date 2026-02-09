@@ -1,0 +1,39 @@
+.lang-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lang-label {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.lang-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  background: none;
+  border: none;
+
+  padding: 6px 8px;
+
+  cursor: pointer;
+
+  border-radius: 6px;
+}
+
+.lang-btn:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.flag {
+  width: 18px;
+  height: auto;
+}
