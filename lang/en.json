@@ -334,6 +334,7 @@
   "sidebar.nav.files": "Files",
   "sidebar.nav.history": "History",
   "sidebar.nav.install": "Install",
+  "sidebar.nav.settings": "Settings",
   "sidebar.nav.prompts": "Prompts",
   "sidebar.nav.workshop": "Workspace",
   "sidebar.navigation.aria": "Navigation",
@@ -356,3 +357,6 @@
   "install.steps.test.note": "After you paste the code, the widget appears as a chat icon in the selected corner. Click it to start a test conversation. If the bot does not respond, check that your prompt and knowledge files are configured.",
   "prompts.status.selectBot": "Select a bot first"
 }
+
+
+

@@ -1,4 +1,5 @@
 import { agentDockStore } from "../../js/agent-dock-store.js";
+import { createDaVeriPoweredBadge } from "../brand/DaVeriPoweredBadge.js";
 import { createAIMessages } from "./AIMessages.js";
 import { createAIInput } from "./AIInput.js";
 
@@ -20,6 +21,22 @@ const createAIWindowNode = () => {
 
   const shell = document.createElement("div");
   shell.className = "ai-window-shell";
+
+  const header = document.createElement("div");
+  header.className = "ai-window-header";
+
+  const headerBrand = document.createElement("div");
+  headerBrand.className = "ai-window-brand";
+
+  const title = document.createElement("span");
+  title.className = "ai-window-title";
+  title.textContent = "AI Assistant";
+
+  const poweredBadge = createDaVeriPoweredBadge({ className: "ai-window-powered-badge" });
+
+  headerBrand.appendChild(title);
+  headerBrand.appendChild(poweredBadge);
+  header.appendChild(headerBrand);
 
   const minimize = document.createElement("button");
   minimize.type = "button";
@@ -53,6 +70,7 @@ const createAIWindowNode = () => {
   });
 
   messagesWrap.appendChild(messages.node);
+  shell.appendChild(header);
   shell.appendChild(minimize);
   shell.appendChild(messagesWrap);
   shell.appendChild(input.node);

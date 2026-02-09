@@ -6,7 +6,7 @@ import { getActiveBotId, setActiveBotId } from "./active-bot.js";
 const API_BASE = getApiUrl("/api/bots");
 const CREATE_MODAL_URL = new URL("../components/bot-create-modal.html", import.meta.url);
 const EDIT_MODAL_URL = new URL("../components/bot-edit-modal.html", import.meta.url);
-const BOT_ICON_URL = "https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249140796x253773293772721950/boty.svg";
+const BOT_ICON_URL = "/assets/icons/bot.svg";
 
 const grid = document.getElementById("botGrid");
 const createBtnId = "create-bot-button";

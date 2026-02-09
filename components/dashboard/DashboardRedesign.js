@@ -1,5 +1,6 @@
-﻿import { createStatsRow } from "./StatsRow.js";
+import { createStatsRow } from "./StatsRow.js";
 import { createChecklistCard } from "./ChecklistCard.js";
+import { createDaVeriPoweredBadge } from "../brand/DaVeriPoweredBadge.js";
 
 const TOOLTIPS = [
   "Total conversations handled by your bots in the last 7 days.",
@@ -117,18 +118,29 @@ export const applyDashboardRedesign = () => {
 
     const userName = (document.getElementById("userName")?.textContent || "Dawid").trim() || "Dawid";
 
-    header.innerHTML = `
-      <div>
-        <h1 class="dashboard-page-title">Welcome, ${userName}</h1>
-        <p class="dashboard-page-subtitle">Control center for your AI bots and activity.</p>
-      </div>
-      <a href="#boty" class="dashboard-create-bot quick-action" data-action="boty">+ Create bot</a>
+    const copy = document.createElement("div");
+    copy.innerHTML = `
+      <h1 class="dashboard-page-title">Welcome, ${userName}</h1>
+      <p class="dashboard-page-subtitle">Control center for your AI bots and activity.</p>
     `;
 
+    const actions = document.createElement("div");
+    actions.className = "dashboard-header-actions";
+
+    const poweredBadge = createDaVeriPoweredBadge({ className: "dashboard-powered-badge" });
+    const createBotBtn = document.createElement("a");
+    createBotBtn.href = "#boty";
+    createBotBtn.className = "dashboard-create-bot quick-action";
+    createBotBtn.dataset.action = "boty";
+    createBotBtn.textContent = "+ Create bot";
+
+    actions.appendChild(poweredBadge);
+    actions.appendChild(createBotBtn);
+    header.appendChild(copy);
+    header.appendChild(actions);
     main.insertBefore(header, main.firstChild);
 
-    const createBotBtn = header.querySelector(".dashboard-create-bot");
-    createBotBtn?.addEventListener("click", (event) => {
+    createBotBtn.addEventListener("click", (event) => {
       event.preventDefault();
       const existingAction = root.querySelector('.quick-action[data-action="boty"]');
       if (existingAction) existingAction.click();

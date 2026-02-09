@@ -860,7 +860,7 @@
         <div class="brand-left">
           <div class="mark" id="logoToggle">
             <!-- ZAKTUALIZOWANE LOGO -->
-            <img src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1768755240414x775862930699997600/logo64.png?_gl=1*1xuqcq7*_gcl_aw*R0NMLjE3NjQ4ODcxODcuQ2owS0NRaUFfOFRKQmhETkFSSXNBUFg1cXhSS2s1aWxkS2hydXJydnNXVm9IUGFvT1NTZ3VvTWVFM0NhZmd4WnJqU0t5SG51ZFAtS0FUc2FBaHRkRUFMd193Y0I.*_gcl_au*MTg4MzA5OTI1OC4xNzY0Nzg5MjY0*_ga*OTczNDY5ODUzLjE3NjQ2MDc2MTI.*_ga_BFPVR2DEE2*czE3NzAyMzI2MjgkbzUwJGcxJHQxNzcwMjM5MTY1JGo2MCRsMCRoMA.." alt="DaVeri logo" />
+            <img src="/assets/icons/logo.svg" alt="DaVeri logo" />
 
             <!-- Ikona rozwiĹ„ â€“ zaokrÄ…glony kwadrat z paskiem po lewej (styl ChatGPT/Copilot) -->
             <div class="mark-ham" role="button" data-i18n-aria-label="sidebar.actions.expand">
@@ -885,8 +885,10 @@
 
     <nav class="nav" data-i18n-aria-label="sidebar.navigation.aria">
       <div class="section">
-        <div class="nav-item" tabindex="0" data-route="panel">
-          <img class="nav-ico" src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249154059x102876966522698510/panel.svg" alt="" width="24" height="24" aria-hidden="true" />
+        <div class="nav-item sidebar-item" tabindex="0" data-route="panel" data-gradient="primary">
+          <div class="sidebar-icon" aria-hidden="true">
+            <img src="/assets/icons/dashboard.svg" alt="" width="14" height="14" />
+          </div>
           <span class="label" data-i18n="sidebar.nav.dashboard">Dashboard</span>
           <span class="badge" data-i18n="sidebar.badge.new">New</span>
           <span class="tip" data-i18n="sidebar.nav.dashboard">Dashboard</span>
@@ -896,40 +898,60 @@
       <div class="nav-label" data-i18n="sidebar.nav.workshop">Workspace</div>
 
       <div class="section">
-        <div class="nav-item" tabindex="0" data-route="boty">
-          <img class="nav-ico" src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249140796x253773293772721950/boty.svg" alt="" width="24" height="24" aria-hidden="true" />
+        <div class="nav-item sidebar-item" tabindex="0" data-route="boty" data-gradient="green">
+          <div class="sidebar-icon" aria-hidden="true">
+            <img src="/assets/icons/bot.svg" alt="" width="14" height="14" />
+          </div>
           <span class="label" data-i18n="sidebar.nav.bots">Bots</span>
           <span class="tip" data-i18n="sidebar.nav.bots">Bots</span>
         </div>
 
-        <div class="nav-item" tabindex="0" data-route="historia">
-          <img class="nav-ico" src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249131284x840037696645927700/hisotria.svg" alt="" width="24" height="24" aria-hidden="true" />
+        <div class="nav-item sidebar-item" tabindex="0" data-route="historia" data-gradient="orange">
+          <div class="sidebar-icon" aria-hidden="true">
+            <img src="/assets/icons/history.svg" alt="" width="14" height="14" />
+          </div>
           <span class="label" data-i18n="sidebar.nav.history">History</span>
           <span class="tip" data-i18n="sidebar.nav.history">History</span>
         </div>
 
-        <div class="nav-item" tabindex="0" data-route="prompt">
-          <img class="nav-ico" src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249125077x656254872647275600/prompt.svg" alt="" width="24" height="24" aria-hidden="true" />
+        <div class="nav-item sidebar-item" tabindex="0" data-route="prompt" data-gradient="purple">
+          <div class="sidebar-icon" aria-hidden="true">
+            <img src="/assets/icons/prompt.svg" alt="" width="14" height="14" />
+          </div>
           <span class="label" data-i18n="sidebar.nav.prompts">Prompts</span>
           <span class="tip" data-i18n="sidebar.nav.prompts">Prompts</span>
         </div>
 
-        <div class="nav-item" tabindex="0" data-route="wyglad">
-          <img class="nav-ico" src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249145896x475580076785379700/wyglad.svg" alt="" width="24" height="24" aria-hidden="true" />
+        <div class="nav-item sidebar-item" tabindex="0" data-route="wyglad" data-gradient="purple">
+          <div class="sidebar-icon" aria-hidden="true">
+            <img src="/assets/icons/appearance.svg" alt="" width="14" height="14" />
+          </div>
           <span class="label" data-i18n="sidebar.nav.appearance">Appearance</span>
           <span class="tip" data-i18n="sidebar.nav.appearance">Appearance</span>
         </div>
 
-        <div class="nav-item" tabindex="0" data-route="pliki">
-          <img class="nav-ico" src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249121272x452195540458458100/pliki.svg" alt="" width="24" height="24" aria-hidden="true" />
+        <div class="nav-item sidebar-item" tabindex="0" data-route="pliki" data-gradient="blue">
+          <div class="sidebar-icon" aria-hidden="true">
+            <img src="/assets/icons/files.svg" alt="" width="14" height="14" />
+          </div>
           <span class="label" data-i18n="sidebar.nav.files">Files</span>
           <span class="tip" data-i18n="sidebar.nav.files">Files</span>
         </div>
 
-        <div class="nav-item" tabindex="0" data-route="instalacja">
-          <img class="nav-ico" src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1770249115665x192170676080926980/intalacja.svg" alt="" width="24" height="24" aria-hidden="true" />
+        <div class="nav-item sidebar-item" tabindex="0" data-route="instalacja" data-gradient="primary">
+          <div class="sidebar-icon" aria-hidden="true">
+            <img src="/assets/icons/install.svg" alt="" width="14" height="14" />
+          </div>
           <span class="label" data-i18n="sidebar.nav.install">Install</span>
           <span class="tip" data-i18n="sidebar.nav.install">Install</span>
+        </div>
+
+        <div class="nav-item sidebar-item" tabindex="0" data-route="settings" data-gradient="neutral">
+          <div class="sidebar-icon" aria-hidden="true">
+            <img src="/assets/icons/settings.svg" alt="" width="14" height="14" />
+          </div>
+          <span class="label" data-i18n="sidebar.nav.settings">Settings</span>
+          <span class="tip" data-i18n="sidebar.nav.settings">Settings</span>
         </div>
       </div>
     </nav>

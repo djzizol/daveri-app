@@ -337,6 +337,7 @@
   "sidebar.nav.files": "Fichiers",
   "sidebar.nav.history": "Historique",
   "sidebar.nav.install": "Installer",
+  "sidebar.nav.settings": "Settings",
   "sidebar.nav.prompts": "Prompts",
   "sidebar.nav.workshop": "Espace de travail",
   "sidebar.navigation.aria": "Navigation",
@@ -355,3 +356,6 @@
   "sidebar.user.profile": "Profil",
   "sidebar.user.title": "Utilisateur"
 }
+
+
+

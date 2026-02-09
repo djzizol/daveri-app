@@ -3,6 +3,7 @@ import { createSidebarLayer } from "../components/layout/Sidebar.js";
 import { createMainContentLayer } from "../components/layout/MainContent.js";
 import { mountAIWindow } from "../components/agent/AIWindow.js";
 import { applyDashboardRedesign } from "../components/dashboard/DashboardRedesign.js";
+import { applyBrandSystem } from "./brand-system.js";
 
 const APP_LAYOUT_STYLE_ID = "daveri-app-layout-style";
 const APP_LAYOUT_STYLE_URL = new URL("../css/agent-dock.css", import.meta.url);
@@ -30,4 +31,6 @@ export const ensureAppLayout = () => {
   if (window.location.pathname.includes("/dashboard")) {
     applyDashboardRedesign();
   }
+
+  applyBrandSystem();
 };

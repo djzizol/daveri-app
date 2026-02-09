@@ -334,6 +334,7 @@
   "sidebar.nav.files": "Pliki",
   "sidebar.nav.history": "Historia rozmów",
   "sidebar.nav.install": "Instalacja",
+  "sidebar.nav.settings": "Settings",
   "sidebar.nav.prompts": "Prompt",
   "sidebar.nav.workshop": "Warsztat",
   "sidebar.navigation.aria": "Nawigacja",
@@ -356,3 +357,6 @@
   "install.steps.test.note": "Po wklejeniu kodu widget pojawi się jako ikona czatu w wybranym rogu strony. Kliknij, aby rozpocząć rozmowę testową. Jeśli bot nie odpowiada, sprawdź czy masz skonfigurowany prompt i dodane pliki wiedzy.",
   "prompts.status.selectBot": "Najpierw wybierz bota"
 }
+
+
+

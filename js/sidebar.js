@@ -1,3 +1,5 @@
+import { mountSidebarIcons } from "../components/brand/SidebarIcon.js";
+
 const DEFAULT_ROUTES = {
   panel: "/dashboard",
   boty: "/bots",
@@ -6,6 +8,7 @@ const DEFAULT_ROUTES = {
   wyglad: "/appearance",
   pliki: "/files",
   instalacja: "/install",
+  settings: "/settings",
 };
 
 const THEME_KEY = "daveri_theme";
@@ -494,6 +497,7 @@ export const initSidebar = async (root, options = {}) => {
   const sidebar = root.querySelector(".sidebar");
   if (!sidebar) return;
 
+  mountSidebarIcons(root);
   restoreSidebarState(sidebar);
   initTheme(root);
   initNavigation(root, routes);
