@@ -59,129 +59,287 @@
     #main-content { flex: 1; min-width: 0; max-width: 100%; transition: all .22s var(--dv-ease); overflow-x: hidden; }
     .page { max-width: var(--page-max); margin: 0 auto; padding: var(--page-pad); min-height: 100vh; position: relative; }
 
-    .page-header { margin-bottom: 18px; }
+    .page-header { margin-bottom: 6px; }
+    .daveri-page-heading {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .daveri-page-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #7C3AED, #EC4899, #3B82F6);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 36px;
+      box-shadow: 0 8px 24px rgba(124,58,237,.26);
+    }
+    .daveri-page-icon img {
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+      display: block;
+      filter: brightness(0) saturate(100%) invert(100%);
+    }
     .page-title { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: var(--dv-text); }
     .page-subtitle { font-size: 14px; color: var(--dv-muted); margin-top: 4px; }
-    .history-toolbar {
+
+    .history-filter-bar {
       display: flex;
-      gap: 10px;
-      margin-bottom: 14px;
-      align-items: center;
+      gap: 12px;
+      margin-top: 14px;
+      margin-bottom: 16px;
       flex-wrap: wrap;
     }
-    .history-filter {
-      height: 32px;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-      color: var(--dv-text);
-      font-size: 12px;
-      padding: 0 10px;
-      min-width: 170px;
-      outline: none;
-    }
-    [data-theme="light"] .history-filter {
-      background: rgba(15,23,42,0.05);
-      border-color: rgba(15,23,42,0.12);
-    }
 
-    /* Conversation Layout */
-    .conv-layout { display: grid; grid-template-columns: 340px 1fr; gap: 20px; min-height: calc(100vh - 190px); }
-    @media (max-width: 900px) { .conv-layout { grid-template-columns: 1fr; } }
-
-    /* Conversation List */
-    .conv-list {
-      background: var(--dv-bg2); border: 1px solid var(--dv-stroke);
-      border-radius: var(--dv-radius-xl); overflow: hidden; display: flex; flex-direction: column;
-    }
-    .conv-list-header {
-      padding: 16px 20px; border-bottom: 1px solid var(--dv-stroke);
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .conv-list-header span { font-size: 13px; color: var(--dv-muted); font-weight: 600; }
-    .conv-count {
-      background: rgba(168,85,247,.15); color: #fff; padding: 4px 10px;
-      border-radius: 999px; font-size: 11px; font-weight: 700;
-    }
-    .conv-items { flex: 1; overflow-y: auto; padding: 10px; }
-    .conv-items::-webkit-scrollbar { width: 4px; }
-    .conv-items::-webkit-scrollbar-thumb { background: var(--dv-stroke2); border-radius: 4px; }
-
-    .conversation-item {
-      width: 100%;
-      min-height: 64px;
-      border-radius: 10px;
-      padding: 12px;
+    .dav-select {
       position: relative;
-      background: transparent;
-      border: 1px solid transparent;
-      text-align: left;
+      min-width: 220px;
+    }
+    .dav-select-trigger {
+      width: 100%;
+      height: 38px;
+      border-radius: 10px;
+      background: #111318;
+      border: 1px solid #23262F;
+      color: #E5E7EB;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
       cursor: pointer;
-      margin-bottom: 6px;
-      transition: all 120ms ease;
+      font-size: 13px;
+      text-align: left;
+      transition: border-color .16s ease, background .16s ease;
+    }
+    .dav-select-trigger:hover {
+      border-color: rgba(124,58,237,.48);
+      background: rgba(17,19,24,.95);
+    }
+    .dav-select.open .dav-select-trigger {
+      border-color: rgba(124,58,237,.62);
+      box-shadow: 0 0 0 1px rgba(124,58,237,.32);
+    }
+    .dav-select-label {
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dav-select-chevron {
+      width: 14px;
+      height: 14px;
+      color: rgba(229,231,235,.8);
+      transition: transform .16s ease;
+      flex: 0 0 auto;
+    }
+    .dav-select.open .dav-select-chevron {
+      transform: rotate(180deg);
+    }
+    .dav-select .bot-icon {
+      width: 16px;
+      height: 16px;
+      border-radius: 5px;
+      object-fit: cover;
+      flex: 0 0 16px;
+      background: rgba(255,255,255,.06);
+    }
+    .dav-select-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      display: none;
+      background: #111318;
+      border: 1px solid #23262F;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      padding: 6px;
+      z-index: 40;
+    }
+    .dav-select.open .dav-select-menu {
+      display: block;
+    }
+    .dav-select-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #E5E7EB;
+      font-size: 13px;
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      transition: background .16s ease;
+    }
+    .dav-select-item:hover {
+      background: rgba(124,58,237,0.15);
+    }
+    .dav-select-item.active {
+      background: linear-gradient(90deg, rgba(124,58,237,0.2), transparent);
+      border-left: 2px solid #7C3AED;
+    }
+    .dav-select-item .bot-icon {
+      width: 16px;
+      height: 16px;
+      border-radius: 5px;
+      object-fit: cover;
+      background: rgba(255,255,255,.06);
+      flex: 0 0 16px;
+    }
+
+    .conv-layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 980px) {
+      .conv-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .conv-list,
+    .conv-detail {
+      background: #181a20;
+      border: 1px solid #23262F;
+      border-radius: 14px;
+      overflow: hidden;
+      height: fit-content;
+      max-height: calc(100vh - 260px);
       display: flex;
       flex-direction: column;
-      justify-content: center;
     }
-    .conversation-item:hover {
-      background: rgba(255,255,255,0.04);
-    }
-    .conversation-item.active {
-      background: rgba(139,92,246,0.12);
-      border: 1px solid rgba(139,92,246,0.35);
-      box-shadow:
-        0 0 0 1px rgba(139,92,246,0.25),
-        0 0 16px rgba(139,92,246,0.15);
-    }
-    .conversation-item.active::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 6px;
-      bottom: 6px;
-      width: 2px;
-      background: linear-gradient(to bottom, #8b5cf6, #ec4899, #3b82f6);
-      border-radius: 2px;
-    }
-    .conv-visitor { font-size: 13px; font-weight: 600; color: var(--dv-text); margin-bottom: 1px; }
-    .conv-preview { font-size: 12px; color: var(--dv-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
-    .conv-date { font-size: 11px; color: var(--dv-muted2); }
-
-    /* Conversation Detail */
-    .conv-detail {
-      background: var(--dv-bg2); border: 1px solid var(--dv-stroke);
-      border-radius: var(--dv-radius-xl); overflow: hidden; display: flex; flex-direction: column;
-    }
+    .conv-list-header,
     .conv-meta {
-      padding: 16px 20px; border-bottom: 1px solid var(--dv-stroke);
-      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 18px;
+      border-bottom: 1px solid #23262F;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
     }
-    .conv-meta-title { font-size: 14px; font-weight: 700; color: var(--dv-text); }
-    .conv-meta-visitor { font-size: 12px; color: var(--dv-muted); }
+    .conv-list-header span {
+      font-size: 12px;
+      color: rgba(229,231,235,.72);
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .conv-count {
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #E5E7EB;
+      background: rgba(124,58,237,.18);
+      border: 1px solid rgba(124,58,237,.28);
+    }
+
+    .conv-items {
+      height: fit-content;
+      max-height: calc(100vh - 320px);
+      overflow-y: auto;
+      padding: 10px;
+      scrollbar-width: thin;
+      scrollbar-color: #2a2f3b transparent;
+    }
+    .conv-items::-webkit-scrollbar { width: 6px; }
+    .conv-items::-webkit-scrollbar-thumb { background: #2a2f3b; border-radius: 999px; }
+
+    .dav-conversation-item,
+    .conversation-item {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      background: transparent;
+      border: 1px solid transparent;
+      transition: all .2s ease;
+      position: relative;
+      text-align: left;
+      cursor: pointer;
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .dav-conversation-item:hover,
+    .conversation-item:hover {
+      background: #141720;
+      border-color: #23262F;
+    }
+    .dav-conversation-item.active,
+    .conversation-item.active {
+      background: linear-gradient(90deg, rgba(124,58,237,0.2), transparent);
+      border-color: #23262F;
+      border-left: 3px solid #7C3AED;
+    }
+    .conv-visitor {
+      font-size: 13px;
+      font-weight: 600;
+      color: #E5E7EB;
+      margin-bottom: 1px;
+    }
+    .conv-preview {
+      font-size: 12px;
+      color: rgba(229,231,235,.62);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+    .conv-date {
+      font-size: 11px;
+      color: rgba(229,231,235,.45);
+    }
+
+    .conv-meta-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #E5E7EB;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .conv-meta-visitor {
+      font-size: 12px;
+      color: rgba(229,231,235,.62);
+    }
 
     .chat-viewer {
-      flex: 1;
-      padding: 24px;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      height: calc(100vh - 240px);
+      padding: 18px 18px 20px;
+      height: fit-content;
+      max-height: calc(100vh - 340px);
       overflow-y: auto;
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: #2a2f3b transparent;
     }
-    .chat-viewer::-webkit-scrollbar { width: 4px; }
-    .chat-viewer::-webkit-scrollbar-thumb { background: var(--dv-stroke2); border-radius: 4px; }
+    .chat-viewer::-webkit-scrollbar { width: 6px; }
+    .chat-viewer::-webkit-scrollbar-thumb { background: #2a2f3b; border-radius: 999px; }
+
     .chat-msg-row {
       display: flex;
       align-items: flex-end;
       gap: 8px;
       max-width: 100%;
+      opacity: 0;
+      transform: translateY(6px);
+      animation: dvMessageIn 180ms ease forwards;
     }
-    .chat-msg-row.user {
-      justify-content: flex-end;
+    @keyframes dvMessageIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    .chat-msg-row.bot {
-      justify-content: flex-start;
-    }
+    .chat-msg-row.user { justify-content: flex-end; }
+    .chat-msg-row.bot { justify-content: flex-start; }
     .msg-avatar {
       width: 28px;
       height: 28px;
@@ -193,7 +351,7 @@
       display: grid;
       place-items: center;
       font-size: 11px;
-      color: var(--dv-muted);
+      color: rgba(229,231,235,.7);
       font-weight: 700;
     }
     .msg-avatar img {
@@ -210,47 +368,70 @@
     .chat-message {
       padding: 10px 12px;
       font-size: 13px;
-      line-height: 1.6;
+      line-height: 1.55;
       white-space: pre-wrap;
       word-break: break-word;
       max-width: 60%;
     }
-    .chat-message.user {
-      background: rgba(139,92,246,0.18);
-      border: 1px solid rgba(139,92,246,0.35);
-      border-radius: 14px 14px 4px 14px;
-      margin-left: auto;
-    }
     .chat-message.bot {
       background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.06);
       border-radius: 14px 14px 14px 4px;
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 10px 12px;
+      max-width: 60%;
     }
-    .chat-msg-row.user .msg-bubble-wrap {
-      align-items: flex-end;
+    .chat-message.user {
+      background: rgba(139,92,246,0.18);
+      border-radius: 14px 14px 4px 14px;
+      border: 1px solid rgba(139,92,246,0.35);
+      padding: 10px 12px;
+      max-width: 60%;
+      margin-left: auto;
     }
-    .chat-msg-row.bot .msg-bubble-wrap {
-      align-items: flex-start;
-    }
+    .chat-msg-row.user .msg-bubble-wrap { align-items: flex-end; }
+    .chat-msg-row.bot .msg-bubble-wrap { align-items: flex-start; }
     .msg-time {
       font-size: 11px;
       opacity: 0.5;
       margin-top: 4px;
-      color: var(--dv-text2);
+      color: rgba(229,231,235,.72);
     }
 
-    /* Empty State */
     .empty-state {
-      flex: 1; display: flex; flex-direction: column; align-items: center;
-      justify-content: center; gap: 12px; padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 36px;
+      min-height: 180px;
     }
     .empty-state-icon {
-      width: 56px; height: 56px; border-radius: 16px;
-      background: var(--dv-surface); border: 1px solid var(--dv-stroke);
-      display: flex; align-items: center; justify-content: center;
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: linear-gradient(
+        135deg,
+        rgba(124,58,237,0.25),
+        rgba(236,72,153,0.25),
+        rgba(59,130,246,0.25)
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .empty-state-icon svg { width: 24px; height: 24px; color: var(--dv-muted); stroke-width: 1.5; }
-    .empty-state-text { font-size: 13px; color: var(--dv-muted); text-align: center; }
+    .empty-state-icon svg {
+      width: 24px;
+      height: 24px;
+      color: #fff;
+      opacity: .9;
+      stroke-width: 1.6;
+    }
+    .empty-state-text {
+      font-size: 13px;
+      color: rgba(229,231,235,.7);
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -260,21 +441,34 @@
     <div id="main-content">
       <div class="page" id="historia_root" data-user-id="CURRENT USER" data-bot-id="">
         <div class="page-header">
-          <div class="page-title" data-i18n="history.page.heading"></div>
+          <div class="daveri-page-heading">
+            <div class="daveri-page-icon" data-daveri-page-icon="true">
+              <img src="/assets/icons/history.svg" alt="" width="18" height="18" />
+            </div>
+            <div class="page-title" data-i18n="history.page.heading"></div>
+          </div>
           <div class="page-subtitle" data-i18n="history.page.subtitle"></div>
         </div>
-        <div class="history-toolbar">
-          <select id="historyBotFilter" class="history-filter" aria-label="Select bot">
-            <option value="">All bots</option>
-          </select>
-          <select id="historyRangeFilter" class="history-filter" aria-label="Select time range">
-            <option value="today">Today</option>
-            <option value="3d">Last 3 days</option>
-            <option value="7d" selected>Last 7 days</option>
-            <option value="14d">Last 14 days</option>
-            <option value="30d">Last 30 days</option>
-            <option value="all">All time</option>
-          </select>
+        <div class="history-filter-bar">
+          <div class="dav-select" id="historyBotSelect">
+            <button class="dav-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+              <img class="bot-icon" src="/icons/default-bot.svg" alt="" />
+              <span class="dav-select-label">All bots</span>
+              <svg class="dav-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </button>
+            <div class="dav-select-menu" role="listbox"></div>
+          </div>
+          <div class="dav-select" id="historyRangeSelect">
+            <button class="dav-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+              <span class="dav-select-label">Last 7 days</span>
+              <svg class="dav-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </button>
+            <div class="dav-select-menu" role="listbox"></div>
+          </div>
         </div>
 
         <div class="conv-layout">
@@ -332,15 +526,23 @@
     const convCount = document.getElementById("convCount");
     const convMessages = document.getElementById("convMessages");
     const convMetaVisitor = document.getElementById("convMetaVisitor");
-    const historyBotFilter = document.getElementById("historyBotFilter");
-    const historyRangeFilter = document.getElementById("historyRangeFilter");
+    const historyBotSelect = document.getElementById("historyBotSelect");
+    const historyRangeSelect = document.getElementById("historyRangeSelect");
     const i18nText = (id) => document.getElementById(id)?.textContent || "";
     const DEFAULT_BOT_AVATAR = "/icons/default-bot.svg";
+    const TIME_RANGE_OPTIONS = [
+      { value: "today", label: "Today" },
+      { value: "3d", label: "Last 3 days" },
+      { value: "7d", label: "Last 7 days" },
+      { value: "14d", label: "Last 14 days" },
+      { value: "30d", label: "Last 30 days" },
+      { value: "all", label: "All time" },
+    ];
 
     let allConversations = [];
     let selectedConversationId = null;
     let selectedBotId = "";
-    let selectedTimeRange = historyRangeFilter?.value || "7d";
+    let selectedTimeRange = "7d";
     let botsById = new Map();
 
     function translateDynamicContent() {
@@ -439,6 +641,146 @@
         .sort((a, b) => getConversationTimestamp(b) - getConversationTimestamp(a));
     }
 
+    function closeAllSelects(exceptRoot = null) {
+      [historyBotSelect, historyRangeSelect].forEach((root) => {
+        if (!root || root === exceptRoot) return;
+        root.classList.remove("open");
+        root.querySelector(".dav-select-trigger")?.setAttribute("aria-expanded", "false");
+      });
+    }
+
+    function setSelectTrigger(root, { label, iconUrl = null }) {
+      if (!root) return;
+      const labelEl = root.querySelector(".dav-select-label");
+      if (labelEl) labelEl.textContent = label || "";
+
+      const iconEl = root.querySelector(".bot-icon");
+      if (iconEl) {
+        if (iconUrl) {
+          iconEl.src = iconUrl;
+          iconEl.style.display = "";
+        } else {
+          iconEl.style.display = "none";
+        }
+      }
+    }
+
+    function createSelectItem({ label, value, iconUrl = null, active = false, onSelect }) {
+      const item = document.createElement("div");
+      item.className = `dav-select-item${active ? " active" : ""}`;
+      item.setAttribute("role", "option");
+      item.dataset.value = value;
+      item.setAttribute("aria-selected", active ? "true" : "false");
+
+      if (iconUrl) {
+        const icon = document.createElement("img");
+        icon.className = "bot-icon";
+        icon.src = iconUrl;
+        icon.alt = "";
+        item.appendChild(icon);
+      }
+
+      const text = document.createElement("span");
+      text.textContent = label;
+      item.appendChild(text);
+
+      item.addEventListener("click", onSelect);
+      return item;
+    }
+
+    function setupSelectInteractions() {
+      [historyBotSelect, historyRangeSelect].forEach((root) => {
+        if (!root) return;
+        const trigger = root.querySelector(".dav-select-trigger");
+        if (!trigger) return;
+
+        trigger.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const wasOpen = root.classList.contains("open");
+          closeAllSelects(root);
+          root.classList.toggle("open", !wasOpen);
+          trigger.setAttribute("aria-expanded", !wasOpen ? "true" : "false");
+        });
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!event.target.closest(".dav-select")) {
+          closeAllSelects();
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeAllSelects();
+        }
+      });
+    }
+
+    function renderRangeSelectMenu() {
+      const menu = historyRangeSelect?.querySelector(".dav-select-menu");
+      if (!menu) return;
+      menu.innerHTML = "";
+
+      TIME_RANGE_OPTIONS.forEach((option) => {
+        const item = createSelectItem({
+          label: option.label,
+          value: option.value,
+          active: selectedTimeRange === option.value,
+          onSelect: async () => {
+            selectedTimeRange = option.value;
+            setActiveConversation(null);
+            setSelectTrigger(historyRangeSelect, { label: option.label });
+            closeAllSelects();
+            await loadConversations();
+            renderRangeSelectMenu();
+          },
+        });
+        menu.appendChild(item);
+      });
+
+      const activeOption = TIME_RANGE_OPTIONS.find((option) => option.value === selectedTimeRange) || TIME_RANGE_OPTIONS[2];
+      setSelectTrigger(historyRangeSelect, { label: activeOption.label });
+    }
+
+    function renderBotSelectMenu() {
+      const menu = historyBotSelect?.querySelector(".dav-select-menu");
+      if (!menu) return;
+      menu.innerHTML = "";
+
+      const entries = [
+        { id: "", name: "All bots", icon_url: DEFAULT_BOT_AVATAR },
+        ...Array.from(botsById.values()),
+      ];
+
+      entries.forEach((entry) => {
+        const value = String(entry?.id || "");
+        const label = entry?.name || `Bot ${value.slice(0, 6)}`;
+        const iconUrl = entry?.icon_url || DEFAULT_BOT_AVATAR;
+
+        const item = createSelectItem({
+          label,
+          value,
+          iconUrl,
+          active: selectedBotId === value,
+          onSelect: async () => {
+            selectedBotId = value;
+            setActiveConversation(null);
+            setSelectTrigger(historyBotSelect, { label, iconUrl });
+            closeAllSelects();
+            await loadConversations();
+            renderBotSelectMenu();
+          },
+        });
+        menu.appendChild(item);
+      });
+
+      const selectedBot = selectedBotId ? botsById.get(String(selectedBotId)) : null;
+      setSelectTrigger(historyBotSelect, {
+        label: selectedBot ? (selectedBot.name || `Bot ${selectedBotId.slice(0, 6)}`) : "All bots",
+        iconUrl: selectedBot?.icon_url || DEFAULT_BOT_AVATAR,
+      });
+    }
+
     function createAvatarNode({ imageUrl, fallbackText }) {
       const avatar = document.createElement("div");
       avatar.className = "msg-avatar";
@@ -476,7 +818,7 @@
 
     function setActiveConversation(id) {
       selectedConversationId = id != null ? String(id) : null;
-      convItems.querySelectorAll(".conversation-item").forEach((item) => {
+      convItems.querySelectorAll(".conversation-item, .dav-conversation-item").forEach((item) => {
         const isActive = selectedConversationId && String(item.dataset.conversationId) === selectedConversationId;
         item.classList.toggle("active", Boolean(isActive));
       });
@@ -488,7 +830,16 @@
       convItems.innerHTML = "";
 
       if (!conversations.length) {
-        convItems.innerHTML = '<div class="empty-state"><div class="empty-state-text">No conversations found for selected bot and time range</div></div>';
+        convItems.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+              </svg>
+            </div>
+            <div class="empty-state-text">No conversations found for selected bot and time range</div>
+          </div>
+        `;
         setActiveConversation(null);
         renderNoConversationSelected();
         return;
@@ -505,7 +856,7 @@
       conversations.forEach((conv) => {
         const el = document.createElement("button");
         el.type = "button";
-        el.className = "conversation-item";
+        el.className = "dav-conversation-item conversation-item";
         el.dataset.conversationId = String(conv?.id || "");
         el.innerHTML = `
           <div class="conv-visitor">${escapeHtml(conv.visitor_id || conv.visitor_name || i18nText("i18n-history-visitor"))}</div>
@@ -526,34 +877,23 @@
       let bots = [];
       try {
         const payload = await fetchJson(API_BOTS);
-        bots = Array.isArray(payload?.bots)
+        const rawBots = Array.isArray(payload?.bots)
           ? payload.bots
           : Array.isArray(payload?.data)
             ? payload.data
             : Array.isArray(payload)
               ? payload
               : [];
+        bots = rawBots.slice().sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")));
       } catch (error) {
         console.error("[History] bot list load failed:", error);
       }
 
       botsById = new Map(bots.map((bot) => [String(bot?.id || ""), bot]));
-      if (!historyBotFilter) return;
-
-      historyBotFilter.innerHTML = '<option value="">All bots</option>';
-      bots.forEach((bot) => {
-        const opt = document.createElement("option");
-        opt.value = String(bot?.id || "");
-        opt.textContent = bot?.name || `Bot ${String(bot?.id || "").slice(0, 6)}`;
-        historyBotFilter.appendChild(opt);
-      });
-
-      if (selectedBotId && botsById.has(String(selectedBotId))) {
-        historyBotFilter.value = String(selectedBotId);
-      } else {
-        historyBotFilter.value = "";
+      if (selectedBotId && !botsById.has(String(selectedBotId))) {
         selectedBotId = "";
       }
+      renderBotSelectMenu();
     }
 
     async function loadConversations() {
@@ -595,7 +935,7 @@
         return;
       }
 
-      const botId = String(conversation?.bot_id || historyBotFilter?.value || "");
+      const botId = String(conversation?.bot_id || selectedBotId || "");
       const botMeta = botsById.get(botId);
       const botAvatar = conversation?.bot_icon_url || botMeta?.icon_url || DEFAULT_BOT_AVATAR;
       const userAvatar = conversation?.visitor_avatar_url || "";
@@ -637,21 +977,10 @@
       convMessages.scrollTop = convMessages.scrollHeight;
     }
 
-    historyBotFilter?.addEventListener("change", async () => {
-      selectedBotId = String(historyBotFilter.value || "").trim();
-      setActiveConversation(null);
-      await loadConversations();
-    });
-    historyRangeFilter?.addEventListener("change", async () => {
-      selectedTimeRange = String(historyRangeFilter.value || "7d");
-      setActiveConversation(null);
-      await loadConversations();
-    });
-
     await waitForAuthReady();
+    setupSelectInteractions();
+    renderRangeSelectMenu();
     await loadBotsFilterOptions();
-    selectedBotId = String(historyBotFilter?.value || "").trim();
-    selectedTimeRange = String(historyRangeFilter?.value || "7d");
     await loadConversations();
     renderNoConversationSelected();
   </script>

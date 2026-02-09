@@ -109,6 +109,45 @@ body.app-layout-root .page {
   color: var(--text-primary);
 }
 
+.daveri-page-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.daveri-page-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #7c3aed, #ec4899, #3b82f6);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.26);
+}
+
+.daveri-page-icon img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  display: block;
+  filter: brightness(0) saturate(100%) invert(100%);
+}
+
+.page-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.daveri-page-heading .page-title,
+.daveri-page-heading .dashboard-page-title {
+  margin: 0;
+}
+
 body.app-layout-root .glass-card,
 body.app-layout-root .bot-card,
 body.app-layout-root .files-card,
