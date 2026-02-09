@@ -8,14 +8,14 @@ const DEFAULT_STATE = {
       ts: Date.now(),
     },
   ],
-  isExpanded: true,
-  height: 360,
+  isExpanded: false,
+  height: 420,
 };
 
 const clampHeight = (height) => {
   const numeric = Number(height);
   if (!Number.isFinite(numeric)) return DEFAULT_STATE.height;
-  return Math.max(200, Math.min(620, Math.round(numeric)));
+  return Math.max(320, Math.min(560, Math.round(numeric)));
 };
 
 const loadFromStorage = () => {

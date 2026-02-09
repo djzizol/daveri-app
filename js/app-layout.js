@@ -1,8 +1,8 @@
 import { createAppLayout } from "../components/layout/AppLayout.js";
 import { createSidebarLayer } from "../components/layout/Sidebar.js";
 import { createMainContentLayer } from "../components/layout/MainContent.js";
-import { mountAgentDock } from "../components/agent/AgentDock.js";
-import { enhanceDashboardPage } from "../components/dashboard/DashboardPage.js";
+import { mountAIWindow } from "../components/agent/AIWindow.js";
+import { applyDashboardRedesign } from "../components/dashboard/DashboardRedesign.js";
 
 const APP_LAYOUT_STYLE_ID = "daveri-app-layout-style";
 const APP_LAYOUT_STYLE_URL = new URL("../css/agent-dock.css", import.meta.url);
@@ -25,9 +25,9 @@ export const ensureAppLayout = () => {
   createSidebarLayer();
   createMainContentLayer();
 
-  mountAgentDock();
+  mountAIWindow();
 
   if (window.location.pathname.includes("/dashboard")) {
-    enhanceDashboardPage();
+    applyDashboardRedesign();
   }
 };
