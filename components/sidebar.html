@@ -163,7 +163,7 @@
   transform:scale(1);
   background:rgba(255,255,255,.05);
 }
-/* W zwiniÄ™tym sidebarze przy hover na logo â€“ chowaj logo, pokazuj ikonÄ™ rozwiĹ„ */
+/* In collapsed sidebar show expand icon on logo hover */
 #daveri_sidebar .sidebar.collapsed .mark:hover img{
   opacity:0;
   pointer-events:none;
@@ -212,7 +212,7 @@
 #daveri_sidebar .nav::-webkit-scrollbar{width:0;height:0;}
 #daveri_sidebar .section{margin-top:2px;}
 #daveri_sidebar .section:first-child{margin-top:0;}
-/* Section headers â€“ Microsoft 365 style */
+/* Section headers - Microsoft 365 style */
 #daveri_sidebar .nav-label{
   font-size:10px;
   font-weight:500;
@@ -223,7 +223,7 @@
 }
 #daveri_sidebar .sidebar.collapsed .nav-label{display:none;}
 
-/* NAV ITEM â€“ typography, spacing, no transform */
+/* NAV ITEM - typography, spacing, no transform */
 #daveri_sidebar .nav-item{
   position:relative;
   display:flex;
@@ -254,7 +254,7 @@
   color:#ffffff;
 }
 
-/* Icons â€“ vector SVG, aligned with text */
+/* Icons - vector SVG, aligned with text */
 #daveri_sidebar .nav-ico{
   width:24px;
   height:24px;
@@ -291,7 +291,7 @@
   text-overflow:ellipsis;
 }
 
-/* badge NEW â€“ reduced weight */
+/* badge NEW - reduced weight */
 #daveri_sidebar .badge{
   font-size:10px;
   font-weight:600;
@@ -304,7 +304,7 @@
   border-radius:999px;
 }
 
-/* ACTIVE STATE â€“ subtle 2px left accent, no gradient */
+/* ACTIVE STATE - subtle 2px left accent, no gradient */
 #daveri_sidebar .nav-item.active{ opacity:1; }
 #daveri_sidebar .nav-item.active .label{
   color:#ffffff;
@@ -616,7 +616,7 @@
   white-space:nowrap;
 }
 
-/* BODY â€“ orb + tekst */
+/* BODY - orb + text */
 #daveri_sidebar .plan-card-body{
   display:flex;
   align-items:center;
@@ -643,7 +643,7 @@
   text-overflow:ellipsis;
 }
 
-/* ===== USER / FOOTER â€“ reduced visual weight ===== */
+/* ===== USER / FOOTER - reduced visual weight ===== */
 #daveri_sidebar .user{
   position:relative;
   padding:10px 12px 12px;
@@ -672,7 +672,7 @@
 #daveri_sidebar .user-btn:active{
   background:rgba(255,255,255,0.04);
 }
-/* User card text â€“ lower contrast */
+/* User card text - lower contrast */
 #daveri_sidebar .user-meta .name{
   color:rgba(255,255,255,0.78);
   font-weight:500;
@@ -884,7 +884,7 @@
             <!-- ZAKTUALIZOWANE LOGO -->
             <img src="/assets/icons/logo.svg" alt="DaVeri logo" />
 
-            <!-- Ikona rozwiĹ„ â€“ zaokrÄ…glony kwadrat z paskiem po lewej (styl ChatGPT/Copilot) -->
+            <!-- Expand icon in rounded square (ChatGPT/Copilot style) -->
             <div class="mark-ham" role="button" data-i18n-aria-label="sidebar.actions.expand">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="5" y="6" width="14" height="12" rx="3"/>
@@ -895,39 +895,7 @@
         </div>
 
         <div class="brand-right">
-          <div class="language-dropdown-container compact" data-lang-dropdown>
-            <button class="language-selector" type="button" data-lang-current aria-label="Change language">
-              <img class="language-flag" data-lang-current-flag src="/assets/flags/en.svg" alt="" width="20" height="14" />
-              <span data-lang-current-label>English</span>
-              <span class="lang-arrow">v</span>
-            </button>
-            <div class="language-dropdown" data-lang-menu>
-              <div class="language-option" data-lang="en">
-                <img src="/assets/flags/en.svg" class="language-flag" alt="" width="20" height="14" />
-                <span>English</span>
-              </div>
-              <div class="language-option" data-lang="pl">
-                <img src="/assets/flags/pl.svg" class="language-flag" alt="" width="20" height="14" />
-                <span>Polski</span>
-              </div>
-              <div class="language-option" data-lang="de">
-                <img src="/assets/flags/de.svg" class="language-flag" alt="" width="20" height="14" />
-                <span>Deutsch</span>
-              </div>
-              <div class="language-option" data-lang="fr">
-                <img src="/assets/flags/fr.svg" class="language-flag" alt="" width="20" height="14" />
-                <span>Français</span>
-              </div>
-              <div class="language-option" data-lang="es">
-                <img src="/assets/flags/es.svg" class="language-flag" alt="" width="20" height="14" />
-                <span>Español</span>
-              </div>
-              <div class="language-option" data-lang="pt">
-                <img src="/assets/flags/pt.svg" class="language-flag" alt="" width="20" height="14" />
-                <span>Português</span>
-              </div>
-            </div>
-          </div>
+
 
           <button class="icon-btn" id="collapseBtn" type="button" data-i18n-aria-label="sidebar.actions.toggle">
             <svg class="sidebar-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1005,73 +973,111 @@
       </div>
     </nav>
 
-    <!-- PLAN -->
-    <div class="plan-card" id="sidebar-plan-card">
-      <div class="plan-card-header">
-        <div>
-          <div class="plan-label" data-i18n="sidebar.plan.label">Your plan</div>
-          <div class="plan-name" id="sidebar-plan-name">â€”</div>
-        </div>
-        <span class="plan-pill" id="sidebar-plan-pill" data-i18n="sidebar.plan.pill">PLAN</span>
-      </div>
+    <div class="sidebar-spacer" aria-hidden="true"></div>
 
-      <div class="plan-card-body">
-        <div class="plan-liquid">
-          <div class="plan-liquid-shell" aria-hidden="true">
-            <canvas id="planLiquidCanvas" width="220" height="220"></canvas>
-            <div class="plan-liquid-ui">
-              <div class="plan-liquid-percent" id="sidebar-plan-percent">0%</div>
-              <div class="plan-liquid-sub" data-i18n="sidebar.plan.remaining">REMAINING</div>
+    <div class="sidebar-bottom">
+      <!-- PLAN -->
+      <div class="plan-card" id="sidebar-plan-card">
+        <div class="plan-card-header">
+          <div>
+            <div class="plan-label" data-i18n="sidebar.plan.label">Your plan</div>
+            <div class="plan-name" id="sidebar-plan-name">--</div>
+          </div>
+          <span class="plan-pill" id="sidebar-plan-pill" data-i18n="sidebar.plan.pill">PLAN</span>
+        </div>
+
+        <div class="plan-card-body">
+          <div class="plan-liquid">
+            <div class="plan-liquid-shell" aria-hidden="true">
+              <canvas id="planLiquidCanvas" width="220" height="220"></canvas>
+              <div class="plan-liquid-ui">
+                <div class="plan-liquid-percent" id="sidebar-plan-percent">0%</div>
+                <div class="plan-liquid-sub" data-i18n="sidebar.plan.remaining">REMAINING</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="plan-credits-box">
+            <div class="plan-credits-main" id="sidebar-plan-credits-main" data-i18n="sidebar.plan.loading">Loading data...</div>
+            <div class="plan-credits-sub" id="sidebar-plan-credits-sub">
+              <span data-i18n="sidebar.plan.subtext">Checking your credits for this billing period.</span>
             </div>
           </div>
         </div>
+      </div><!-- /plan-card -->
 
-        <div class="plan-credits-box">
-          <div class="plan-credits-main" id="sidebar-plan-credits-main" data-i18n="sidebar.plan.loading">Loading dataâ€¦</div>
-          <div class="plan-credits-sub" id="sidebar-plan-credits-sub">
-            <span data-i18n="sidebar.plan.subtext">Checking your credits for this billing period.</span>
+      <!-- THEME TOGGLE -->
+      <div class="theme-toggle-section">
+        <div class="theme-toggle-buttons">
+          <button class="theme-btn active" data-theme="system" data-i18n-title="sidebar.theme.system">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </button>
+          <button class="theme-btn" data-theme="light" data-i18n-title="sidebar.theme.light">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          </button>
+          <button class="theme-btn" data-theme="dark" data-i18n-title="sidebar.theme.dark">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="language-dropdown-container compact" data-lang-dropdown>
+        <button class="language-selector" type="button" data-lang-current aria-label="Change language">
+          <img class="language-flag" data-lang-current-flag src="/assets/flags/en.svg" alt="" width="20" height="14" />
+          <span data-lang-current-label>English</span>
+          <span class="lang-arrow">v</span>
+        </button>
+        <div class="language-dropdown" data-lang-menu>
+          <div class="language-option" data-lang="en">
+            <img src="/assets/flags/en.svg" class="language-flag" alt="" width="20" height="14" />
+            <span>English</span>
+          </div>
+          <div class="language-option" data-lang="pl">
+            <img src="/assets/flags/pl.svg" class="language-flag" alt="" width="20" height="14" />
+            <span>Polski</span>
+          </div>
+          <div class="language-option" data-lang="de">
+            <img src="/assets/flags/de.svg" class="language-flag" alt="" width="20" height="14" />
+            <span>Deutsch</span>
+          </div>
+          <div class="language-option" data-lang="fr">
+            <img src="/assets/flags/fr.svg" class="language-flag" alt="" width="20" height="14" />
+            <span>Francais</span>
+          </div>
+          <div class="language-option" data-lang="es">
+            <img src="/assets/flags/es.svg" class="language-flag" alt="" width="20" height="14" />
+            <span>Espanol</span>
+          </div>
+          <div class="language-option" data-lang="pt">
+            <img src="/assets/flags/pt.svg" class="language-flag" alt="" width="20" height="14" />
+            <span>Portugues</span>
           </div>
         </div>
       </div>
-    </div><!-- /plan-card -->
 
-    <!-- THEME TOGGLE -->
-    <div class="theme-toggle-section">
-      <div class="theme-toggle-buttons">
-        <button class="theme-btn active" data-theme="system" data-i18n-title="sidebar.theme.system">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-        </button>
-        <button class="theme-btn" data-theme="light" data-i18n-title="sidebar.theme.light">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-        </button>
-        <button class="theme-btn" data-theme="dark" data-i18n-title="sidebar.theme.dark">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- USER -->
-    <div class="user">
-      <div class="dropdown ck-dropdown dv-dd" id="userDropdown">
-        <button class="dd-item" type="button" id="goProfileBtn">
-          <span data-i18n="sidebar.nav.settings">Settings</span>
-        </button>
-        <button class="dd-item danger" type="button" id="logoutBtn">
-          <svg viewBox="0 0 24 24"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 21V3"/></svg>
-          <span data-i18n="sidebar.user.logout">Log out</span>
-        </button>
-      </div>
-
-      <button class="user-btn" id="userBtn" type="button" data-i18n-aria-label="sidebar.user.menu">
-        <div class="avatar" id="avatarBox" data-i18n-title="sidebar.user.title"></div>
-        <div class="user-meta">
-          <strong id="userName" data-i18n="sidebar.user.nameFallback">User</strong>
-          <span id="userSub">â€”</span>
+      <!-- USER -->
+      <div class="user">
+        <div class="dropdown ck-dropdown dv-dd" id="userDropdown">
+          <button class="dd-item" type="button" id="goProfileBtn">
+            <span data-i18n="sidebar.nav.settings">Settings</span>
+          </button>
+          <button class="dd-item danger" type="button" id="logoutBtn">
+            <svg viewBox="0 0 24 24"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 21V3"/></svg>
+            <span data-i18n="sidebar.user.logout">Log out</span>
+          </button>
         </div>
-        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M6 9l6 6 6-6"/>
-        </svg>
-      </button>
+
+        <button class="user-btn" id="userBtn" type="button" data-i18n-aria-label="sidebar.user.menu">
+          <div class="avatar" id="avatarBox" data-i18n-title="sidebar.user.title"></div>
+          <div class="user-meta">
+            <strong id="userName" data-i18n="sidebar.user.nameFallback">User</strong>
+            <span id="userSub">--</span>
+          </div>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
+      </div>
     </div>
   </aside>
 </div>
@@ -1102,3 +1108,4 @@
 
 </body>
 </html>
+

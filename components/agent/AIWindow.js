@@ -1,10 +1,9 @@
 import { agentDockStore } from "../../js/agent-dock-store.js";
-import { createDaVeriPoweredBadge } from "../brand/DaVeriPoweredBadge.js";
 import { createAIMessages } from "./AIMessages.js";
 import { createAIInput } from "./AIInput.js";
 
 const AI_WINDOW_ID = "aiWindow";
-const COLLAPSED_HEIGHT = 56;
+const COLLAPSED_HEIGHT = 92;
 
 const applyState = (windowNode, state) => {
   const targetHeight = state.isExpanded ? state.height : COLLAPSED_HEIGHT;
@@ -19,41 +18,11 @@ const createAIWindowNode = () => {
   windowNode.id = AI_WINDOW_ID;
   windowNode.className = "ai-window is-collapsed";
 
-  const shell = document.createElement("div");
-  shell.className = "ai-window-shell";
-
-  const header = document.createElement("div");
-  header.className = "ai-window-header";
-
-  const headerBrand = document.createElement("div");
-  headerBrand.className = "ai-window-brand";
-
-  const title = document.createElement("span");
-  title.className = "ai-window-title";
-  title.textContent = "AI Assistant";
-
-  const poweredBadge = createDaVeriPoweredBadge({ className: "ai-window-powered-badge" });
-
-  headerBrand.appendChild(title);
-  headerBrand.appendChild(poweredBadge);
-  header.appendChild(headerBrand);
-
-  const minimize = document.createElement("button");
-  minimize.type = "button";
-  minimize.className = "ai-window-minimize";
-  minimize.setAttribute("aria-label", "Toggle AI window");
-  minimize.innerHTML = `
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-    </svg>
-  `;
-  minimize.addEventListener("click", () => {
-    const state = agentDockStore.getState();
-    agentDockStore.setExpanded(!state.isExpanded);
-  });
+  const container = document.createElement("div");
+  container.className = "chat-container";
 
   const messagesWrap = document.createElement("div");
-  messagesWrap.className = "ai-messages-wrap";
+  messagesWrap.className = "chat-messages-wrap ai-messages-wrap";
 
   const messages = createAIMessages();
   const input = createAIInput({
@@ -69,12 +38,52 @@ const createAIWindowNode = () => {
     },
   });
 
+  const footer = document.createElement("div");
+  footer.className = "chat-footer";
+
+  const poweredBy = document.createElement("div");
+  poweredBy.className = "powered-by";
+
+  const poweredLogo = document.createElement("img");
+  poweredLogo.src = "/assets/icons/logo.svg";
+  poweredLogo.alt = "";
+  poweredLogo.width = 14;
+  poweredLogo.height = 14;
+
+  const poweredAi = document.createElement("img");
+  poweredAi.src = "/assets/icons/ai.svg";
+  poweredAi.alt = "";
+  poweredAi.width = 14;
+  poweredAi.height = 14;
+
+  const poweredText = document.createElement("span");
+  poweredText.textContent = "Powered by DaVeri AI";
+
+  poweredBy.appendChild(poweredLogo);
+  poweredBy.appendChild(poweredAi);
+  poweredBy.appendChild(poweredText);
+  footer.appendChild(poweredBy);
+
+  const minimize = document.createElement("button");
+  minimize.type = "button";
+  minimize.className = "chat-minimize ai-window-minimize";
+  minimize.setAttribute("aria-label", "Toggle AI window");
+  minimize.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+    </svg>
+  `;
+  minimize.addEventListener("click", () => {
+    const state = agentDockStore.getState();
+    agentDockStore.setExpanded(!state.isExpanded);
+  });
+
   messagesWrap.appendChild(messages.node);
-  shell.appendChild(header);
-  shell.appendChild(minimize);
-  shell.appendChild(messagesWrap);
-  shell.appendChild(input.node);
-  windowNode.appendChild(shell);
+  container.appendChild(minimize);
+  container.appendChild(messagesWrap);
+  container.appendChild(input.node);
+  container.appendChild(footer);
+  windowNode.appendChild(container);
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {

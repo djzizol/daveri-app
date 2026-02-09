@@ -16,32 +16,29 @@ const sendIcon = `
 </svg>`;
 
 export const createAIInput = ({ onSend, onActivate }) => {
-  const wrap = document.createElement("div");
-  wrap.className = "ai-input-wrap";
-
   const row = document.createElement("div");
-  row.className = "ai-input-row";
+  row.className = "chat-input-row ai-input-row";
 
   const attachmentBtn = document.createElement("button");
   attachmentBtn.type = "button";
-  attachmentBtn.className = "ai-icon-btn";
+  attachmentBtn.className = "chat-icon-button ai-icon-btn";
   attachmentBtn.setAttribute("aria-label", "Attach file");
   attachmentBtn.innerHTML = attachmentIcon;
 
   const input = document.createElement("textarea");
-  input.className = "ai-input";
+  input.className = "chat-input ai-input";
   input.rows = 1;
   input.placeholder = "Ask AI anything...";
 
   const micBtn = document.createElement("button");
   micBtn.type = "button";
-  micBtn.className = "ai-icon-btn";
+  micBtn.className = "chat-icon-button ai-icon-btn";
   micBtn.setAttribute("aria-label", "Voice input");
   micBtn.innerHTML = micIcon;
 
   const sendBtn = document.createElement("button");
   sendBtn.type = "button";
-  sendBtn.className = "ai-icon-btn ai-send-btn";
+  sendBtn.className = "chat-icon-button send-button ai-send-btn";
   sendBtn.setAttribute("aria-label", "Send message");
   sendBtn.innerHTML = sendIcon;
 
@@ -80,7 +77,6 @@ export const createAIInput = ({ onSend, onActivate }) => {
   row.appendChild(input);
   row.appendChild(micBtn);
   row.appendChild(sendBtn);
-  wrap.appendChild(row);
 
-  return { node: wrap, input };
+  return { node: row, input };
 };
