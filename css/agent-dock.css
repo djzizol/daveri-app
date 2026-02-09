@@ -194,8 +194,8 @@ body.app-layout-root .card-icon img {
   margin: 8px 12px 0 !important;
 }
 
-#daveri_sidebar .language-section {
-  margin: 8px 12px 0 !important;
+#daveri_sidebar .brand-right .language-dropdown-container.compact {
+  margin: 0 !important;
 }
 
 #daveri_sidebar .user {
@@ -213,8 +213,11 @@ body.app-layout-root .card-icon img {
   box-shadow: none;
 }
 
-#daveri_sidebar .language-dropdown {
-  bottom: calc(100% + 6px);
+#daveri_sidebar .brand-right .language-dropdown-container.compact .language-dropdown {
+  top: calc(100% + 6px);
+  bottom: auto;
+  left: auto;
+  right: 0;
 }
 
 [data-theme="light"] #daveri_sidebar .nav-item {

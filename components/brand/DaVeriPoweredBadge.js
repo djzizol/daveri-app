@@ -1,7 +1,7 @@
 const ICON_BASE_PATH = "/assets/icons";
 const BADGE_MARKER = "data-daveri-powered";
 
-export const createDaVeriPoweredBadge = ({ className = "", label = "Powered by DaVeri AI" } = {}) => {
+export const createDaVeriPoweredBadge = ({ className = "", label = "Powered by" } = {}) => {
   const wrapper = document.createElement("div");
   wrapper.className = `daveri-powered${className ? ` ${className}` : ""}`;
   wrapper.setAttribute(BADGE_MARKER, "true");

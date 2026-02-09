@@ -381,7 +381,7 @@
 
 /* ===== THEME TOGGLE - SINGLE DARK BAR ===== */
 #daveri_sidebar .theme-toggle-section{
-  margin:12px 12px 0;
+  margin:8px 12px 0;
   padding:0;
   border-radius:var(--sb-radius);
   background:transparent;
@@ -458,44 +458,51 @@
 /* ===== LANGUAGE SELECTOR ===== */
 #daveri_sidebar .language-dropdown-container{
   position:relative;
-  width:100%;
-  min-width:0;
+  width:auto;
+  min-width:auto;
   max-width:none;
-  margin-top:0;
-}
-#daveri_sidebar .language-section{
-  margin:10px 12px 0;
-  order:3;
 }
 #daveri_sidebar .language-selector{
   display:flex;
   align-items:center;
+  justify-content:center;
   gap:6px;
-  width:100%;
-  min-width:0;
-  max-width:none;
-  padding:8px 10px;
-  border-radius:var(--sb-radius);
-  border:1px solid var(--sb-stroke);
-  background:var(--sb-surface);
+  width:30px;
+  height:30px;
+  min-height:30px;
+  min-width:30px;
+  padding:0;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.03);
   color:var(--sb-text);
   font-size:12px;
   cursor:pointer;
+  transition:all .14s var(--sb-ease);
+}
+#daveri_sidebar .language-selector:hover{
+  background:rgba(255,255,255,.05);
+  border-color:rgba(255,255,255,.14);
+}
+#daveri_sidebar .language-dropdown-container.compact [data-lang-current-label],
+#daveri_sidebar .language-dropdown-container.compact .lang-arrow{
+  display:none;
 }
 #daveri_sidebar .language-dropdown{
   display:none;
   position:absolute;
-  top:auto;
-  bottom:calc(100% + 8px);
-  left:0;
-  width:100%;
-  min-width:0;
-  max-width:none;
+  top:calc(100% + 8px);
+  bottom:auto;
+  left:auto;
+  right:0;
+  width:190px;
+  min-width:190px;
+  max-width:220px;
   background:var(--sb-panel);
-  border-radius:var(--sb-radius);
-  margin-top:6px;
+  border-radius:12px;
   overflow:hidden;
   border:1px solid var(--sb-stroke);
+  box-shadow:0 16px 32px rgba(0,0,0,.45);
   z-index:20;
 }
 #daveri_sidebar .language-dropdown.open{
@@ -545,10 +552,21 @@
   height:auto;
   max-width:100%;
 }
+#daveri_sidebar .sidebar.collapsed .language-dropdown-container.compact{
+  display:none;
+}
+[data-theme="light"] #daveri_sidebar .language-selector{
+  background:var(--sb-surface);
+  border-color:var(--sb-stroke);
+}
+[data-theme="light"] #daveri_sidebar .language-selector:hover{
+  background:var(--sb-surface2);
+  border-color:var(--sb-stroke2);
+}
 
 /* ===== PLAN CARD - CLEAN ===== */
 #daveri_sidebar .plan-card{
-  margin:16px 12px 0;
+  margin:8px 12px 0;
   padding:12px;
   border-radius:var(--sb-radius);
   border:1px solid var(--sb-stroke);
@@ -558,7 +576,6 @@
   gap:10px;
   position:relative;
   color:var(--sb-text);
-  margin-top:12px;
   order:1;
 }
 
@@ -631,8 +648,8 @@
   position:relative;
   padding:10px 12px 12px;
   border-top:none;
-  margin-top:12px;
-  order:4;
+  margin-top:8px;
+  order:3;
 }
 
 #daveri_sidebar .user-btn{
@@ -878,6 +895,40 @@
         </div>
 
         <div class="brand-right">
+          <div class="language-dropdown-container compact" data-lang-dropdown>
+            <button class="language-selector" type="button" data-lang-current aria-label="Change language">
+              <img class="language-flag" data-lang-current-flag src="/assets/flags/en.svg" alt="" width="20" height="14" />
+              <span data-lang-current-label>English</span>
+              <span class="lang-arrow">v</span>
+            </button>
+            <div class="language-dropdown" data-lang-menu>
+              <div class="language-option" data-lang="en">
+                <img src="/assets/flags/en.svg" class="language-flag" alt="" width="20" height="14" />
+                <span>English</span>
+              </div>
+              <div class="language-option" data-lang="pl">
+                <img src="/assets/flags/pl.svg" class="language-flag" alt="" width="20" height="14" />
+                <span>Polski</span>
+              </div>
+              <div class="language-option" data-lang="de">
+                <img src="/assets/flags/de.svg" class="language-flag" alt="" width="20" height="14" />
+                <span>Deutsch</span>
+              </div>
+              <div class="language-option" data-lang="fr">
+                <img src="/assets/flags/fr.svg" class="language-flag" alt="" width="20" height="14" />
+                <span>Français</span>
+              </div>
+              <div class="language-option" data-lang="es">
+                <img src="/assets/flags/es.svg" class="language-flag" alt="" width="20" height="14" />
+                <span>Español</span>
+              </div>
+              <div class="language-option" data-lang="pt">
+                <img src="/assets/flags/pt.svg" class="language-flag" alt="" width="20" height="14" />
+                <span>Português</span>
+              </div>
+            </div>
+          </div>
+
           <button class="icon-btn" id="collapseBtn" type="button" data-i18n-aria-label="sidebar.actions.toggle">
             <svg class="sidebar-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="5" y="6" width="14" height="12" rx="3"/>
@@ -892,7 +943,7 @@
       <div class="section">
         <div class="nav-item sidebar-item" tabindex="0" data-route="panel">
           <div class="sidebar-icon" aria-hidden="true">
-            <img class="sidebar-icon-img" src="/assets/icons/dashboard.svg" alt="" width="24" height="24" />
+            <img class="sidebar-icon-img" src="/assets/icons/logo.svg" alt="" width="24" height="24" />
           </div>
           <span class="label" data-i18n="sidebar.nav.dashboard">Dashboard</span>
           <span class="badge" data-i18n="sidebar.badge.new">New</span>
@@ -945,7 +996,7 @@
 
         <div class="nav-item sidebar-item" tabindex="0" data-route="instalacja">
           <div class="sidebar-icon" aria-hidden="true">
-            <img class="sidebar-icon-img" src="/assets/icons/install.svg" alt="" width="24" height="24" />
+            <img class="sidebar-icon-img" src="/assets/icons/prompt.svg" alt="" width="24" height="24" />
           </div>
           <span class="label" data-i18n="sidebar.nav.install">Install</span>
           <span class="tip" data-i18n="sidebar.nav.install">Install</span>
@@ -996,43 +1047,6 @@
         <button class="theme-btn" data-theme="dark" data-i18n-title="sidebar.theme.dark">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
         </button>
-      </div>
-    </div>
-
-    <!-- LANGUAGE -->
-    <div class="language-section">
-      <div class="language-dropdown-container" data-lang-dropdown>
-        <div class="language-selector" data-lang-current>
-          <img class="language-flag" data-lang-current-flag src="/assets/flags/en.svg" alt="" width="20" height="14" />
-          <span data-lang-current-label>English</span>
-          <span class="lang-arrow">â–Ľ</span>
-        </div>
-        <div class="language-dropdown" data-lang-menu>
-          <div class="language-option" data-lang="en">
-            <img src="/assets/flags/en.svg" class="language-flag" alt="" width="20" height="14" />
-            <span>English</span>
-          </div>
-          <div class="language-option" data-lang="pl">
-            <img src="/assets/flags/pl.svg" class="language-flag" alt="" width="20" height="14" />
-            <span>Polski</span>
-          </div>
-          <div class="language-option" data-lang="de">
-            <img src="/assets/flags/de.svg" class="language-flag" alt="" width="20" height="14" />
-            <span>Deutsch</span>
-          </div>
-          <div class="language-option" data-lang="fr">
-            <img src="/assets/flags/fr.svg" class="language-flag" alt="" width="20" height="14" />
-            <span>FranĂ§ais</span>
-          </div>
-          <div class="language-option" data-lang="es">
-            <img src="/assets/flags/es.svg" class="language-flag" alt="" width="20" height="14" />
-            <span>EspaĂ±ol</span>
-          </div>
-          <div class="language-option" data-lang="pt">
-            <img src="/assets/flags/pt.svg" class="language-flag" alt="" width="20" height="14" />
-            <span>PortuguĂŞs</span>
-          </div>
-        </div>
       </div>
     </div>
 
