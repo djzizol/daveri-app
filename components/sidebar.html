@@ -452,68 +452,6 @@
   padding:10px;
 }
 
-/* ===== LANGUAGE SELECTOR ===== */
-#daveri_sidebar .language-dropdown-container{
-  position:relative;
-  width:100%;
-  margin-top:10px;
-}
-#daveri_sidebar .language-selector{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  width:100%;
-  padding:8px 10px;
-  border-radius:var(--sb-radius);
-  border:1px solid var(--sb-stroke);
-  background:var(--sb-surface);
-  color:var(--sb-text);
-  font-size:12px;
-  cursor:pointer;
-}
-#daveri_sidebar .language-dropdown{
-  display:none;
-  position:absolute;
-  top:100%;
-  left:0;
-  width:100%;
-  background:var(--sb-panel);
-  border-radius:var(--sb-radius);
-  margin-top:6px;
-  overflow:hidden;
-  border:1px solid var(--sb-stroke);
-  z-index:20;
-}
-#daveri_sidebar .language-dropdown.open{
-  display:block;
-}
-#daveri_sidebar .language-option{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  width:100%;
-  padding:8px 10px;
-  border:none;
-  background:transparent;
-  color:inherit;
-  cursor:pointer;
-  font-size:12px;
-}
-#daveri_sidebar .language-option:hover{
-  background:var(--sb-surface);
-}
-#daveri_sidebar .language-flag{
-  width:20px;
-  height:14px;
-  object-fit:cover;
-  border-radius:2px;
-  display:inline-block;
-  flex-shrink:0;
-}
-#daveri_sidebar .language-dropdown img{
-  max-width:20px;
-}
-
 /* ===== PLAN CARD - CLEAN ===== */
 #daveri_sidebar .plan-card{
   margin:8px 12px;
@@ -942,37 +880,37 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
         </button>
       </div>
-      <div class="language-dropdown-container" data-lang-dropdown>
-        <div class="language-selector" data-lang-current>
-          <img class="language-flag" data-lang-current-flag src="/assets/flags/en.svg" alt="" />
+      <div class="lang-dropdown" data-lang-dropdown>
+        <button class="lang-current" data-lang-current>
+          <img class="lang-flag" data-lang-current-flag src="/assets/flags/en.svg">
           <span data-lang-current-label>English</span>
           <span class="lang-arrow">▼</span>
-        </div>
-        <div class="language-dropdown" data-lang-menu>
-          <div class="language-option" data-lang="en">
-            <img src="/assets/flags/en.svg" class="language-flag" alt="" />
-            <span>English</span>
-          </div>
-          <div class="language-option" data-lang="pl">
-            <img src="/assets/flags/pl.svg" class="language-flag" alt="" />
-            <span>Polski</span>
-          </div>
-          <div class="language-option" data-lang="de">
-            <img src="/assets/flags/de.svg" class="language-flag" alt="" />
-            <span>Deutsch</span>
-          </div>
-          <div class="language-option" data-lang="fr">
-            <img src="/assets/flags/fr.svg" class="language-flag" alt="" />
-            <span>Français</span>
-          </div>
-          <div class="language-option" data-lang="es">
-            <img src="/assets/flags/es.svg" class="language-flag" alt="" />
-            <span>Español</span>
-          </div>
-          <div class="language-option" data-lang="pt">
-            <img src="/assets/flags/pt.svg" class="language-flag" alt="" />
-            <span>Português</span>
-          </div>
+        </button>
+        <div class="lang-menu" data-lang-menu>
+          <button class="lang-option" data-lang="en">
+            <img src="/assets/flags/en.svg" class="lang-flag">
+            English
+          </button>
+          <button class="lang-option" data-lang="pl">
+            <img src="/assets/flags/pl.svg" class="lang-flag">
+            Polski
+          </button>
+          <button class="lang-option" data-lang="de">
+            <img src="/assets/flags/de.svg" class="lang-flag">
+            Deutsch
+          </button>
+          <button class="lang-option" data-lang="fr">
+            <img src="/assets/flags/fr.svg" class="lang-flag">
+            Français
+          </button>
+          <button class="lang-option" data-lang="es">
+            <img src="/assets/flags/es.svg" class="lang-flag">
+            Español
+          </button>
+          <button class="lang-option" data-lang="pt">
+            <img src="/assets/flags/pt.svg" class="lang-flag">
+            Português
+          </button>
         </div>
       </div>
     </div>
