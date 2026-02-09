@@ -107,23 +107,30 @@
   justify-content: center;
   border-radius: 6px;
   background: #1a1b21;
+  color: rgba(255, 255, 255, 0.85);
   transition: all 160ms ease;
 }
 
-#daveri_sidebar .sidebar-icon img {
+#daveri_sidebar .sidebar-icon svg {
   width: 14px;
   height: 14px;
-  opacity: 0.9;
   display: block;
 }
 
 #daveri_sidebar .sidebar-item:hover .sidebar-icon {
   background: #23262f;
+  color: #fff;
 }
 
 #daveri_sidebar .sidebar-item.active .sidebar-icon {
-  background: var(--sidebar-item-gradient, var(--gradient-primary)), #1a1b21;
-  background-blend-mode: overlay;
+  background: linear-gradient(
+      135deg,
+      rgba(139, 92, 246, 0.35),
+      rgba(236, 72, 153, 0.35),
+      rgba(59, 130, 246, 0.35)
+    ),
+    #1a1b21;
+  color: #fff;
 }
 
 #daveri_sidebar .sidebar.collapsed .sidebar-icon {
