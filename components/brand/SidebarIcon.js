@@ -1,13 +1,13 @@
 const ICON_BASE_PATH = "/assets/icons";
 
 const ROUTE_ICON_MAP = {
-  panel: "logo",
+  panel: "dashboard",
   boty: "bot",
   historia: "history",
   prompt: "prompt",
   wyglad: "appearance",
   pliki: "files",
-  instalacja: "prompt",
+  instalacja: "install",
 };
 
 const getIconPath = (name) => `${ICON_BASE_PATH}/${name}.svg`;
