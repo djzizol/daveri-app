@@ -3603,12 +3603,13 @@
 
     #dv-configurator .appearance-layout {
       display: grid;
-      grid-template-columns: 340px 360px minmax(360px, 1fr);
-      gap: 24px;
+      grid-template-columns: 340px 360px minmax(0, 1fr);
+      grid-template-rows: auto 1fr;
+      gap: 40px;
       align-items: start;
-      height: calc(100vh - 152px);
-      min-height: 620px;
-      overflow: hidden;
+      height: calc(100vh - 132px);
+      min-height: 0;
+      overflow: visible;
       background: transparent;
     }
 
@@ -3637,18 +3638,19 @@
     #dv-configurator .steps-nav {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 0;
       margin-bottom: 16px;
     }
 
     #dv-configurator .step-item {
       width: 100%;
       text-align: left;
-      padding: 10px 12px;
+      position: relative;
+      padding: 10px 14px;
       border-radius: 8px;
       cursor: pointer;
       color: var(--dv-text2);
-      border: 1px solid transparent;
+      border: 1px solid rgba(255, 255, 255, 0.05);
       background: transparent;
       font-size: 13px;
       line-height: 1.2;
@@ -3656,13 +3658,44 @@
     }
 
     #dv-configurator .step-item.active {
-      background: rgba(139, 92, 246, 0.12);
-      border: 1px solid rgba(139, 92, 246, 0.25);
+      background: rgba(139, 92, 246, 0.08);
+      border: 1px solid rgba(139, 92, 246, 0.35);
       color: #fff;
+    }
+
+    #dv-configurator .step-item.completed {
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      color: var(--dv-text);
+    }
+
+    #dv-configurator .step-item.upcoming {
+      color: var(--dv-text2);
     }
 
     #dv-configurator .step-item:hover {
       background: rgba(255, 255, 255, 0.04);
+    }
+
+    #dv-configurator .step-connector {
+      height: 2px;
+      margin: 6px 0;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.06);
+      position: relative;
+      overflow: hidden;
+      transition: all 120ms ease;
+    }
+
+    #dv-configurator .step-connector.completed::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        rgba(139, 92, 246, 0.8),
+        rgba(236, 72, 153, 0.8),
+        rgba(59, 130, 246, 0.8)
+      );
     }
 
     #dv-configurator .step-content {
@@ -3736,28 +3769,31 @@
     }
 
     #dv-configurator .appearance-preview-grid {
-      display: grid;
-      grid-template-columns: 360px minmax(0, 1fr);
-      grid-template-rows: auto 1fr;
-      gap: 18px 22px;
-      align-items: start;
-      height: 100%;
-      min-width: 0;
-      overflow: hidden;
-      padding: 0;
-      background: transparent;
+      display: contents;
     }
 
     #dv-configurator .live-preview-section {
-      grid-column: 1;
+      grid-column: 2;
       grid-row: 1 / span 2;
+      display: flex;
+      flex-direction: column;
       align-items: center;
+      min-width: 0;
     }
 
     #dv-configurator .live-preview-section .section-label {
       margin-bottom: 10px;
       width: 100%;
       text-align: left;
+    }
+
+    #dv-configurator .chat-preview-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: calc(100vh - 140px);
+      min-height: 520px;
     }
 
     #dv-configurator .chat-live-preview {
@@ -3794,42 +3830,51 @@
     }
 
     #dv-configurator .device-toggle {
-      grid-column: 2;
+      grid-column: 3;
       grid-row: 1;
       display: flex;
       gap: 8px;
       align-items: center;
       justify-content: flex-start;
-      margin-top: 4px;
+      margin-top: 0;
+      margin-bottom: 16px;
     }
 
-    #dv-configurator .device-toggle button {
+    #dv-configurator .device-toggle .device-button {
       height: 32px;
       padding: 0 12px;
+      flex: 0 0 auto;
       border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: transparent;
       color: var(--dv-text2);
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       transition: all 120ms ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    #dv-configurator .device-toggle button.active {
+    #dv-configurator .device-toggle .device-button.active {
       background: rgba(139, 92, 246, 0.15);
-      border: 1px solid rgba(139, 92, 246, 0.3);
+      border: 1px solid rgba(139, 92, 246, 0.35);
       color: #fff;
     }
 
-    #dv-configurator .device-toggle button:hover {
-      background: rgba(255, 255, 255, 0.05);
+    #dv-configurator .device-toggle .device-button:hover {
+      background: rgba(255, 255, 255, 0.04);
     }
 
     #dv-configurator .device-preview-mode {
-      grid-column: 2;
+      grid-column: 3;
       grid-row: 2;
       min-width: 0;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
     }
 
     #dv-configurator[data-device-preview="desktop"] .device-preview-mobile {
@@ -3845,13 +3890,13 @@
       margin-bottom: 10px;
     }
 
-    #dv-configurator .device-preview-desktop .monitor-wrapper {
-      width: 480px;
-      height: 320px;
+    #dv-configurator .device-preview-desktop .desktop-preview {
+      width: 520px;
+      height: 340px;
       border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       background:
-        radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.08), transparent 60%),
+        radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.08), transparent 70%),
         rgba(255, 255, 255, 0.02);
       position: relative;
       padding: 14px;
@@ -3890,18 +3935,34 @@
       transform: none !important;
     }
 
-    #dv-configurator .device-preview-mobile .iphone-frame {
+    #dv-configurator .device-preview-mobile .mobile-preview {
       width: 260px;
       height: 520px;
-      border-radius: 32px;
+      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #111217;
+      position: relative;
+    }
+
+    #dv-configurator .device-preview-mobile .iphone-frame {
+      width: 100%;
+      height: 100%;
+      border-radius: 28px;
       border: 1px solid rgba(255, 255, 255, 0.08);
       background: #111217;
       padding: 10px;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
     }
 
+    #dv-configurator .device-preview-mobile .iphone-frame::before,
+    #dv-configurator .device-preview-mobile .iphone-frame::after,
+    #dv-configurator .device-preview-mobile .iphone-screen::before,
+    #dv-configurator .device-preview-mobile .iphone-screen::after {
+      display: none;
+    }
+
     #dv-configurator .device-preview-mobile .iphone-screen {
-      border-radius: 24px;
+      border-radius: 20px;
       overflow: hidden;
       height: 100%;
       width: 100%;
@@ -3918,7 +3979,7 @@
     }
 
     #dv-configurator .steps-nav .step-item:focus-visible,
-    #dv-configurator .device-toggle button:focus-visible,
+    #dv-configurator .device-toggle .device-button:focus-visible,
     #dv-configurator .appearance-sidebar .setting-card:focus-within {
       outline: none;
       box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.42), 0 0 0 4px rgba(139, 92, 246, 0.18);
@@ -3927,28 +3988,49 @@
     @media (max-width: 1560px) {
       #dv-configurator .appearance-layout {
         grid-template-columns: 340px 340px minmax(300px, 1fr);
+        gap: 28px;
       }
     }
 
     @media (max-width: 1280px) {
       #dv-configurator .appearance-layout {
         grid-template-columns: 340px minmax(0, 1fr);
+        grid-template-rows: auto auto auto;
+        gap: 20px;
         height: auto;
-        min-height: 0;
-        overflow: visible;
       }
 
-      #dv-configurator .appearance-preview-grid {
+      #dv-configurator .live-preview-section {
         grid-column: 2;
-        grid-template-columns: 340px minmax(0, 1fr);
-        min-height: 560px;
+        grid-row: 1;
+      }
+
+      #dv-configurator .device-toggle {
+        grid-column: 2;
+        grid-row: 2;
+      }
+
+      #dv-configurator .device-preview-mode {
+        grid-column: 2;
+        grid-row: 3;
+      }
+
+      #dv-configurator .chat-preview-wrapper {
+        height: auto;
+        min-height: 0;
+      }
+
+      #dv-configurator .device-preview-desktop .desktop-preview {
+        width: min(520px, 100%);
       }
     }
 
     @media (max-width: 1080px) {
       #dv-configurator .appearance-layout {
         grid-template-columns: 1fr;
+        grid-template-rows: auto;
         gap: 16px;
+        height: auto;
       }
 
       #dv-configurator .appearance-sidebar {
@@ -3959,18 +4041,15 @@
         max-height: calc(100vh - 80px);
       }
 
-      #dv-configurator .appearance-preview-grid {
-        grid-column: 1;
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto;
-        gap: 14px;
-      }
-
       #dv-configurator .live-preview-section,
       #dv-configurator .device-toggle,
       #dv-configurator .device-preview-mode {
         grid-column: 1;
         grid-row: auto;
+      }
+
+      #dv-configurator .chat-preview-wrapper {
+        height: auto;
       }
 
       #dv-configurator .chat-live-preview {
@@ -4039,10 +4118,15 @@
             </div>
             <nav class="steps-nav" aria-label="Appearance Builder Steps">
               <button type="button" class="step-item active" data-step="layout">Step 1 - Layout</button>
+              <div class="step-connector" aria-hidden="true"></div>
               <button type="button" class="step-item" data-step="colors">Step 2 - Colors</button>
+              <div class="step-connector" aria-hidden="true"></div>
               <button type="button" class="step-item" data-step="position">Step 3 - Position &amp; Size</button>
+              <div class="step-connector" aria-hidden="true"></div>
               <button type="button" class="step-item" data-step="branding">Step 4 - Avatar &amp; Branding</button>
+              <div class="step-connector" aria-hidden="true"></div>
               <button type="button" class="step-item" data-step="animations">Step 5 - Animations</button>
+              <div class="step-connector" aria-hidden="true"></div>
               <button type="button" class="step-item" data-step="advanced">Step 6 - Quick Replies &amp; Advanced</button>
             </nav>
             <section class="config-panel step-content">
@@ -4649,6 +4733,7 @@
     <!-- Desktop Chat Preview - SCALE 0.9 -->
     <div class="preview-section live-preview-section">
       <div class="section-label" data-i18n="appearance.preview.configurator"></div>
+      <div class="chat-preview-wrapper">
       <div class="work-column chat-live-preview">
               <div class="chat-scale">
                 <!-- Chat (visible when not minimized) -->
@@ -4689,17 +4774,18 @@
                 </div>
     </div><!-- /chat-scale -->
     </div><!-- /work-column -->
+    </div><!-- /chat-preview-wrapper -->
     </div><!-- /preview-section Konfigurator -->
     
     <div class="device-toggle" id="appearanceDeviceToggle">
-      <button type="button" class="device-btn device-toggle-btn active" data-device="desktop">Desktop</button>
-      <button type="button" class="device-btn device-toggle-btn" data-device="mobile">Mobile</button>
+      <button type="button" class="device-btn device-button device-toggle-btn active" data-device="desktop">Desktop</button>
+      <button type="button" class="device-btn device-button device-toggle-btn" data-device="mobile">Mobile</button>
     </div>
 
     <!-- Mobile iPhone Preview - TRUE NATIVE MOBILE UI -->
     <div class="preview-section device-preview-mode device-preview-mobile">
       <div class="section-label" data-i18n="appearance.preview.mobile"></div>
-      <div class="mobile-column">
+      <div class="mobile-column mobile-preview">
               <div class="phone-scale">
                 <div class="iphone-frame">
                   <div class="iphone-screen">
@@ -4736,7 +4822,7 @@
     <!-- Desktop Monitor - SINGLE CLEAN STRUCTURE -->
     <div class="preview-section device-preview-mode device-preview-desktop" style="flex: 1 1 auto;">
       <div class="section-label" data-i18n="appearance.preview.desktop"></div>
-      <div class="monitor-wrapper">
+      <div class="monitor-wrapper desktop-preview">
               <div class="monitor-frame" id="monitorFrame">
                 <div class="monitor-screen" id="monitorScreen">
                   <div class="monitor-viewport" id="monitorViewport">
@@ -5541,6 +5627,7 @@
 
       function setBuilderStep(stepKey) {
         const stepItems = Array.from(root.querySelectorAll('.step-item[data-step]'));
+        const connectors = Array.from(root.querySelectorAll('.step-connector'));
         const sections = Array.from(root.querySelectorAll('.config-section[data-builder-step]'));
         if (!stepItems.length || !sections.length) return;
 
@@ -5550,8 +5637,23 @@
           : fallback;
 
         root.dataset.builderStep = targetStep;
-        stepItems.forEach((item) => {
-          item.classList.toggle('active', item.getAttribute('data-step') === targetStep);
+        const activeIndex = stepItems.findIndex((item) => item.getAttribute('data-step') === targetStep);
+
+        stepItems.forEach((item, index) => {
+          const isActive = index === activeIndex;
+          const isCompleted = index < activeIndex;
+          item.classList.toggle('active', isActive);
+          item.classList.toggle('completed', isCompleted);
+          item.classList.toggle('upcoming', index > activeIndex);
+          if (isActive) {
+            item.setAttribute('aria-current', 'step');
+          } else {
+            item.removeAttribute('aria-current');
+          }
+        });
+
+        connectors.forEach((connector, index) => {
+          connector.classList.toggle('completed', index <= activeIndex);
         });
 
         const visibleSections = [];
