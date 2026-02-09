@@ -21,6 +21,12 @@
       --dv-ease: cubic-bezier(.22,.61,.36,1);
       --page-max: 900px; --page-pad: 24px;
       --dv-sidebar-w: 0px;
+      --surface-1: #181a20;
+      --surface-2: #111318;
+      --surface-border: rgba(255,255,255,.06);
+      --text-primary: rgba(255,255,255,.92);
+      --text-secondary: rgba(255,255,255,.65);
+      --font-mono: 'SF Mono', 'Monaco', 'Fira Code', monospace;
     }
     [data-theme="light"] {
       --dv-bg: #f8f9fc; --dv-bg2: #ffffff;
@@ -28,10 +34,15 @@
       --dv-stroke: rgba(0,0,0,.08); --dv-stroke2: rgba(0,0,0,.12);
       --dv-text: rgba(0,0,0,.88); --dv-text2: rgba(0,0,0,.65);
       --dv-muted: rgba(0,0,0,.55); --dv-muted2: rgba(0,0,0,.35);
+      --surface-1: #ffffff;
+      --surface-2: #f3f4f8;
+      --surface-border: rgba(0,0,0,.08);
+      --text-primary: rgba(0,0,0,.88);
+      --text-secondary: rgba(0,0,0,.62);
     }
     [data-theme="light"] body::before, [data-theme="light"] body::after { display: none; }
     [data-theme="light"] #ambientParticles { opacity: 0.15; }
-    [data-theme="light"] .code-block { background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.08); }
+    [data-theme="light"] .code-block { background: rgba(15,23,42,.03); border-color: rgba(15,23,42,.1); }
     [data-theme="light"] .code-block code { color: var(--dv-text); }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -61,63 +72,188 @@
     #main-content { flex: 1; min-width: 0; max-width: 100%; transition: all .22s var(--dv-ease); overflow-x: hidden; }
     .page { max-width: var(--page-max); margin: 0 auto; padding: var(--page-pad); min-height: 100vh; position: relative; }
 
-    .page-header { margin-bottom: 32px; }
-    .page-title { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: var(--dv-text); }
-    .page-subtitle { font-size: 14px; color: var(--dv-muted); margin-top: 4px; }
-
-    /* Steps */
-    .steps { display: flex; flex-direction: column; gap: 24px; }
-    .step-card {
-      background: var(--dv-surface); border: 1px solid var(--dv-stroke);
-      border-radius: var(--dv-radius-xl); overflow: hidden; position: relative;
+    .page-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
     }
-    .step-card::before {
-      content: ""; position: absolute; inset: 0; pointer-events: none;
-      background: radial-gradient(100% 100% at 0% 0%, rgba(168,85,247,.06), transparent 60%),
-        radial-gradient(100% 100% at 100% 100%, rgba(96,165,250,.05), transparent 60%);
+    .page-header-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(
+        135deg,
+        rgba(139,92,246,0.18),
+        rgba(236,72,153,0.18),
+        rgba(59,130,246,0.18)
+      );
+      border: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 40px;
+    }
+    .page-header-icon img {
+      width: 20px;
+      height: 20px;
+      opacity: .95;
+      object-fit: contain;
+      display: block;
+      filter: brightness(0) saturate(100%) invert(100%);
+    }
+    .page-header-text { min-width: 0; }
+    .page-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+      margin: 0;
+    }
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin: 4px 0 0;
+    }
+
+    .install-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .install-step-card {
+      background: var(--surface-1);
+      border: 1px solid var(--surface-border);
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+    }
+    .install-step-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(139,92,246,0.45),
+        rgba(236,72,153,0.45),
+        rgba(59,130,246,0.45),
+        transparent
+      );
+      pointer-events: none;
     }
 
     .step-header {
-      padding: 20px 24px; display: flex; align-items: center; gap: 16px; position: relative; z-index: 1;
+      padding: 18px 20px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
     }
-    .step-number {
-      width: 36px; height: 36px; border-radius: 10px; font-size: 14px; font-weight: 800; color: #fff;
-      background: var(--dv-grad); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      box-shadow: 0 2px 10px rgba(168,85,247,.3);
+    .step-number-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(
+        135deg,
+        rgba(139,92,246,0.25),
+        rgba(236,72,153,0.25),
+        rgba(59,130,246,0.25)
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.06);
+      flex: 0 0 36px;
     }
-    .step-title { font-size: 16px; font-weight: 700; color: var(--dv-text); }
-    .step-desc { font-size: 13px; color: var(--dv-muted); margin-top: 2px; }
+    .step-content { min-width: 0; }
+    .step-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+    .step-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+      line-height: 1.4;
+    }
 
-    .step-body { padding: 0 24px 24px; position: relative; z-index: 1; }
+    .step-body {
+      padding: 0 20px 18px;
+      position: relative;
+      z-index: 1;
+    }
 
-    /* Code Block */
     .code-block {
-      background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.06);
-      border-radius: var(--dv-radius-md); padding: 16px 20px; position: relative;
+      background: rgba(0,0,0,0.35);
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.06);
+      font-family: var(--font-mono);
+      padding: 16px;
+      position: relative;
       overflow-x: auto;
     }
     .code-block code {
-      font-family: 'SF Mono', 'Monaco', 'Fira Code', monospace;
-      font-size: 13px; line-height: 1.6; color: rgba(255,255,255,.85);
-      white-space: pre; display: block;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.6;
+      color: rgba(255,255,255,.88);
+      white-space: pre;
+      display: block;
+      padding-right: 84px;
     }
-    .copy-btn {
-      position: absolute; top: 10px; right: 10px; padding: 6px 12px;
-      background: var(--dv-surface2); border: 1px solid var(--dv-stroke);
-      border-radius: var(--dv-radius-sm); font-size: 11px; font-weight: 600;
-      color: var(--dv-muted); cursor: pointer; transition: all 0.15s var(--dv-ease);
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 7px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--dv-text2);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s var(--dv-ease), border-color .15s var(--dv-ease), color .15s var(--dv-ease);
     }
-    .copy-btn:hover { background: var(--dv-stroke); color: var(--dv-text); }
+    .copy-button:hover {
+      background: rgba(139,92,246,0.15);
+      border-color: rgba(139,92,246,0.35);
+      color: #fff;
+    }
 
     /* Status Card */
     .status-card {
-      background: var(--dv-surface); border: 1px solid var(--dv-stroke);
+      background: var(--surface-1); border: 1px solid var(--surface-border);
       border-radius: var(--dv-radius-xl); padding: 24px; margin-top: 32px;
       display: flex; align-items: center; gap: 16px; position: relative; overflow: hidden;
     }
     .status-card::before {
-      content: ""; position: absolute; inset: 0; pointer-events: none;
-      background: radial-gradient(100% 100% at 0% 0%, rgba(168,85,247,.06), transparent 60%);
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      pointer-events: none;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(139,92,246,0.45),
+        rgba(236,72,153,0.45),
+        rgba(59,130,246,0.45),
+        transparent
+      );
     }
     .status-icon {
       width: 48px; height: 48px; border-radius: 14px;
@@ -140,23 +276,28 @@
     <div id="main-content">
       <div class="page" id="instalacja_root" data-user-id="CURRENT USER" data-bot-id="">
         <div class="page-header">
-          <div class="page-title" data-i18n="install.page.heading"></div>
-          <div class="page-subtitle" data-i18n="install.page.subtitle"></div>
+          <div class="page-header-icon">
+            <img src="/assets/icons/install.svg" alt="" />
+          </div>
+          <div class="page-header-text">
+            <h1 class="page-title" data-i18n="install.page.heading"></h1>
+            <p class="page-subtitle" data-i18n="install.page.subtitle"></p>
+          </div>
         </div>
 
-        <div class="steps">
+        <div class="install-steps">
           <!-- Step 1 -->
-          <div class="step-card">
+          <div class="install-step-card">
             <div class="step-header">
-              <div class="step-number">1</div>
-              <div>
-              <div class="step-title" data-i18n="install.steps.copy.title"></div>
-              <div class="step-desc" data-i18n="install.steps.copy.desc"></div>
+              <div class="step-number-icon">1</div>
+              <div class="step-content">
+                <div class="step-title" data-i18n="install.steps.copy.title"></div>
+                <div class="step-desc" data-i18n="install.steps.copy.desc"></div>
               </div>
             </div>
             <div class="step-body">
               <div class="code-block">
-                <button class="copy-btn" onclick="copyCode(this)" data-i18n="install.actions.copy"></button>
+                <button class="copy-button" onclick="copyCode(this)" data-i18n="install.actions.copy"></button>
                 <code id="installCode">&lt;script src="https://daveri.app/widget.js"
   data-bot-id="TWOJ_BOT_ID"
   data-position="bottom-right"
@@ -166,10 +307,10 @@
           </div>
 
           <!-- Step 2 -->
-          <div class="step-card">
+          <div class="install-step-card">
             <div class="step-header">
-              <div class="step-number">2</div>
-              <div>
+              <div class="step-number-icon">2</div>
+              <div class="step-content">
                 <div class="step-title" data-i18n="install.steps.position.title"></div>
                 <div class="step-desc" data-i18n="install.steps.position.desc"></div>
               </div>
@@ -182,10 +323,10 @@
           </div>
 
           <!-- Step 3 -->
-          <div class="step-card">
+          <div class="install-step-card">
             <div class="step-header">
-              <div class="step-number">3</div>
-              <div>
+              <div class="step-number-icon">3</div>
+              <div class="step-content">
                 <div class="step-title" data-i18n="install.steps.test.title"></div>
                 <div class="step-desc" data-i18n="install.steps.test.desc"></div>
               </div>
@@ -232,8 +373,8 @@
         window.getSelection().removeAllRanges();
         window.getSelection().addRange(range);
         document.execCommand('copy');
-        btn.textContent = 'Skopiowano!';
-        setTimeout(() => btn.textContent = 'Kopiuj', 2000);
+        btn.textContent = copiedLabel || copyLabel;
+        setTimeout(() => btn.textContent = copyLabel, 2000);
       });
     }
   </script>

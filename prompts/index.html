@@ -21,6 +21,12 @@
       --dv-ease: cubic-bezier(.22,.61,.36,1);
       --page-max: 900px; --page-pad: 24px;
       --dv-sidebar-w: 0px;
+      --surface-1: #181a20;
+      --surface-2: #111318;
+      --surface-border: rgba(255,255,255,.06);
+      --text-primary: rgba(255,255,255,.92);
+      --text-secondary: rgba(255,255,255,.65);
+      --font-mono: 'SF Mono', 'Monaco', 'Fira Code', monospace;
     }
     [data-theme="light"] {
       --dv-bg: #f8f9fc; --dv-bg2: #ffffff;
@@ -28,6 +34,11 @@
       --dv-stroke: rgba(0,0,0,.08); --dv-stroke2: rgba(0,0,0,.12);
       --dv-text: rgba(0,0,0,.88); --dv-text2: rgba(0,0,0,.65);
       --dv-muted: rgba(0,0,0,.55); --dv-muted2: rgba(0,0,0,.35);
+      --surface-1: #ffffff;
+      --surface-2: #f3f4f8;
+      --surface-border: rgba(0,0,0,.08);
+      --text-primary: rgba(0,0,0,.88);
+      --text-secondary: rgba(0,0,0,.62);
     }
     [data-theme="light"] body::before, [data-theme="light"] body::after { display: none; }
     [data-theme="light"] #ambientParticles { opacity: 0.15; }
@@ -59,69 +70,201 @@
     #main-content { flex: 1; min-width: 0; max-width: 100%; transition: all .22s var(--dv-ease); overflow-x: hidden; }
     .page { max-width: var(--page-max); margin: 0 auto; padding: var(--page-pad); min-height: 100vh; position: relative; }
 
-    /* Page Header */
-    .page-header { margin-bottom: 32px; }
-    .page-title { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: var(--dv-text); }
-    .page-subtitle { font-size: 14px; color: var(--dv-muted); margin-top: 4px; }
+    .page-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .page-header-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(
+        135deg,
+        rgba(139,92,246,0.18),
+        rgba(236,72,153,0.18),
+        rgba(59,130,246,0.18)
+      );
+      border: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 40px;
+    }
+    .page-header-icon img {
+      width: 20px;
+      height: 20px;
+      opacity: .95;
+      object-fit: contain;
+      display: block;
+      filter: brightness(0) saturate(100%) invert(100%);
+    }
+    .page-header-text { min-width: 0; }
+    .page-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+      margin: 0;
+    }
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin: 4px 0 0;
+    }
 
-    /* Card */
-    .glass-card {
-      background: var(--dv-surface); border: 1px solid var(--dv-stroke);
-      border-radius: var(--dv-radius-xl); overflow: hidden; position: relative;
+    .prompt-container {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
     }
-    .glass-card::before {
-      content: ""; position: absolute; inset: 0; pointer-events: none;
-      background: radial-gradient(100% 100% at 0% 0%, rgba(168,85,247,.06), transparent 60%),
-        radial-gradient(100% 100% at 100% 100%, rgba(96,165,250,.05), transparent 60%);
+    .prompt-editor-card {
+      background: var(--surface-1);
+      border-radius: 14px;
+      border: 1px solid var(--surface-border);
+      overflow: hidden;
+      position: relative;
     }
-    .card-header {
-      padding: 20px 24px; border-bottom: 1px solid var(--dv-stroke);
-      display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1;
+    .prompt-editor-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(139,92,246,0.6),
+        rgba(236,72,153,0.6),
+        rgba(59,130,246,0.6),
+        transparent
+      );
+      pointer-events: none;
     }
-    .card-header-left { display: flex; align-items: center; gap: 14px; }
-    .card-icon {
-      width: 40px; height: 40px; border-radius: 12px;
-      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.10);
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    .prompt-editor-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--surface-border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
     }
-    .card-icon img { width: 22px; height: 22px; object-fit: contain; }
-    .card-title { font-size: 16px; font-weight: 700; color: var(--dv-text); }
-    .card-subtitle { font-size: 13px; color: var(--dv-muted); margin-top: 2px; }
-    .card-body { padding: 24px; position: relative; z-index: 1; }
+    .prompt-module-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(
+        135deg,
+        rgba(139,92,246,0.22),
+        rgba(236,72,153,0.2),
+        rgba(59,130,246,0.22)
+      );
+      border: 1px solid rgba(255,255,255,.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 36px;
+    }
+    .prompt-module-icon img {
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+      display: block;
+      filter: brightness(0) saturate(100%) invert(100%);
+    }
+    .prompt-module-title {
+      font-size: 16px;
+      line-height: 1.25;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .prompt-module-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
 
-    /* Textarea */
-    .prompt-area {
-      width: 100%; min-height: 320px; max-height: 600px; resize: vertical;
-      background: var(--dv-surface); border: 1px solid var(--dv-stroke);
-      border-radius: var(--dv-radius-md); padding: 18px; font-size: 14px;
-      color: var(--dv-text); font-family: 'SF Mono', 'Monaco', 'Fira Code', monospace;
-      line-height: 1.6; outline: none; transition: border-color 0.2s var(--dv-ease);
+    .prompt-editor {
+      border-bottom: 1px solid var(--surface-border);
+      background: var(--surface-2);
     }
-    .prompt-area:focus { border-color: var(--dv-vio); box-shadow: 0 0 0 3px rgba(168,85,247,.1); }
-    .prompt-area::placeholder { color: var(--dv-muted2); }
+    .prompt-editor textarea {
+      width: 100%;
+      min-height: 340px;
+      max-height: 640px;
+      resize: vertical;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 20px;
+      outline: none;
+      transition: background .16s ease;
+    }
+    .prompt-editor textarea:focus {
+      outline: none;
+      background: rgba(255,255,255,0.02);
+    }
+    .prompt-editor textarea::placeholder {
+      color: var(--dv-muted2);
+    }
 
-    /* Footer */
-    .card-footer {
-      padding: 16px 24px; border-top: 1px solid var(--dv-stroke);
-      display: flex; align-items: center; justify-content: space-between;
-      position: relative; z-index: 1;
+    .prompt-editor-footer {
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
     }
-    .char-count { font-size: 12px; color: var(--dv-muted2); font-variant-numeric: tabular-nums; }
+    .prompt-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .char-count {
+      font-size: 12px;
+      color: var(--dv-muted2);
+      font-variant-numeric: tabular-nums;
+    }
     .save-btn {
-      padding: 10px 24px; border-radius: var(--dv-radius-sm); border: none;
-      background: var(--dv-grad); color: #fff; font-size: 13px; font-weight: 700;
-      cursor: pointer; transition: all 0.2s var(--dv-ease);
-      box-shadow: 0 2px 12px rgba(168,85,247,.3);
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(139,92,246,0.35);
+      background: rgba(139,92,246,0.16);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s var(--dv-ease), border-color .15s var(--dv-ease), box-shadow .15s var(--dv-ease);
     }
-    .save-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(168,85,247,.4); }
-    .save-btn:active { transform: scale(0.98); }
-    .save-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .save-btn:hover {
+      background: rgba(139,92,246,0.24);
+      border-color: rgba(139,92,246,0.5);
+      box-shadow: 0 0 0 1px rgba(139,92,246,0.2);
+    }
+    .save-btn:active {
+      background: rgba(139,92,246,0.2);
+    }
+    .save-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
 
     /* Tips */
-    .tips { margin-top: 24px; }
+    .tips { margin-top: 0; }
     .tips-title { font-size: 13px; font-weight: 600; color: var(--dv-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
     .tip-item {
-      padding: 12px 16px; background: var(--dv-surface); border: 1px solid var(--dv-stroke);
+      padding: 12px 16px; background: var(--surface-1); border: 1px solid var(--surface-border);
       border-radius: var(--dv-radius-md); font-size: 13px; color: var(--dv-text2);
       margin-bottom: 8px; line-height: 1.5;
     }
@@ -143,35 +286,40 @@
     <div id="main-content">
       <div class="page" id="prompt_root" data-user-id="CURRENT USER" data-bot-id="">
         <div class="page-header">
-          <div class="page-title" data-i18n="prompts.page.heading"></div>
-          <div class="page-subtitle" data-i18n="prompts.page.subtitle"></div>
+          <div class="page-header-icon">
+            <img src="/assets/icons/prompt.svg" alt="" />
+          </div>
+          <div class="page-header-text">
+            <h1 class="page-title" data-i18n="prompts.page.heading"></h1>
+            <p class="page-subtitle" data-i18n="prompts.page.subtitle"></p>
+          </div>
         </div>
 
-        <div class="glass-card">
-          <div class="card-header">
-            <div class="card-header-left">
-              <div class="card-icon">
-                <img src="/assets/icons/prompt.svg" alt="Prompt">
+        <div class="prompt-container">
+          <div class="prompt-editor-card">
+            <div class="prompt-editor-header">
+              <div class="prompt-module-icon">
+                <img src="/assets/icons/prompt.svg" alt="" />
               </div>
               <div>
-                <div class="card-title" data-i18n="prompts.card.title"></div>
-                <div class="card-subtitle" data-i18n="prompts.card.subtitle"></div>
+                <div class="prompt-module-title" data-i18n="prompts.card.title"></div>
+                <div class="prompt-module-subtitle" data-i18n="prompts.card.subtitle"></div>
               </div>
             </div>
-          </div>
-          <div class="card-body">
-            <textarea class="prompt-area" id="promptTextarea"
-              data-i18n-placeholder="prompts.card.placeholder"
-              placeholder=""
-              spellcheck="false"></textarea>
-          </div>
-          <div class="card-footer">
-            <div style="display:flex;align-items:center;">
-              <span class="save-status" id="saveStatus"></span>
-              <span class="char-count" id="charCount">0</span>
-              <span class="char-count" data-i18n="prompts.card.characters"></span>
+            <div class="prompt-editor">
+              <textarea class="prompt-textarea" id="promptTextarea"
+                data-i18n-placeholder="prompts.card.placeholder"
+                placeholder=""
+                spellcheck="false"></textarea>
             </div>
-            <button class="save-btn" id="saveBtn" onclick="savePrompt()" data-i18n="prompts.actions.save"></button>
+            <div class="prompt-editor-footer">
+              <div class="prompt-meta">
+                <span class="save-status" id="saveStatus"></span>
+                <span class="char-count" id="charCount">0</span>
+                <span class="char-count" data-i18n="prompts.card.characters"></span>
+              </div>
+              <button class="save-btn" id="saveBtn" onclick="savePrompt()" data-i18n="prompts.actions.save"></button>
+            </div>
           </div>
         </div>
 

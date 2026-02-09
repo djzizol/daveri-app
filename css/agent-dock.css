@@ -109,30 +109,39 @@ body.app-layout-root .page {
   color: var(--text-primary);
 }
 
+.page-header-main,
 .daveri-page-heading {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   min-width: 0;
 }
 
+.page-header-icon,
 .daveri-page-icon {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #7c3aed, #ec4899, #3b82f6);
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.18),
+    rgba(236, 72, 153, 0.18),
+    rgba(59, 130, 246, 0.18)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.06);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 36px;
-  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.26);
+  flex: 0 0 40px;
 }
 
+.page-header-icon img,
 .daveri-page-icon img {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   object-fit: contain;
   display: block;
+  opacity: 0.95;
   filter: brightness(0) saturate(100%) invert(100%);
 }
 
@@ -143,9 +152,16 @@ body.app-layout-root .page {
   min-width: 0;
 }
 
+.page-header-main .page-title,
+.page-header-main .dashboard-page-title,
 .daveri-page-heading .page-title,
 .daveri-page-heading .dashboard-page-title {
   margin: 0;
+}
+
+.page-header-text .page-subtitle,
+.page-header-text .dashboard-page-subtitle {
+  margin: 4px 0 0;
 }
 
 body.app-layout-root .glass-card,
