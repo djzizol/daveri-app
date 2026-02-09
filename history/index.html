@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --dv-bg: #0d0e13; --dv-bg2: #0f1114;
+      --dv-bg: #111217; --dv-bg2: #181a20;
       --dv-surface: rgba(255,255,255,.03); --dv-surface2: rgba(255,255,255,.05);
       --dv-stroke: rgba(255,255,255,.08); --dv-stroke2: rgba(255,255,255,.12);
       --dv-text: rgba(255,255,255,.92); --dv-text2: rgba(255,255,255,.65);
@@ -31,7 +31,6 @@
     }
     [data-theme="light"] body::before, [data-theme="light"] body::after { display: none; }
     [data-theme="light"] #ambientParticles { opacity: 0.15; }
-    [data-theme="light"] .msg.user { background: rgba(168,85,247,0.08); }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -60,12 +59,34 @@
     #main-content { flex: 1; min-width: 0; max-width: 100%; transition: all .22s var(--dv-ease); overflow-x: hidden; }
     .page { max-width: var(--page-max); margin: 0 auto; padding: var(--page-pad); min-height: 100vh; position: relative; }
 
-    .page-header { margin-bottom: 32px; }
+    .page-header { margin-bottom: 18px; }
     .page-title { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: var(--dv-text); }
     .page-subtitle { font-size: 14px; color: var(--dv-muted); margin-top: 4px; }
+    .history-toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .history-filter {
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: var(--dv-text);
+      font-size: 12px;
+      padding: 0 10px;
+      min-width: 170px;
+      outline: none;
+    }
+    [data-theme="light"] .history-filter {
+      background: rgba(15,23,42,0.05);
+      border-color: rgba(15,23,42,0.12);
+    }
 
     /* Conversation Layout */
-    .conv-layout { display: grid; grid-template-columns: 340px 1fr; gap: 20px; min-height: calc(100vh - 140px); }
+    .conv-layout { display: grid; grid-template-columns: 340px 1fr; gap: 20px; min-height: calc(100vh - 190px); }
     @media (max-width: 900px) { .conv-layout { grid-template-columns: 1fr; } }
 
     /* Conversation List */
@@ -82,23 +103,37 @@
       background: rgba(168,85,247,.15); color: #fff; padding: 4px 10px;
       border-radius: 999px; font-size: 11px; font-weight: 700;
     }
-    .conv-items { flex: 1; overflow-y: auto; padding: 8px; }
+    .conv-items { flex: 1; overflow-y: auto; padding: 10px; }
     .conv-items::-webkit-scrollbar { width: 4px; }
     .conv-items::-webkit-scrollbar-thumb { background: var(--dv-stroke2); border-radius: 4px; }
 
     .conv-item {
-      width: 100%; padding: 14px; background: transparent; border: 1px solid transparent;
-      border-radius: var(--dv-radius-md); text-align: left; cursor: pointer;
-      margin-bottom: 4px; transition: all 0.15s var(--dv-ease); position: relative;
+      width: 100%;
+      height: 64px;
+      padding: 10px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      text-align: left;
+      cursor: pointer;
+      margin-bottom: 6px;
+      transition: all 0.15s var(--dv-ease);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
-    .conv-item:hover { background: var(--dv-surface2); border-color: var(--dv-stroke); }
-    .conv-item.active { background: var(--dv-surface2); border-color: rgba(168,85,247,.3); }
+    .conv-item:hover { background: rgba(255,255,255,0.04); }
+    .conv-item.active {
+      background: rgba(139,92,246,0.12);
+      border: 1px solid rgba(139,92,246,0.35);
+    }
     .conv-item.active::before {
       content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
       width: 3px; height: 24px; background: var(--dv-grad); border-radius: 999px; box-shadow: var(--dv-gradGlow);
     }
-    .conv-visitor { font-size: 13px; font-weight: 600; color: var(--dv-text); margin-bottom: 2px; }
-    .conv-preview { font-size: 12px; color: var(--dv-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+    .conv-visitor { font-size: 13px; font-weight: 600; color: var(--dv-text); margin-bottom: 1px; }
+    .conv-preview { font-size: 12px; color: var(--dv-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
     .conv-date { font-size: 11px; color: var(--dv-muted2); }
 
     /* Conversation Detail */
@@ -113,26 +148,83 @@
     .conv-meta-title { font-size: 14px; font-weight: 700; color: var(--dv-text); }
     .conv-meta-visitor { font-size: 12px; color: var(--dv-muted); }
 
-    .messages-container {
-      flex: 1; overflow-y: auto; padding: 20px;
-      display: flex; flex-direction: column; gap: 12px;
+    .chat-viewer {
+      flex: 1;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: calc(100vh - 240px);
+      overflow-y: auto;
     }
-    .messages-container::-webkit-scrollbar { width: 4px; }
-    .messages-container::-webkit-scrollbar-thumb { background: var(--dv-stroke2); border-radius: 4px; }
-
+    .chat-viewer::-webkit-scrollbar { width: 4px; }
+    .chat-viewer::-webkit-scrollbar-thumb { background: var(--dv-stroke2); border-radius: 4px; }
+    .chat-msg-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      max-width: 100%;
+    }
+    .chat-msg-row.user {
+      justify-content: flex-end;
+    }
+    .chat-msg-row.bot {
+      justify-content: flex-start;
+    }
+    .msg-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      overflow: hidden;
+      flex: 0 0 28px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.09);
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      color: var(--dv-muted);
+      font-weight: 700;
+    }
+    .msg-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .msg-bubble-wrap {
+      max-width: min(76%, 640px);
+      display: flex;
+      flex-direction: column;
+    }
     .msg {
-      max-width: 80%; padding: 12px 16px; border-radius: var(--dv-radius-md);
-      font-size: 13px; line-height: 1.6; position: relative;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
-    .msg.user {
-      align-self: flex-end; background: rgba(168,85,247,0.12);
-      color: var(--dv-text); border: 1px solid rgba(168,85,247,.18);
+    .chat-msg-row.user .msg {
+      background: rgba(139,92,246,0.18);
+      border: 1px solid rgba(139,92,246,0.35);
+      border-radius: 14px 14px 4px 14px;
     }
-    .msg.bot {
-      align-self: flex-start; background: var(--dv-surface2);
-      color: var(--dv-text); border: 1px solid var(--dv-stroke);
+    .chat-msg-row.bot .msg {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px 14px 14px 4px;
     }
-    .msg-time { font-size: 10px; color: var(--dv-muted2); margin-top: 4px; }
+    .chat-msg-row.user .msg-bubble-wrap {
+      align-items: flex-end;
+    }
+    .chat-msg-row.bot .msg-bubble-wrap {
+      align-items: flex-start;
+    }
+    .msg-time {
+      font-size: 11px;
+      opacity: 0.5;
+      margin-top: 4px;
+      color: var(--dv-text2);
+    }
 
     /* Empty State */
     .empty-state {
@@ -158,6 +250,19 @@
           <div class="page-title" data-i18n="history.page.heading"></div>
           <div class="page-subtitle" data-i18n="history.page.subtitle"></div>
         </div>
+        <div class="history-toolbar">
+          <select id="historyBotFilter" class="history-filter" aria-label="Select bot">
+            <option value="">All bots</option>
+          </select>
+          <select id="historyRangeFilter" class="history-filter" aria-label="Select time range">
+            <option value="today">Today</option>
+            <option value="3d">Last 3 days</option>
+            <option value="7d" selected>Last 7 days</option>
+            <option value="14d">Last 14 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="all">All time</option>
+          </select>
+        </div>
 
         <div class="conv-layout">
           <div class="conv-list">
@@ -182,14 +287,14 @@
               <div class="conv-meta-title" data-i18n="history.details.title"></div>
               <div class="conv-meta-visitor" id="convMetaVisitor" data-i18n="history.details.selectHint"></div>
             </div>
-            <div class="messages-container" id="convMessages">
+            <div class="chat-viewer" id="convMessages">
               <div class="empty-state">
                 <div class="empty-state-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
                   </svg>
                 </div>
-                <div class="empty-state-text" data-i18n="history.details.selectLeftHint"></div>
+                <div class="empty-state-text">No conversation selected</div>
               </div>
             </div>
           </div>
@@ -216,7 +321,14 @@
     const convCount = document.getElementById("convCount");
     const convMessages = document.getElementById("convMessages");
     const convMetaVisitor = document.getElementById("convMetaVisitor");
+    const historyBotFilter = document.getElementById("historyBotFilter");
+    const historyRangeFilter = document.getElementById("historyRangeFilter");
     const i18nText = (id) => document.getElementById(id)?.textContent || "";
+    const DEFAULT_BOT_AVATAR = "/icons/default-bot.svg";
+
+    let allConversations = [];
+    let selectedConversationId = null;
+    let botsById = new Map();
 
     function translateDynamicContent() {
       if (window.DaVeriI18n?.translatePage) {
@@ -293,47 +405,171 @@
       return dt.toLocaleDateString("pl-PL", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
     }
 
-    async function loadConversations() {
-      const botId = await ensureActiveBotId();
-      let endpoint = `${API_CONVERSATIONS}?limit=50`;
-      if (botId) endpoint += `&bot_id=${encodeURIComponent(botId)}`;
+    function escapeHtml(value = "") {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
 
-      let convs = [];
-      try {
-        const payload = await fetchJson(endpoint);
-        convs = Array.isArray(payload?.conversations) ? payload.conversations : [];
-      } catch (error) {
-        console.error("[History] conversations load failed:", error);
-        convs = [];
+    function getConversationTimestamp(conv) {
+      const raw = conv?.updated_at || conv?.last_message_at || conv?.created_at;
+      const value = new Date(raw || 0).getTime();
+      return Number.isFinite(value) ? value : 0;
+    }
+
+    function isConversationInRange(conv, rangeValue) {
+      if (!rangeValue || rangeValue === "all") return true;
+      const ts = getConversationTimestamp(conv);
+      if (!ts) return false;
+
+      const now = new Date();
+      if (rangeValue === "today") {
+        const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        return ts >= startToday;
       }
 
-      convCount.textContent = String(convs.length);
+      const map = { "3d": 3, "7d": 7, "14d": 14, "30d": 30 };
+      const days = map[rangeValue] || 7;
+      const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+      return ts >= cutoff;
+    }
+
+    function getConversationList() {
+      const rangeValue = historyRangeFilter?.value || "7d";
+      return allConversations
+        .filter((conv) => isConversationInRange(conv, rangeValue))
+        .sort((a, b) => getConversationTimestamp(b) - getConversationTimestamp(a));
+    }
+
+    function createAvatarNode({ imageUrl, fallbackText }) {
+      const avatar = document.createElement("div");
+      avatar.className = "msg-avatar";
+
+      if (imageUrl) {
+        const img = document.createElement("img");
+        img.src = imageUrl;
+        img.alt = "";
+        img.loading = "lazy";
+        img.decoding = "async";
+        img.onerror = () => {
+          avatar.textContent = fallbackText || "?";
+        };
+        avatar.appendChild(img);
+      } else {
+        avatar.textContent = fallbackText || "?";
+      }
+
+      return avatar;
+    }
+
+    function renderNoConversationSelected() {
+      convMetaVisitor.textContent = i18nText("i18n-history-visitor");
+      convMessages.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+            </svg>
+          </div>
+          <div class="empty-state-text">No conversation selected</div>
+        </div>
+      `;
+    }
+
+    function renderConversationList() {
+      const conversations = getConversationList();
+      convCount.textContent = String(conversations.length);
       convItems.innerHTML = "";
-      if (!convs.length) {
+
+      if (!conversations.length) {
         convItems.innerHTML = '<div class="empty-state"><div class="empty-state-text" data-i18n="history.list.empty"></div></div>';
         translateDynamicContent();
+        renderNoConversationSelected();
         return;
       }
 
-      convs.forEach((conv) => {
-        const el = document.createElement("div");
-        el.className = "conv-item";
+      const exists = selectedConversationId
+        ? conversations.some((conv) => String(conv?.id) === String(selectedConversationId))
+        : false;
+      if (!exists) {
+        selectedConversationId = null;
+        renderNoConversationSelected();
+      }
+
+      conversations.forEach((conv) => {
+        const el = document.createElement("button");
+        el.type = "button";
+        el.className = String(conv?.id) === String(selectedConversationId) ? "conv-item active" : "conv-item";
         el.innerHTML = `
-          <div class="conv-visitor">${conv.visitor_id || conv.visitor_name || i18nText("i18n-history-visitor")}</div>
-          <div class="conv-preview">${conv.last_message_preview || conv.last_message || i18nText("i18n-history-preview")}</div>
-          <div class="conv-date">${fmtDate(conv.created_at)}</div>
+          <div class="conv-visitor">${escapeHtml(conv.visitor_id || conv.visitor_name || i18nText("i18n-history-visitor"))}</div>
+          <div class="conv-preview">${escapeHtml(conv.last_message_preview || conv.last_message || i18nText("i18n-history-preview"))}</div>
+          <div class="conv-date">${escapeHtml(fmtDate(conv.updated_at || conv.last_message_at || conv.created_at))}</div>
         `;
         el.onclick = () => {
-          document.querySelectorAll(".conv-item").forEach((item) => item.classList.remove("active"));
-          el.classList.add("active");
-          loadMessages(conv.id, conv.visitor_id || conv.visitor_name);
+          selectedConversationId = conv.id;
+          renderConversationList();
+          loadMessages(conv);
         };
         convItems.appendChild(el);
       });
     }
 
-    async function loadMessages(convId, visitorName) {
-      convMetaVisitor.textContent = visitorName || i18nText("i18n-history-visitor");
+    async function loadBotsFilterOptions(defaultBotId) {
+      let bots = [];
+      try {
+        const payload = await fetchJson(API_BOTS);
+        bots = Array.isArray(payload?.bots)
+          ? payload.bots
+          : Array.isArray(payload?.data)
+            ? payload.data
+            : Array.isArray(payload)
+              ? payload
+              : [];
+      } catch (error) {
+        console.error("[History] bot list load failed:", error);
+      }
+
+      botsById = new Map(bots.map((bot) => [String(bot?.id || ""), bot]));
+      if (!historyBotFilter) return;
+
+      historyBotFilter.innerHTML = '<option value="">All bots</option>';
+      bots.forEach((bot) => {
+        const opt = document.createElement("option");
+        opt.value = String(bot?.id || "");
+        opt.textContent = bot?.name || `Bot ${String(bot?.id || "").slice(0, 6)}`;
+        historyBotFilter.appendChild(opt);
+      });
+
+      if (defaultBotId && botsById.has(String(defaultBotId))) {
+        historyBotFilter.value = String(defaultBotId);
+      }
+    }
+
+    async function loadConversations() {
+      const botId = historyBotFilter?.value || await ensureActiveBotId();
+      let endpoint = `${API_CONVERSATIONS}?limit=50`;
+      if (botId) endpoint += `&bot_id=${encodeURIComponent(botId)}`;
+
+      allConversations = [];
+      try {
+        const payload = await fetchJson(endpoint);
+        allConversations = Array.isArray(payload?.conversations) ? payload.conversations : [];
+      } catch (error) {
+        console.error("[History] conversations load failed:", error);
+        allConversations = [];
+      }
+
+      renderConversationList();
+    }
+
+    async function loadMessages(conversation) {
+      const convId = conversation?.id;
+      if (!convId) return;
+      const visitorName = conversation?.visitor_id || conversation?.visitor_name || i18nText("i18n-history-visitor");
+      convMetaVisitor.textContent = visitorName;
 
       let msgs = [];
       try {
@@ -351,11 +587,44 @@
         return;
       }
 
+      const botId = String(conversation?.bot_id || historyBotFilter?.value || "");
+      const botMeta = botsById.get(botId);
+      const botAvatar = conversation?.bot_icon_url || botMeta?.icon_url || DEFAULT_BOT_AVATAR;
+      const userAvatar = conversation?.visitor_avatar_url || "";
+      const userInitial = String(visitorName || "U").trim().charAt(0).toUpperCase() || "U";
+
       msgs.forEach((msg) => {
-        const el = document.createElement("div");
-        el.className = `msg ${msg.role === "user" ? "user" : "bot"}`;
-        el.innerHTML = `<div>${msg.content || ""}</div><div class="msg-time">${fmtDate(msg.created_at)}</div>`;
-        convMessages.appendChild(el);
+        const isUser = String(msg?.role || "").toLowerCase() === "user";
+        const row = document.createElement("div");
+        row.className = `chat-msg-row ${isUser ? "user" : "bot"}`;
+
+        const bubbleWrap = document.createElement("div");
+        bubbleWrap.className = "msg-bubble-wrap";
+
+        const bubble = document.createElement("div");
+        bubble.className = "msg";
+        bubble.textContent = msg?.content || "";
+
+        const time = document.createElement("div");
+        time.className = "msg-time";
+        time.textContent = fmtDate(msg?.created_at);
+
+        bubbleWrap.appendChild(bubble);
+        bubbleWrap.appendChild(time);
+
+        const avatar = createAvatarNode({
+          imageUrl: isUser ? (msg?.user_avatar_url || userAvatar) : botAvatar,
+          fallbackText: isUser ? userInitial : "AI",
+        });
+
+        if (isUser) {
+          row.appendChild(bubbleWrap);
+          row.appendChild(avatar);
+        } else {
+          row.appendChild(avatar);
+          row.appendChild(bubbleWrap);
+        }
+        convMessages.appendChild(row);
       });
       convMessages.scrollTop = convMessages.scrollHeight;
     }
@@ -363,11 +632,26 @@
     window.addEventListener("daveri:active-bot-changed", (event) => {
       const nextBotId = String(event?.detail?.botId || "").trim();
       root.dataset.botId = nextBotId;
+      if (historyBotFilter && nextBotId) {
+        historyBotFilter.value = nextBotId;
+      }
+      selectedConversationId = null;
       loadConversations();
     });
 
+    historyBotFilter?.addEventListener("change", async () => {
+      selectedConversationId = null;
+      await loadConversations();
+    });
+    historyRangeFilter?.addEventListener("change", () => {
+      renderConversationList();
+    });
+
     await waitForAuthReady();
+    const defaultBotId = await ensureActiveBotId();
+    await loadBotsFilterOptions(defaultBotId);
     await loadConversations();
+    renderNoConversationSelected();
   </script>
 
   <script type="module" src="../js/language.js"></script>
