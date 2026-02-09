@@ -8,7 +8,6 @@ const DEFAULT_ROUTES = {
   wyglad: "/appearance",
   pliki: "/files",
   instalacja: "/install",
-  settings: "/settings",
 };
 
 const THEME_KEY = "daveri_theme";

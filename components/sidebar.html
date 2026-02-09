@@ -760,6 +760,11 @@
   fill:none;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round;
 }
+.ck-dropdown.dv-dd .dd-item .dd-item-icon{
+  width:18px;height:18px;
+  opacity:.78;
+  display:block;
+}
 .ck-dropdown.dv-dd .dd-item.danger{color:#f97373;}
 .ck-dropdown.dv-dd .dd-item.danger svg{stroke:#f97373;}
 .ck-dropdown.dv-dd:not(.open){
@@ -946,13 +951,6 @@
           <span class="tip" data-i18n="sidebar.nav.install">Install</span>
         </div>
 
-        <div class="nav-item sidebar-item" tabindex="0" data-route="settings" data-gradient="neutral">
-          <div class="sidebar-icon" aria-hidden="true">
-            <img src="/assets/icons/settings.svg" alt="" width="14" height="14" />
-          </div>
-          <span class="label" data-i18n="sidebar.nav.settings">Settings</span>
-          <span class="tip" data-i18n="sidebar.nav.settings">Settings</span>
-        </div>
       </div>
     </nav>
 
@@ -1042,7 +1040,7 @@
     <div class="user">
       <div class="dropdown ck-dropdown dv-dd" id="userDropdown">
         <button class="dd-item" type="button" id="goProfileBtn">
-          <svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="8" r="4"/></svg>
+          <img class="dd-item-icon" src="/assets/icons/settings.svg" alt="" width="18" height="18" />
           <span data-i18n="sidebar.user.profile">Profile</span>
         </button>
         <button class="dd-item danger" type="button" id="logoutBtn">

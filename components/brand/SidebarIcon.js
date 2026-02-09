@@ -20,7 +20,6 @@ const ROUTE_ICON_MAP = {
   wyglad: "appearance",
   pliki: "files",
   instalacja: "install",
-  settings: "settings",
 };
 
 const ROUTE_GRADIENT_MAP = {
@@ -31,7 +30,6 @@ const ROUTE_GRADIENT_MAP = {
   wyglad: "purple",
   pliki: "blue",
   instalacja: "primary",
-  settings: "neutral",
 };
 
 const getIconPath = (name) => {
