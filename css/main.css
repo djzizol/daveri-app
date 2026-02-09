@@ -50,12 +50,31 @@
 .language-flag {
   width: 20px;
   height: 14px;
+  min-width: 20px;
+  max-width: 20px;
+  min-height: 14px;
+  max-height: 14px;
   object-fit: cover;
   border-radius: 2px;
-  display: inline-block;
-  flex-shrink: 0;
+  display: block;
+  flex: 0 0 20px;
 }
 
-.language-dropdown img {
-  max-width: 20px;
+.language-dropdown-container .language-flag,
+.language-dropdown-container [data-lang-current-flag] {
+  width: 20px !important;
+  height: 14px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  min-height: 14px !important;
+  max-height: 14px !important;
+  display: block !important;
+  object-fit: cover !important;
+}
+
+.language-dropdown img,
+.language-selector img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
 }
