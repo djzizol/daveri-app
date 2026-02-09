@@ -2660,7 +2660,7 @@
       z-index: 1;
     }
 
-    .chat-watermark strong {
+    .chat-watermark .watermark-brand {
       color: var(--dv-muted);
       font-weight: 500;
     }
@@ -3603,12 +3603,12 @@
 
     #dv-configurator .appearance-layout {
       display: grid;
-      grid-template-columns: minmax(430px, 1.1fr) 360px minmax(520px, 1fr);
+      grid-template-columns: minmax(640px, 1.75fr) 340px minmax(560px, 1fr);
       grid-template-rows: auto minmax(0, 1fr);
-      gap: 22px 34px;
+      gap: 18px 26px;
       align-items: start;
-      height: calc(100vh - 134px);
-      min-height: 700px;
+      height: calc(100vh - 128px);
+      min-height: 680px;
       overflow: hidden;
       background: transparent;
     }
@@ -3631,24 +3631,44 @@
 
     #dv-configurator .step-item {
       flex: 1 1 0;
-      min-width: 174px;
+      min-width: 162px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       text-align: left;
       position: relative;
-      padding: 10px 12px;
-      border-radius: 10px;
+      padding: 0;
+      border: none;
+      border-radius: 0;
       cursor: pointer;
       color: var(--dv-text2);
-      border: 1px solid rgba(255, 255, 255, 0.05);
       background: transparent;
       transition: all 120ms ease;
     }
 
+    #dv-configurator .step-item::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -6px;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(139, 92, 246, 0.55),
+        rgba(236, 72, 153, 0.5),
+        rgba(59, 130, 246, 0.55),
+        transparent
+      );
+      opacity: 0;
+      transition: opacity 120ms ease;
+      pointer-events: none;
+    }
+
     #dv-configurator .step-badge {
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
       border-radius: 999px;
       border: 1px solid rgba(255, 255, 255, 0.14);
       background: rgba(255, 255, 255, 0.03);
@@ -3656,9 +3676,9 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
-      flex: 0 0 24px;
+      flex: 0 0 28px;
       transition: all 120ms ease;
     }
 
@@ -3666,12 +3686,12 @@
       display: flex;
       flex-direction: column;
       min-width: 0;
-      gap: 2px;
+      gap: 1px;
     }
 
     #dv-configurator .step-title {
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 600;
       color: currentColor;
       line-height: 1.2;
       white-space: nowrap;
@@ -3680,7 +3700,7 @@
     }
 
     #dv-configurator .step-caption {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--dv-muted2);
       line-height: 1.2;
       white-space: nowrap;
@@ -3689,15 +3709,11 @@
     }
 
     #dv-configurator .step-item.active {
-      border: 1px solid rgba(139, 92, 246, 0.35);
-      background: rgba(139, 92, 246, 0.08);
       color: #fff;
     }
 
     #dv-configurator .step-item.completed {
-      border: 1px solid rgba(139, 92, 246, 0.25);
       color: var(--dv-text);
-      background: rgba(255, 255, 255, 0.02);
     }
 
     #dv-configurator .step-item.upcoming {
@@ -3705,9 +3721,15 @@
     }
 
     #dv-configurator .step-item.active .step-badge {
-      border-color: rgba(139, 92, 246, 0.55);
-      background: rgba(139, 92, 246, 0.2);
+      border-color: rgba(139, 92, 246, 0.66);
+      background: linear-gradient(
+        140deg,
+        rgba(139, 92, 246, 0.32),
+        rgba(236, 72, 153, 0.24),
+        rgba(59, 130, 246, 0.24)
+      );
       color: #fff;
+      box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.22), 0 0 18px rgba(139, 92, 246, 0.22);
     }
 
     #dv-configurator .step-item.completed .step-badge {
@@ -3716,13 +3738,28 @@
       color: #fff;
     }
 
+    #dv-configurator .step-item.active .step-title,
+    #dv-configurator .step-item.completed .step-title {
+      color: #eef2ff;
+    }
+
     #dv-configurator .step-item.active .step-caption,
     #dv-configurator .step-item.completed .step-caption {
       color: rgba(226, 232, 240, 0.82);
     }
 
     #dv-configurator .step-item:hover {
-      background: rgba(255, 255, 255, 0.04);
+      color: #e8edf8;
+    }
+
+    #dv-configurator .step-item:hover .step-badge {
+      border-color: rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    #dv-configurator .step-item.active::before,
+    #dv-configurator .step-item.completed::before {
+      opacity: 1;
     }
 
     #dv-configurator .step-connector {
@@ -3874,7 +3911,7 @@
     }
 
     #dv-configurator .appearance-sidebar .section-content {
-      padding: 14px 16px 16px;
+      padding: 12px 14px 14px;
     }
 
     #dv-configurator .appearance-sidebar .setting-card .section-title h3 {
@@ -3887,12 +3924,251 @@
       color: var(--dv-muted);
     }
 
+    #dv-configurator .appearance-sidebar .option-group {
+      margin-bottom: 12px;
+    }
+
+    #dv-configurator .appearance-sidebar .option-group h4 {
+      margin-bottom: 8px;
+      font-size: 11px;
+    }
+
+    #dv-configurator .appearance-sidebar .subsection-header {
+      margin: 12px 0 8px;
+      padding-left: 6px;
+      border-left-width: 2px;
+      font-size: 12px;
+    }
+
+    #dv-configurator .appearance-sidebar .option-tiles {
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+    }
+
+    #dv-configurator .appearance-sidebar .option-tile {
+      min-height: 44px;
+      padding: 8px 10px;
+      gap: 8px;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    #dv-configurator .appearance-sidebar .option-tile:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(139, 92, 246, 0.3);
+    }
+
+    #dv-configurator .appearance-sidebar .option-tile.active {
+      border-color: rgba(139, 92, 246, 0.45);
+      background: rgba(139, 92, 246, 0.12);
+      outline: none;
+      box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.24);
+    }
+
+    #dv-configurator .appearance-sidebar .tile-preview {
+      width: 24px;
+      height: 20px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    #dv-configurator .appearance-sidebar .tile-label {
+      font-size: 11px;
+      line-height: 1.2;
+      text-align: left;
+    }
+
+    #dv-configurator .appearance-sidebar .slider-container label {
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    #dv-configurator .appearance-sidebar .slider-value {
+      font-size: 11px;
+      padding: 2px 8px;
+    }
+
+    #dv-configurator .appearance-sidebar .slider {
+      height: 5px;
+    }
+
+    #dv-configurator .appearance-sidebar .color-tiles-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    #dv-configurator .appearance-sidebar .color-tile {
+      height: 36px;
+      padding: 0 10px;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.02);
+      transform: none;
+      box-shadow: none;
+    }
+
+    #dv-configurator .appearance-sidebar .color-tile::before {
+      display: none;
+    }
+
+    #dv-configurator .appearance-sidebar .color-tile:hover {
+      transform: none;
+      outline: none;
+      border-color: rgba(139, 92, 246, 0.35);
+      background: rgba(139, 92, 246, 0.1);
+      box-shadow: none;
+    }
+
+    #dv-configurator .appearance-sidebar .color-tile.active {
+      border-color: rgba(139, 92, 246, 0.45);
+      box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.24);
+    }
+
+    #dv-configurator .appearance-sidebar .color-preview {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      flex-shrink: 0;
+      order: 2;
+    }
+
+    #dv-configurator .appearance-sidebar .color-label {
+      font-size: 11px;
+      text-align: left;
+      color: #dbe0ea;
+      order: 1;
+    }
+
+    #dv-configurator .appearance-sidebar .bg-options {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    #dv-configurator .appearance-sidebar .bg-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.02);
+      overflow: visible;
+      transition: all 120ms ease;
+    }
+
+    #dv-configurator .appearance-sidebar .bg-option:hover {
+      border-color: rgba(139, 92, 246, 0.34);
+      background: rgba(139, 92, 246, 0.08);
+    }
+
+    #dv-configurator .appearance-sidebar .bg-option.active {
+      border-color: rgba(139, 92, 246, 0.45);
+      box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.24);
+    }
+
+    #dv-configurator .appearance-sidebar .bg-option-preview {
+      width: 30px;
+      height: 22px;
+      border-radius: 6px;
+      flex: 0 0 30px;
+    }
+
+    #dv-configurator .appearance-sidebar .bg-option-label {
+      font-size: 11px;
+      padding: 0;
+      text-align: left;
+      background: transparent;
+      color: #dbe0ea;
+      line-height: 1.2;
+    }
+
+    #dv-configurator .appearance-sidebar .bg-upload-container,
+    #dv-configurator .appearance-sidebar .avatar-upload-container {
+      padding: 10px;
+      gap: 8px;
+      border-radius: 10px;
+    }
+
+    #dv-configurator .appearance-sidebar .bg-preview {
+      height: 56px;
+      margin-top: 2px;
+    }
+
+    #dv-configurator .appearance-sidebar .bg-preview-overlay {
+      font-size: 10px;
+    }
+
+    #dv-configurator .appearance-sidebar .quick-reply-row {
+      margin-bottom: 6px;
+    }
+
+    #dv-configurator .appearance-sidebar .position-tiles {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    #dv-configurator .appearance-sidebar .position-tile {
+      height: 52px;
+      min-height: 52px;
+      padding: 8px 10px;
+      gap: 8px;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.02);
+      box-shadow: none;
+      transform: none;
+    }
+
+    #dv-configurator .appearance-sidebar .position-tile:hover {
+      transform: none;
+      border-color: rgba(139, 92, 246, 0.35);
+      background: rgba(139, 92, 246, 0.08);
+      box-shadow: none;
+    }
+
+    #dv-configurator .appearance-sidebar .position-tile.active {
+      border-color: rgba(139, 92, 246, 0.45);
+      box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.24);
+    }
+
+    #dv-configurator .appearance-sidebar .position-preview {
+      width: 32px;
+      height: 20px;
+      border-width: 1px;
+      flex-shrink: 0;
+    }
+
+    #dv-configurator .appearance-sidebar .position-indicator {
+      width: 8px;
+      height: 8px;
+      box-shadow: 0 0 6px rgba(168, 85, 237, 0.52);
+    }
+
+    #dv-configurator .appearance-sidebar .position-label {
+      font-size: 11px;
+      text-align: left;
+    }
+
     #dv-configurator .preview-area.appearance-preview-grid {
       grid-column: 2 / 4;
       grid-row: 2;
       display: grid;
-      grid-template-columns: 360px minmax(520px, 1fr);
-      gap: 32px;
+      grid-template-columns: 340px minmax(560px, 1fr);
+      gap: 24px;
       align-items: start;
       min-width: 0;
       min-height: 0;
@@ -3905,9 +4181,8 @@
       min-height: 0;
     }
 
-    #dv-configurator .live-preview-section .section-label {
-      margin-bottom: 10px;
-      text-align: left;
+    #dv-configurator .live-preview-section > :not(.chat-preview-wrapper) {
+      display: none !important;
     }
 
     #dv-configurator .chat-preview-wrapper {
@@ -3915,8 +4190,9 @@
       align-items: center;
       justify-content: center;
       width: 100%;
-      height: calc(100vh - 226px);
-      min-height: 540px;
+      height: calc(100vh - 252px);
+      min-height: 520px;
+      max-height: 620px;
     }
 
     #dv-configurator .chat-live-preview {
@@ -3994,8 +4270,9 @@
     }
 
     #dv-configurator .device-preview-stage {
-      height: calc(100vh - 246px);
-      min-height: 540px;
+      height: calc(100vh - 252px);
+      min-height: 520px;
+      max-height: 620px;
       border-radius: 14px;
       border: 1px solid rgba(255, 255, 255, 0.08);
       background: #181a20;
@@ -4014,11 +4291,10 @@
       justify-content: center;
     }
 
+    #dv-configurator .live-preview-section .section-label,
     #dv-configurator .device-preview-desktop .section-label,
     #dv-configurator .device-preview-mobile .section-label {
-      margin-bottom: 10px;
-      width: 100%;
-      text-align: center;
+      display: none !important;
     }
 
     #dv-configurator[data-device-preview="desktop"] .device-preview-mobile {
@@ -4065,6 +4341,14 @@
       height: 100%;
       border-radius: 10px;
       overflow: hidden;
+      background:
+        radial-gradient(96% 130% at 86% 84%, rgba(124, 58, 237, 0.24), rgba(124, 58, 237, 0) 58%),
+        radial-gradient(70% 90% at 74% 78%, rgba(236, 72, 153, 0.15), rgba(236, 72, 153, 0) 62%),
+        linear-gradient(162deg, #090d13 0%, #0d1118 48%, #141829 100%);
+    }
+
+    #dv-configurator .device-preview-desktop .monitor-viewport {
+      background: transparent;
     }
 
     #dv-configurator .device-preview-mobile .mobile-column {
@@ -4085,38 +4369,135 @@
     #dv-configurator .device-preview-mobile .mobile-preview {
       width: 260px;
       height: 520px;
-      border-radius: 28px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: #111217;
+      border-radius: 36px;
+      border: none;
+      background: transparent;
       position: relative;
     }
 
     #dv-configurator .device-preview-mobile .iphone-frame {
       width: 100%;
       height: 100%;
-      border-radius: 28px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: #111217;
-      padding: 10px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+      border-radius: 36px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: linear-gradient(165deg, #1d212b 0%, #0e1016 74%);
+      padding: 12px;
+      box-shadow:
+        0 24px 58px rgba(0, 0, 0, 0.48),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      position: relative;
     }
 
-    #dv-configurator .device-preview-mobile .iphone-frame::before,
-    #dv-configurator .device-preview-mobile .iphone-frame::after,
+    #dv-configurator .device-preview-mobile .iphone-frame::before {
+      content: "";
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 76px;
+      height: 20px;
+      border-radius: 12px;
+      background: #090b10;
+      z-index: 12;
+    }
+
+    #dv-configurator .device-preview-mobile .iphone-frame::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 8px;
+      transform: translateX(-50%);
+      width: 92px;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      z-index: 12;
+    }
+
     #dv-configurator .device-preview-mobile .iphone-screen::before,
     #dv-configurator .device-preview-mobile .iphone-screen::after {
-      display: none;
+      display: none !important;
     }
 
     #dv-configurator .device-preview-mobile .iphone-screen {
-      border-radius: 20px;
+      border-radius: 26px;
       overflow: hidden;
       height: 100%;
       width: 100%;
+      background: #0f1118;
     }
 
     #dv-configurator .device-preview-mobile .mobile-chat-root {
       height: 100%;
+      padding-top: 38px;
+    }
+
+    #dv-configurator .device-preview-mobile .mobile-header {
+      height: 54px;
+      padding: 0 14px;
+    }
+
+    #dv-configurator .device-preview-mobile .mobile-header-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 9px;
+    }
+
+    #dv-configurator .device-preview-mobile .mobile-messages {
+      padding: 12px 10px;
+      gap: 8px;
+    }
+
+    #dv-configurator .device-preview-mobile .mobile-message-content {
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    #dv-configurator .device-preview-mobile .mobile-input-bar {
+      height: 62px;
+      padding: 8px 10px 12px;
+    }
+
+    #dv-configurator .device-preview-mobile .mobile-input {
+      height: 34px;
+      font-size: 12px;
+      border-radius: 17px;
+    }
+
+    #dv-configurator .device-preview-mobile .mobile-send-button {
+      width: 34px;
+      height: 34px;
+      font-size: 12px;
+    }
+
+    #dv-configurator .chat-watermark {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 5px 10px;
+      font-size: 10px;
+      color: #9aa4b5;
+      line-height: 1;
+    }
+
+    #dv-configurator .chat-watermark .watermark-label {
+      color: #8f99ab;
+      font-weight: 500;
+    }
+
+    #dv-configurator .chat-watermark .watermark-brand {
+      color: #dbe3f1;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    #dv-configurator .chat-watermark .watermark-icon {
+      width: 14px;
+      height: 14px;
+      object-fit: contain;
+      display: block;
+      opacity: 0.94;
     }
 
     #dv-configurator .bottom-actions {
@@ -4134,13 +4515,13 @@
 
     @media (max-width: 1700px) {
       #dv-configurator .appearance-layout {
-        grid-template-columns: minmax(380px, 1fr) 340px minmax(460px, 1fr);
-        gap: 20px 24px;
+        grid-template-columns: minmax(520px, 1.45fr) 340px minmax(460px, 1fr);
+        gap: 16px 22px;
       }
 
       #dv-configurator .preview-area.appearance-preview-grid {
-        grid-template-columns: 340px minmax(420px, 1fr);
-        gap: 24px;
+        grid-template-columns: 340px minmax(440px, 1fr);
+        gap: 20px;
       }
     }
 
@@ -4258,7 +4639,7 @@
             <button type="button" class="step-item" data-step="position">
               <span class="step-badge">3</span>
               <span class="step-copy">
-                <span class="step-title">Position &amp; Size</span>
+                <span class="step-title">Position</span>
                 <span class="step-caption">Osadzenie widgetu</span>
               </span>
             </button>
@@ -4571,24 +4952,10 @@
                       </div>
                     </div>
 
-                    <!-- Wymiary -->
-                    <div class="subsection-header" style="margin-top: 24px;" data-i18n="appearance.position.dimensions"></div>
-                    <div class="slider-group">
-                      <div class="slider-container">
-                        <label><span data-i18n="appearance.position.width"></span> <span class="slider-value" data-for="device.width">360px</span></label>
-                        <input type="range" min="280" max="600" value="360" class="slider" data-group="device"
-                          data-key="width" data-role="range">
-                      </div>
-                      <div class="slider-container">
-                        <label><span data-i18n="appearance.position.height"></span> <span class="slider-value" data-for="device.height">520px</span></label>
-                        <input type="range" min="360" max="800" value="520" class="slider" data-group="device"
-                          data-key="height" data-role="range">
-                      </div>
-                    </div>
                     <div class="info-note"
-                      style="margin-top: 16px; padding: 12px; background: rgba(96,165,250,.1); border-radius: var(--dv-radius-sm); font-size: 11px; color: var(--dv-text);">
+                      style="margin-top: 14px; padding: 10px 12px; background: rgba(96,165,250,.1); border-radius: var(--dv-radius-sm); font-size: 11px; color: var(--dv-text);">
                       <i class="fas fa-info-circle" style="margin-right: 6px;"></i>
-                      <span data-i18n="appearance.position.note"></span>
+                      <span>Rozmiar widgetu jest ustawiany automatycznie dla Desktop i Mobile.</span>
                     </div>
                   </div>
                 </div>
@@ -4898,7 +5265,6 @@
   <div class="preview-area appearance-preview-grid">
     <!-- Desktop Chat Preview -->
     <div class="preview-section live-preview-section">
-      <div class="section-label" data-i18n="appearance.preview.configurator"></div>
       <div class="chat-preview-wrapper">
         <div class="work-column chat-live-preview">
           <div class="chat-scale">
@@ -4929,8 +5295,9 @@
                 </button>
               </div>
               <div class="chat-watermark" id="workChatWatermark">
-                <span data-i18n="appearance.preview.watermark"
-                  style="background: linear-gradient(135deg, #fb7185 0%, #a855f7 48%, #60a5fa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 600;"></span>
+                <span class="watermark-label">Powered by</span>
+                <img class="watermark-icon" src="/assets/icons/poweredby.svg" alt="" />
+                <span class="watermark-brand">DaVeri</span>
               </div>
             </div>
             <!-- Minimized icon (LEFT side, hidden by default) -->
@@ -4951,7 +5318,6 @@
       <div class="device-preview-stage">
         <!-- Mobile iPhone Preview -->
         <div class="preview-section device-preview-mode device-preview-mobile">
-          <div class="section-label" data-i18n="appearance.preview.mobile"></div>
           <div class="mobile-column mobile-preview">
             <div class="phone-scale">
               <div class="iphone-frame">
@@ -4987,7 +5353,6 @@
 
         <!-- Desktop Monitor -->
         <div class="preview-section device-preview-mode device-preview-desktop">
-          <div class="section-label" data-i18n="appearance.preview.desktop"></div>
           <div class="monitor-wrapper desktop-preview">
             <div class="monitor-frame" id="monitorFrame">
               <div class="monitor-screen" id="monitorScreen">
@@ -5116,6 +5481,9 @@
         return byKey?.textContent || "";
       };
       const ACTIVE_BOT_KEY = "daveri_active_bot_id";
+      const WATERMARK_BRAND = "DaVeri";
+      const WATERMARK_ICON = "/assets/icons/poweredby.svg";
+      const FIXED_CHAT_DIMENSIONS = Object.freeze({ width: 360, height: 520 });
       const resolveApiOrigin = () => {
         if (typeof window.DaVeriApiOrigin === "string" && window.DaVeriApiOrigin.trim()) {
           return window.DaVeriApiOrigin.trim().replace(/\/$/, "");
@@ -5255,8 +5623,8 @@
       });
       const defaultDeviceState = Object.freeze({
         // 3️⃣ UKŁAD
-        width: 360,
-        height: 520,
+        width: FIXED_CHAT_DIMENSIONS.width,
+        height: FIXED_CHAT_DIMENSIONS.height,
         position: "bottom-right",
         deviceType: "desktop"
       });
@@ -5441,7 +5809,12 @@
       function setDeviceOption(key, value) {
         // Setting device option
         const next = deepClone(deviceState);
-        next[key] = value;
+        if (key === 'width' || key === 'height') {
+          next.width = FIXED_CHAT_DIMENSIONS.width;
+          next.height = FIXED_CHAT_DIMENSIONS.height;
+        } else {
+          next[key] = value;
+        }
         deviceState = next;
         // Natychmiastowa aktualizacja
         if (key === 'width' || key === 'height') {
@@ -5518,6 +5891,8 @@
                 deviceState[key] = parsed.device[key];
               }
             });
+            deviceState.width = FIXED_CHAT_DIMENSIONS.width;
+            deviceState.height = FIXED_CHAT_DIMENSIONS.height;
           }
           if (parsed.preset) {
             currentPreset = parsed.preset;
@@ -6036,10 +6411,10 @@
         // Watermark - biały tekst bez dodatkowego tła
         const watermark = workChat.querySelector('.chat-watermark');
         if (watermark) {
-          watermark.style.display = snapshot.watermarkEnabled ? 'block' : 'none';
-          const strongElement = watermark.querySelector('strong');
-          if (strongElement) {
-            strongElement.textContent = snapshot.watermarkText || i18nText("i18n-appearance-brand-name");
+          watermark.style.display = snapshot.watermarkEnabled ? 'flex' : 'none';
+          const brandElement = watermark.querySelector('.watermark-brand');
+          if (brandElement) {
+            brandElement.textContent = WATERMARK_BRAND;
           }
         }
         // Avatar
@@ -6196,8 +6571,8 @@ ${msg.text}
         const scaleY = viewportHeight / VIRTUAL_SCREEN_HEIGHT;
         const scale = Math.min(scaleX, scaleY);
         // Przelicz rozmiar chatu z px ustawionych na suwaku na proporcjonalny rozmiar w monitorze
-        const scaledWidth = deviceState.width * scale;
-        const scaledHeight = deviceState.height * scale;
+        const scaledWidth = FIXED_CHAT_DIMENSIONS.width * scale;
+        const scaledHeight = FIXED_CHAT_DIMENSIONS.height * scale;
         deviceChat.style.width = `${scaledWidth}px`;
         deviceChat.style.height = `${scaledHeight}px`;
       }
@@ -6419,9 +6794,9 @@ ${msg.text}
       // Apply dimensions to monitor chat based on device state
       function applyMonitorChatDimensions(monitorChat, deviceSnapshot) {
         if (!monitorChat) return;
-        // Use device state dimensions (these are in 1920x1080 virtual pixels)
-        const width = (deviceSnapshot && deviceSnapshot.width) || deviceState.width || 380;
-        const height = (deviceSnapshot && deviceSnapshot.height) || deviceState.height || 520;
+        // Fixed dimensions for a consistent SaaS preview footprint
+        const width = FIXED_CHAT_DIMENSIONS.width;
+        const height = FIXED_CHAT_DIMENSIONS.height;
         monitorChat.style.width = `${width}px`;
         monitorChat.style.height = `${height}px`;
       }
@@ -6504,7 +6879,6 @@ ${msg.text}
         const messages = snapshot.messages || [];
         const quickReplies = snapshot.quickReplies?.messages || [];
         const botName = snapshot.botName || i18nText("i18n-appearance-default-bot-name");
-        const watermarkText = snapshot.watermarkText || i18nText("i18n-appearance-default-watermark");
         const watermarkEnabled = snapshot.watermarkEnabled !== false;
         const avatarImage = snapshot.avatarImage;
         const colors = snapshot.colors || {};
@@ -6539,7 +6913,9 @@ ${quickReplies.map(text => `<button>${text}</button>`).join('')}
         if (watermarkEnabled) {
           watermarkHTML = `
 <div class="chat-watermark">
-<span style="background: linear-gradient(135deg, #fb7185 0%, #a855f7 48%, #60a5fa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 500;">${watermarkText}</span>
+<span class="watermark-label">Powered by</span>
+<img class="watermark-icon" src="${WATERMARK_ICON}" alt="">
+<span class="watermark-brand">${WATERMARK_BRAND}</span>
 </div>
 `;
         }
@@ -6578,7 +6954,6 @@ ${watermarkHTML}
         const messages = snapshot.messages || [];
         const quickReplies = snapshot.quickReplies?.messages || [];
         const botName = snapshot.botName || i18nText("i18n-appearance-default-bot-name");
-        const watermarkText = snapshot.watermarkText || i18nText("i18n-appearance-default-watermark");
         const watermarkEnabled = snapshot.watermarkEnabled !== false;
         let messagesHTML = messages.map(msg => `
 <div class="message ${msg.type}">
@@ -6597,7 +6972,9 @@ ${quickReplies.map(text => `<button>${text}</button>`).join('')}
         if (watermarkEnabled) {
           watermarkHTML = `
 <div class="chat-watermark">
-<span style="background: linear-gradient(135deg, #fb7185 0%, #a855f7 48%, #60a5fa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: 500;">${watermarkText}</span>
+<span class="watermark-label">Powered by</span>
+<img class="watermark-icon" src="${WATERMARK_ICON}" alt="">
+<span class="watermark-brand">${WATERMARK_BRAND}</span>
 </div>
 `;
         }
@@ -6795,10 +7172,10 @@ ${watermarkHTML}
         // Aktualizuj watermark
         const deviceWatermark = deviceChat.querySelector('.chat-watermark');
         if (deviceWatermark) {
-          deviceWatermark.style.display = workState.watermarkEnabled ? 'block' : 'none';
-          const strongElement = deviceWatermark.querySelector('strong');
-          if (strongElement) {
-            strongElement.textContent = workState.watermarkText || i18nText("i18n-appearance-brand-name");
+          deviceWatermark.style.display = workState.watermarkEnabled ? 'flex' : 'none';
+          const brandElement = deviceWatermark.querySelector('.watermark-brand');
+          if (brandElement) {
+            brandElement.textContent = WATERMARK_BRAND;
           }
         }
         // Dodaj przycisk X do device chat
@@ -7214,15 +7591,16 @@ ${i18nText("i18n-appearance-scale-fit")}
         }
       }
       function updateWatermarkText(text) {
+        const brandText = WATERMARK_BRAND;
         // LEWY CHAT
-        const workWatermark = document.querySelector('#workChat .chat-watermark strong');
+        const workWatermark = document.querySelector('#workChat .chat-watermark .watermark-brand');
         if (workWatermark) {
-          workWatermark.textContent = text || i18nText("i18n-appearance-brand-name");
+          workWatermark.textContent = brandText;
         }
         // PRAWY CHAT
-        const deviceWatermark = document.querySelector('#deviceChat .chat-watermark strong');
+        const deviceWatermark = document.querySelector('#deviceChat .chat-watermark .watermark-brand');
         if (deviceWatermark) {
-          deviceWatermark.textContent = text || i18nText("i18n-appearance-brand-name");
+          deviceWatermark.textContent = brandText;
         }
       }
       /* ========== QUICK REPLIES ========== */
