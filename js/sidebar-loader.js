@@ -1,5 +1,6 @@
 import { initSidebar } from "./sidebar.js";
 import "./lang-dropdown.js";
+import { ensureAppLayout } from "./app-layout.js";
 
 const SIDEBAR_STYLE_ID = "daveri-sidebar-style";
 const SIDEBAR_ROOT_ID = "daveri_sidebar";
@@ -58,6 +59,8 @@ const insertSidebarRoot = (root) => {
 };
 
 const mountSidebar = async () => {
+  ensureAppLayout();
+
   const authReady = await waitForAuthReady();
   if (!authReady) {
     return;
@@ -75,6 +78,7 @@ const mountSidebar = async () => {
   ensureSidebarStyle(template.style);
   insertSidebarRoot(template.root);
   await initSidebar(template.root);
+  ensureAppLayout();
   document.dispatchEvent(new CustomEvent("sidebar:mounted"));
 };
 

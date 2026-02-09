@@ -775,7 +775,7 @@ body {
 </head>
 
 <body>
-  <!-- AUTH SCREEN - pokazuje siÄ™ przed sprawdzeniem sesji -->
+  <!-- AUTH SCREEN - pokazuje siĂ„â„˘ przed sprawdzeniem sesji -->
   <div id="auth-screen">
     <div class="auth-container">
       <div class="auth-spinner"></div>
@@ -1087,10 +1087,10 @@ body {
   <script type="module" src="../js/lang-dropdown.js"></script>
   <script type="module" src="../js/auth-bootstrap.js"></script>
 
-  <!-- SYSTEM AUTORYZACJI - wykonuje siÄ™ jako pierwszy -->
+  <!-- SYSTEM AUTORYZACJI - wykonuje siĂ„â„˘ jako pierwszy -->
   <script>
   (async function checkAuth() {
-    console.log('đź” Dashboard: sprawdzam sesjÄ™...');
+    console.log('Ä‘Ĺşâ€ťÂ Dashboard: sprawdzam sesjĂ„â„˘...');
 
     const getLanguage = () => window.DaVeriLanguage?.getCurrentLanguage?.() || 'en';
     const buildLoginUrl = () => {
@@ -1127,7 +1127,7 @@ body {
       const data = await waitForAuth();
       console.log('Dane sesji:', data);
 
-      console.log('âś… ZALOGOWANY jako:', data.user.email);
+      console.log('Ă˘Ĺ›â€¦ ZALOGOWANY jako:', data.user.email);
 
       const root = document.getElementById('panel_root');
       if (root) {
@@ -1139,7 +1139,7 @@ body {
 
       if (typeof initPanel === 'function') initPanel();
     } catch (error) {
-      console.error('âťŚ BĹ‚Ä…d autoryzacji:', error);
+      console.error('Ă˘ĹĄĹš BÄąâ€šĂ„â€¦d autoryzacji:', error);
 
       const authMessage = document.getElementById('auth-message');
       if (authMessage) {
@@ -1333,6 +1333,33 @@ body {
       }
     }
 
+    function renderRecentBots() {
+      const recentBotsEl = document.getElementById("recent-bots-list");
+      if (!recentBotsEl) return;
+      if (!state.bots.length) {
+        recentBotsEl.innerHTML = '<div class="recent-bot-item"><span class="recent-bot-name">No bots yet</span><span class="recent-bot-meta">Create your first agent to begin</span></div>';
+        return;
+      }
+
+      recentBotsEl.innerHTML = "";
+      state.bots.slice(0, 6).forEach((bot) => {
+        const item = document.createElement("div");
+        item.className = "recent-bot-item";
+
+        const name = document.createElement("span");
+        name.className = "recent-bot-name";
+        name.textContent = bot.name || `Bot ${bot.id}`;
+
+        const meta = document.createElement("span");
+        meta.className = "recent-bot-meta";
+        meta.textContent = (String(bot.id) === String(state.activeBotId)) ? "Active" : "Idle";
+
+        item.appendChild(name);
+        item.appendChild(meta);
+        recentBotsEl.appendChild(item);
+      });
+    }
+
     function renderBotsInPanel() {
       if (!botSelect) return;
       botSelect.innerHTML = "";
@@ -1360,6 +1387,7 @@ body {
       const current = state.bots.find(b => String(b.id) === String(state.activeBotId));
       const botNameEl = document.getElementById("panel-active-bot-name");
       if (botNameEl) botNameEl.textContent = current ? (current.name || current.id) : "--";
+      renderRecentBots();
       updateChecklist();
       loadFilesList();
       loadConversationsAndKpis();
@@ -1560,6 +1588,7 @@ body {
           const current = state.bots.find(b => String(b.id) === String(state.activeBotId));
           const botNameEl = document.getElementById("panel-active-bot-name");
           if (botNameEl) botNameEl.textContent = current ? (current.name || current.id) : "--";
+          renderRecentBots();
           updateChecklist();
           loadFilesList();
           loadConversationsAndKpis();
