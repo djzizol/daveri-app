@@ -1,0 +1,53 @@
+<div class="modal" id="create-bot-modal" hidden>
+  <div class="modal-overlay" data-modal-close="create-bot-modal"></div>
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="create-bot-title">
+    <div class="modal-header">
+      <h2 id="create-bot-title">Create Bot</h2>
+      <button type="button" class="modal-close-btn" data-modal-close="create-bot-modal" aria-label="Close">×</button>
+    </div>
+
+    <div class="modal-body">
+      <label class="modal-label" for="create-bot-name">Bot Name</label>
+      <input id="create-bot-name" class="modal-input" type="text" maxlength="80" placeholder="My Support Bot" />
+
+      <div class="modal-label">Preset</div>
+      <div class="preset-grid" id="create-bot-presets">
+        <button type="button" class="preset-card selected" data-preset="support">
+          <span class="preset-card-title">Support</span>
+          <span class="preset-card-desc">Answer customer questions and solve common issues.</span>
+        </button>
+        <button type="button" class="preset-card" data-preset="lead">
+          <span class="preset-card-title">Lead</span>
+          <span class="preset-card-desc">Collect contacts and qualify leads automatically.</span>
+        </button>
+        <button type="button" class="preset-card" data-preset="sales">
+          <span class="preset-card-title">Sales</span>
+          <span class="preset-card-desc">Guide users to purchase with product-focused flows.</span>
+        </button>
+        <button type="button" class="preset-card" data-preset="website">
+          <span class="preset-card-title">Website</span>
+          <span class="preset-card-desc">General website assistant for navigation and FAQs.</span>
+        </button>
+        <button type="button" class="preset-card" data-preset="knowledge">
+          <span class="preset-card-title">Knowledge</span>
+          <span class="preset-card-desc">Use your docs and knowledge base as the core source.</span>
+        </button>
+      </div>
+
+      <div class="toggle-row">
+        <span>Enabled</span>
+        <label class="toggle-switch">
+          <input id="create-bot-enabled" type="checkbox" checked />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <p class="modal-note">Appearance and widget settings can be configured later in the Appearance tab.</p>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" data-modal-close="create-bot-modal">Cancel</button>
+      <button type="button" class="btn-primary" id="create-bot-submit">Create Bot</button>
+    </div>
+  </div>
+</div>

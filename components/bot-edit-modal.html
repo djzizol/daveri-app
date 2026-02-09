@@ -1,0 +1,43 @@
+<div class="modal" id="edit-bot-modal" hidden>
+  <div class="modal-overlay" data-modal-close="edit-bot-modal"></div>
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="edit-bot-title">
+    <div class="modal-header">
+      <h2 id="edit-bot-title">Bot Settings</h2>
+      <button type="button" class="modal-close-btn" data-modal-close="edit-bot-modal" aria-label="Close">×</button>
+    </div>
+
+    <div class="modal-body">
+      <label class="modal-label" for="edit-bot-name">Bot Name</label>
+      <input id="edit-bot-name" class="modal-input" type="text" maxlength="80" />
+
+      <div class="toggle-row">
+        <span>Enabled</span>
+        <label class="toggle-switch">
+          <input id="edit-bot-enabled" type="checkbox" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-row">
+          <span class="meta-label">Preset</span>
+          <span class="meta-value" id="edit-bot-preset">-</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Bot ID</span>
+          <span class="meta-value" id="edit-bot-id">-</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions modal-actions-spread">
+      <div class="modal-actions-left">
+        <button type="button" class="btn-secondary" id="edit-bot-copy-id">Copy Bot ID</button>
+        <button type="button" class="btn-secondary" id="edit-bot-clone">Clone Bot</button>
+        <button type="button" class="btn-secondary" id="edit-bot-download">Download JSON</button>
+        <button type="button" class="btn-danger" id="edit-bot-delete">Delete Bot</button>
+      </div>
+      <button type="button" class="btn-primary" id="edit-bot-save">Save</button>
+    </div>
+  </div>
+</div>
