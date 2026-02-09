@@ -1,3 +1,48 @@
+const jsonResponse = (payload, status = 200, extraHeaders = {}) =>
+  new Response(JSON.stringify(payload), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...extraHeaders,
+    },
+  });
+
+const getSessionFromCookie = (request) => {
+  const cookie = request.headers.get("Cookie") || "";
+  const match = cookie.match(/session=([^;]+)/);
+  if (!match) return null;
+  try {
+    return JSON.parse(atob(match[1]));
+  } catch {
+    return null;
+  }
+};
+
+async function getUserFromSession(request, env) {
+  const session = getSessionFromCookie(request);
+  if (!session?.email) return null;
+
+  if (session.id) {
+    return { id: session.id, email: session.email, name: session.name };
+  }
+
+  const usersUrl =
+    `${env.SUPABASE_URL}/rest/v1/users?` +
+    `email=eq.${encodeURIComponent(session.email)}&select=id,email,name&limit=1`;
+
+  const usersRes = await fetch(usersUrl, {
+    headers: {
+      apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+    },
+  });
+
+  if (!usersRes.ok) return null;
+  const users = await usersRes.json();
+  if (!Array.isArray(users) || users.length === 0) return null;
+  return users[0];
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -10,7 +55,7 @@ export default {
       "Access-Control-Allow-Origin": origin,
       "Access-Control-Allow-Credentials": "true",
       "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS, DELETE",
+      "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
       "Access-Control-Expose-Headers": "Set-Cookie"
     };
     
@@ -31,11 +76,164 @@ export default {
         }
       });
     }
+
+    // ============================
+    // BOTS API - GET /api/bots
+    // ============================
+    if (url.pathname === "/api/bots" && request.method === "GET") {
+      try {
+        const user = await getUserFromSession(request, env);
+        if (!user) {
+          return jsonResponse({ error: "Unauthorized" }, 401, cors);
+        }
+
+        const res = await fetch(
+          `${env.SUPABASE_URL}/rest/v1/bots?user_id=eq.${user.id}&order=created_at.desc`,
+          {
+            headers: {
+              apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+              Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+          }
+        );
+
+        const data = await res.json();
+        if (!res.ok) {
+          return jsonResponse({ error: "Failed to fetch bots", details: data }, res.status, cors);
+        }
+
+        return jsonResponse(data, 200, cors);
+      } catch (error) {
+        console.log("GET /api/bots error:", error);
+        return jsonResponse({ error: "Internal server error" }, 500, cors);
+      }
+    }
+
+    // ============================
+    // BOTS API - POST /api/bots
+    // ============================
+    if (url.pathname === "/api/bots" && request.method === "POST") {
+      try {
+        const user = await getUserFromSession(request, env);
+        if (!user) {
+          return jsonResponse({ error: "Unauthorized" }, 401, cors);
+        }
+
+        const body = await request.json();
+        const bot = {
+          user_id: user.id,
+          name: body?.name,
+          preset: body?.preset,
+          enabled: body?.enabled ?? true,
+          created_at: new Date().toISOString(),
+        };
+
+        const res = await fetch(`${env.SUPABASE_URL}/rest/v1/bots`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+            Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+            Prefer: "return=representation",
+          },
+          body: JSON.stringify(bot),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          return jsonResponse({ error: "Failed to create bot", details: data }, res.status, cors);
+        }
+
+        return jsonResponse(data, 200, cors);
+      } catch (error) {
+        console.log("POST /api/bots error:", error);
+        return jsonResponse({ error: "Internal server error" }, 500, cors);
+      }
+    }
+
+    // ============================
+    // BOTS API - PATCH /api/bots/:id
+    // ============================
+    if (url.pathname.startsWith("/api/bots/") && request.method === "PATCH") {
+      try {
+        const user = await getUserFromSession(request, env);
+        if (!user) {
+          return jsonResponse({ error: "Unauthorized" }, 401, cors);
+        }
+
+        const botId = url.pathname.split("/")[3];
+        if (!botId) {
+          return jsonResponse({ error: "Missing bot id" }, 400, cors);
+        }
+
+        const body = await request.json();
+        const res = await fetch(
+          `${env.SUPABASE_URL}/rest/v1/bots?id=eq.${botId}&user_id=eq.${user.id}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+              Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+            body: JSON.stringify(body),
+          }
+        );
+
+        if (!res.ok) {
+          const details = await res.text();
+          return jsonResponse({ error: "Failed to update bot", details }, res.status, cors);
+        }
+
+        return new Response("OK", { status: 200, headers: cors });
+      } catch (error) {
+        console.log("PATCH /api/bots/:id error:", error);
+        return jsonResponse({ error: "Internal server error" }, 500, cors);
+      }
+    }
+
+    // ============================
+    // BOTS API - DELETE /api/bots/:id
+    // ============================
+    if (url.pathname.startsWith("/api/bots/") && request.method === "DELETE") {
+      try {
+        const user = await getUserFromSession(request, env);
+        if (!user) {
+          return jsonResponse({ error: "Unauthorized" }, 401, cors);
+        }
+
+        const botId = url.pathname.split("/")[3];
+        if (!botId) {
+          return jsonResponse({ error: "Missing bot id" }, 400, cors);
+        }
+
+        const res = await fetch(
+          `${env.SUPABASE_URL}/rest/v1/bots?id=eq.${botId}&user_id=eq.${user.id}`,
+          {
+            method: "DELETE",
+            headers: {
+              apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+              Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+          }
+        );
+
+        if (!res.ok) {
+          const details = await res.text();
+          return jsonResponse({ error: "Failed to delete bot", details }, res.status, cors);
+        }
+
+        return new Response("OK", { status: 200, headers: cors });
+      } catch (error) {
+        console.log("DELETE /api/bots/:id error:", error);
+        return jsonResponse({ error: "Internal server error" }, 500, cors);
+      }
+    }
     
     // ============================
     // GOOGLE LOGIN
     // ============================
-    if (url.pathname === "/auth/google") {
+    if (url.pathname === "/auth/google" || url.pathname === "/auth/google/start") {
       const params = new URLSearchParams({
         client_id: env.GOOGLE_CLIENT_ID,
         redirect_uri: "https://api.daveri.io/auth/callback",
@@ -55,7 +253,7 @@ export default {
     // ============================
     // GOOGLE CALLBACK
     // ============================
-    if (url.pathname === "/auth/callback") {
+    if (url.pathname === "/auth/callback" || url.pathname === "/auth/google/callback") {
       try {
         const code = url.searchParams.get("code");
         
@@ -170,10 +368,9 @@ export default {
     // GET SESSION (/auth/me)
     // ============================
     if (url.pathname === "/auth/me") {
-      const cookie = request.headers.get("Cookie") || "";
-      const match = cookie.match(/session=([^;]+)/);
+      const session = getSessionFromCookie(request);
       
-      if (!match) {
+      if (!session) {
         return new Response(
           JSON.stringify({ logged: false }),
           {
@@ -187,7 +384,7 @@ export default {
       }
       
       try {
-        const user = JSON.parse(atob(match[1]));
+        const user = session;
         
         return new Response(
           JSON.stringify({
