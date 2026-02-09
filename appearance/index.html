@@ -4389,6 +4389,87 @@
         const byKey = document.querySelector(`[data-i18n="${idOrKey}"]`);
         return byKey?.textContent || "";
       };
+      const ACTIVE_BOT_KEY = "daveri_active_bot_id";
+      const resolveApiOrigin = () => {
+        if (typeof window.DaVeriApiOrigin === "string" && window.DaVeriApiOrigin.trim()) {
+          return window.DaVeriApiOrigin.trim().replace(/\/$/, "");
+        }
+        const host = (window.location.hostname || "").toLowerCase();
+        if (host === "api.daveri.io") return "";
+        return "https://api.daveri.io";
+      };
+      const getApiUrl = (path) => {
+        const normalized = path.startsWith("/") ? path : `/${path}`;
+        const origin = resolveApiOrigin();
+        return origin ? `${origin}${normalized}` : normalized;
+      };
+      const API_BOTS = getApiUrl("/api/bots");
+      const getStoredActiveBotId = () => {
+        const raw = window.localStorage.getItem(ACTIVE_BOT_KEY);
+        return raw && raw.trim() ? raw.trim() : null;
+      };
+      const setStoredActiveBotId = (botId) => {
+        const value = typeof botId === "string" ? botId.trim() : "";
+        if (!value) {
+          window.localStorage.removeItem(ACTIVE_BOT_KEY);
+          return;
+        }
+        window.localStorage.setItem(ACTIVE_BOT_KEY, value);
+      };
+      const fetchJson = async (url, options = {}) => {
+        const method = String(options.method || "GET").toUpperCase();
+        const headers = { ...(options.headers || {}) };
+        if (method !== "GET" && method !== "HEAD" && !("Content-Type" in headers)) {
+          headers["Content-Type"] = "application/json";
+        }
+        const response = await fetch(url, {
+          credentials: "include",
+          ...options,
+          headers,
+        });
+        let payload = null;
+        try {
+          payload = await response.json();
+        } catch {
+          payload = null;
+        }
+        if (!response.ok) {
+          throw new Error(payload?.error || `Request failed: ${response.status}`);
+        }
+        return payload;
+      };
+      const resolveActiveBotId = async () => {
+        const stored = getStoredActiveBotId();
+        const payload = await fetchJson(API_BOTS);
+        const bots = Array.isArray(payload) ? payload : (Array.isArray(payload?.bots) ? payload.bots : []);
+        if (!bots.length) {
+          setStoredActiveBotId("");
+          return null;
+        }
+        const hasStored = stored ? bots.some((bot) => String(bot?.id) === String(stored)) : false;
+        const nextBotId = hasStored ? stored : String(bots[0]?.id || "");
+        setStoredActiveBotId(nextBotId);
+        return nextBotId || null;
+      };
+      const waitForAuthReady = async () => {
+        if (window.DaVeriAuth?.ready) {
+          try {
+            await window.DaVeriAuth.ready;
+          } catch {}
+          return;
+        }
+        await new Promise((resolve) => {
+          let done = false;
+          const finish = () => {
+            if (done) return;
+            done = true;
+            resolve();
+          };
+          document.addEventListener("auth:ready", finish, { once: true });
+          document.addEventListener("auth:failed", finish, { once: true });
+          window.setTimeout(finish, 1800);
+        });
+      };
       /* ========== DANE PRESETÓW ========== */
       const PRESET_BACKGROUNDS = {
         sales: 'https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1769988404088x184638242248941000/8k%20white%20opal%20liquid%20glass%20prisma%20%20background%20%281%29.jpg',
@@ -6623,20 +6704,55 @@ ${i18nText("i18n-appearance-scale-fit")}
         }
       }
       /* ========== ZAPIS/WCZYTYWANIE ========== */
+      async function loadStateFromBackend() {
+        try {
+          const botId = await resolveActiveBotId();
+          if (!botId) return false;
+          const bot = await fetchJson(`${API_BOTS}/${encodeURIComponent(botId)}`);
+          const candidate = bot?.appearance || bot?.config?.ready_config || null;
+          if (!candidate) return false;
+          return importState(candidate);
+        } catch (error) {
+          console.error("[Appearance] load from API failed:", error);
+          return false;
+        }
+      }
+
+      async function saveStateToBackend() {
+        const botId = await resolveActiveBotId();
+        if (!botId) {
+          throw new Error("No active bot selected");
+        }
+        const parsed = JSON.parse(exportState());
+        await fetchJson(`${API_BOTS}/${encodeURIComponent(botId)}`, {
+          method: "PATCH",
+          body: JSON.stringify({
+            appearance: parsed,
+            ready_config: parsed,
+          }),
+        });
+      }
+
       function initSaveLoad() {
         const saveBtn = document.querySelector('[data-role="action-save"]');
         const loadBtn = document.querySelector('[data-role="action-load"]');
 
         if (saveBtn) {
-          saveBtn.addEventListener('click', () => {
-            const data = exportState();
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'chat-config.json';
-            a.click();
-            URL.revokeObjectURL(url);
+          saveBtn.addEventListener('click', async () => {
+            const originalHtml = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            try {
+              await saveStateToBackend();
+              saveBtn.innerHTML = '<i class="fas fa-check"></i> Saved';
+            } catch (error) {
+              console.error("[Appearance] save failed:", error);
+              saveBtn.innerHTML = '<i class="fas fa-triangle-exclamation"></i> Error';
+            }
+            window.setTimeout(() => {
+              saveBtn.innerHTML = originalHtml;
+              saveBtn.disabled = false;
+            }, 1400);
           });
         }
 
@@ -6666,7 +6782,7 @@ ${i18nText("i18n-appearance-scale-fit")}
       }
 
       /* ========== INICJALIZACJA ========== */
-      function init() {
+      async function init() {
         // Inicjalizacja konfiguratora
         bindEvents();
         initAccordionDefault();
@@ -6679,6 +6795,8 @@ ${i18nText("i18n-appearance-scale-fit")}
         initIconSection();
         // NAPRAWA: renderuj wiadomości przy starcie
         renderWorkChatMessages();
+        await waitForAuthReady();
+        await loadStateFromBackend();
         // Wywołaj notify aby zsynchronizować UI
         notify();
         // Aktualizuj skalę
@@ -6710,6 +6828,9 @@ ${i18nText("i18n-appearance-scale-fit")}
       
       // Expose globally for sidebar sync
       window.updateMonitorScale = updateMonitorScale;
+      window.addEventListener("daveri:active-bot-changed", () => {
+        loadStateFromBackend();
+      });
 
       // Run on load and resize
       setTimeout(updateMonitorScale, 50);
@@ -6910,3 +7031,5 @@ ${i18nText("i18n-appearance-scale-fit")}
 </body>
 
 </html>
+
+

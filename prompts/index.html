@@ -194,23 +194,29 @@
   </div>
 
   <script type="module">
-    const API_BOTS = "/api/bots";
+    import { getApiUrl } from "../js/api.js";
+    import { getActiveBotId, setActiveBotId, resolveActiveBot } from "../js/active-bot.js";
 
-    const root = document.getElementById('prompt_root');
-    const textarea = document.getElementById('promptTextarea');
-    const charCount = document.getElementById('charCount');
-    const saveStatus = document.getElementById('saveStatus');
-    const saveBtn = document.getElementById('saveBtn');
+    const API_BOTS = getApiUrl("/api/bots");
+
+    const root = document.getElementById("prompt_root");
+    const textarea = document.getElementById("promptTextarea");
+    const charCount = document.getElementById("charCount");
+    const saveStatus = document.getElementById("saveStatus");
+    const saveBtn = document.getElementById("saveBtn");
     const i18nText = (id) => document.getElementById(id)?.textContent || "";
 
     async function fetchJson(url, options = {}) {
+      const method = String(options.method || "GET").toUpperCase();
+      const headers = { ...(options.headers || {}) };
+      if (method !== "GET" && method !== "HEAD" && !("Content-Type" in headers)) {
+        headers["Content-Type"] = "application/json";
+      }
+
       const response = await fetch(url, {
         credentials: "include",
         ...options,
-        headers: {
-          "Content-Type": "application/json",
-          ...(options.headers || {})
-        }
+        headers,
       });
       let payload = null;
       try {
@@ -224,54 +230,106 @@
       return payload;
     }
 
-    textarea.addEventListener('input', () => {
+    const showStatus = (message, type = "success", duration = 2500) => {
+      if (!saveStatus) return;
+      saveStatus.textContent = message;
+      saveStatus.className = `save-status show ${type}`;
+      window.setTimeout(() => {
+        saveStatus.className = "save-status";
+      }, duration);
+    };
+
+    const waitForAuthReady = async () => {
+      if (window.DaVeriAuth?.ready) {
+        try {
+          await window.DaVeriAuth.ready;
+        } catch {}
+        return;
+      }
+
+      await new Promise((resolve) => {
+        let done = false;
+        const finish = () => {
+          if (done) return;
+          done = true;
+          resolve();
+        };
+        document.addEventListener("auth:ready", finish, { once: true });
+        document.addEventListener("auth:failed", finish, { once: true });
+        window.setTimeout(finish, 1800);
+      });
+    };
+
+    const ensureActiveBotId = async () => {
+      const dataBotId = String(root?.dataset?.botId || "").trim();
+      if (dataBotId) {
+        setActiveBotId(dataBotId);
+        return dataBotId;
+      }
+
+      try {
+        const resolved = await resolveActiveBot({ apiBots: API_BOTS });
+        const botId = resolved?.botId || null;
+        root.dataset.botId = botId || "";
+        return botId;
+      } catch (error) {
+        const fallbackBotId = getActiveBotId();
+        root.dataset.botId = fallbackBotId || "";
+        return fallbackBotId || null;
+      }
+    };
+
+    textarea?.addEventListener("input", () => {
       charCount.textContent = textarea.value.length;
     });
 
     async function loadPrompt() {
-      const botId = root?.dataset?.botId;
-      if (!botId) return;
+      const botId = await ensureActiveBotId();
+      if (!botId) {
+        textarea.value = "";
+        charCount.textContent = "0";
+        return;
+      }
+
       try {
         const data = await fetchJson(`${API_BOTS}/${encodeURIComponent(botId)}`);
-        if (data?.system_prompt) {
-          textarea.value = data.system_prompt;
-          charCount.textContent = data.system_prompt.length;
-        } else {
-          textarea.value = "";
-          charCount.textContent = "0";
-        }
+        const promptValue = data?.system_prompt || "";
+        textarea.value = promptValue;
+        charCount.textContent = String(promptValue.length);
       } catch (error) {
         console.error("[Prompts] load failed:", error);
       }
     }
 
-    window.savePrompt = async function() {
-      const botId = root?.dataset?.botId;
+    window.savePrompt = async function () {
+      const botId = await ensureActiveBotId();
       if (!botId) {
-        saveStatus.textContent = i18nText("i18n-prompts-select-bot");
-        saveStatus.className = 'save-status show error';
-        setTimeout(() => saveStatus.className = 'save-status', 2000);
+        showStatus(i18nText("i18n-prompts-select-bot"), "error", 2200);
         return;
       }
-      saveBtn.disabled = true;
 
+      saveBtn.disabled = true;
       try {
         await fetchJson(`${API_BOTS}/${encodeURIComponent(botId)}`, {
           method: "PATCH",
-          body: JSON.stringify({ system_prompt: textarea.value })
+          body: JSON.stringify({ system_prompt: textarea.value }),
         });
-        saveStatus.textContent = i18nText("i18n-prompts-save-success");
-        saveStatus.className = 'save-status show success';
+        showStatus(i18nText("i18n-prompts-save-success"), "success");
       } catch (error) {
         console.error("[Prompts] save failed:", error);
-        saveStatus.textContent = i18nText("i18n-prompts-save-error");
-        saveStatus.className = 'save-status show error';
+        showStatus(i18nText("i18n-prompts-save-error"), "error");
       }
       saveBtn.disabled = false;
-      setTimeout(() => saveStatus.className = 'save-status', 2500);
     };
 
-    loadPrompt();
+    window.addEventListener("daveri:active-bot-changed", (event) => {
+      const nextBotId = String(event?.detail?.botId || "").trim();
+      root.dataset.botId = nextBotId;
+      loadPrompt();
+    });
+
+    await waitForAuthReady();
+    await loadPrompt();
   </script>
 
   <script type="module" src="../js/language.js"></script>

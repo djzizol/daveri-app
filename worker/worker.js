@@ -636,6 +636,15 @@ const handleBotUpdate = async (request, env, cors, auth, botId) => {
   if (isObject(body?.config)) {
     updates.config = body.config;
   }
+  if (isObject(body?.config_patch)) {
+    const currentConfig = isObject(existing.config) ? { ...existing.config } : {};
+    updates.config = { ...currentConfig, ...body.config_patch };
+  }
+  if (Object.prototype.hasOwnProperty.call(body || {}, "ready_config")) {
+    const currentConfig = isObject(existing.config) ? { ...existing.config } : {};
+    currentConfig.ready_config = body.ready_config;
+    updates.config = currentConfig;
+  }
   if (Object.prototype.hasOwnProperty.call(body || {}, "installed")) {
     updates.installed = Boolean(body.installed);
   }
@@ -672,6 +681,74 @@ const handleBotUpdate = async (request, env, cors, auth, botId) => {
 
   const updated = Array.isArray(result.data) ? result.data[0] : result.data;
   return jsonResponse(normalizeBot(updated), 200, cors, buildSessionHeadersIfNeeded(auth, request));
+};
+
+const handleFilesCreate = async (request, env, cors, auth) => {
+  const body = await readJsonBody(request);
+  const botId = typeof body?.bot_id === "string" ? body.bot_id.trim() : "";
+  if (!botId) {
+    return jsonResponse({ error: "bot_id is required" }, 400, cors);
+  }
+
+  const bot = await getOwnedBot(env, auth.user, botId, "id");
+  if (!bot) {
+    return jsonResponse({ error: "Forbidden bot access" }, 403, cors);
+  }
+
+  const limitResult = await supabaseRequest(env, "/rest/v1/rpc/check_files_limit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ u_id: auth.user.id }),
+  });
+  if (limitResult.ok && limitResult.data === false) {
+    return jsonResponse({ error: "Files limit reached for your plan" }, 403, cors);
+  }
+
+  const list = Array.isArray(body?.files) ? body.files : [body];
+  const now = new Date().toISOString();
+
+  const payload = list
+    .map((item) => {
+      const name = typeof item?.name === "string" ? item.name.trim() : "";
+      if (!name) return null;
+
+      const size = Number(item?.size_bytes);
+      return {
+        bot_id: botId,
+        owner_id: auth.user.id,
+        name,
+        mime_type: typeof item?.mime_type === "string" && item.mime_type.trim() ? item.mime_type.trim() : null,
+        size_bytes: Number.isFinite(size) && size >= 0 ? Math.round(size) : null,
+        status: typeof item?.status === "string" && item.status.trim() ? item.status.trim() : "processing",
+        url: typeof item?.url === "string" && item.url.trim() ? item.url.trim() : null,
+        created_at: now,
+      };
+    })
+    .filter(Boolean);
+
+  if (!payload.length) {
+    return jsonResponse({ error: "No valid files payload" }, 400, cors);
+  }
+
+  const insertResult = await supabaseRequest(env, "/rest/v1/bot_files", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!insertResult.ok) {
+    return jsonResponse(
+      { error: "Failed to create files", details: insertResult.data || null },
+      insertResult.status,
+      cors
+    );
+  }
+
+  const files = (Array.isArray(insertResult.data) ? insertResult.data : []).map(normalizeFile);
+  return jsonResponse({ files }, 201, cors, buildSessionHeadersIfNeeded(auth, request));
 };
 
 const handleBotDelete = async (request, env, cors, auth, botId) => {
@@ -1074,6 +1151,7 @@ export default {
         if (response) return response;
 
         if (request.method === "GET") return handleFilesGet(request, env, cors, auth, url);
+        if (request.method === "POST") return handleFilesCreate(request, env, cors, auth);
         return jsonResponse({ error: "Method not allowed" }, 405, cors);
       }
 

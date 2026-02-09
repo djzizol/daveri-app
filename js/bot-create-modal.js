@@ -1,4 +1,5 @@
 import { getApiUrl } from "./api.js";
+import { setActiveBotId } from "./active-bot.js";
 
 const API_BASE = getApiUrl("/api/bots");
 
@@ -94,6 +95,16 @@ const submitCreateBot = async () => {
       console.error("[CreateBot] API failed:", details);
       setCreateStatus("Could not create bot. Check console / API response.", "error");
       return;
+    }
+
+    let created = null;
+    try {
+      created = await response.json();
+    } catch {
+      created = null;
+    }
+    if (created?.id) {
+      setActiveBotId(created.id);
     }
 
     closeCreateModal();

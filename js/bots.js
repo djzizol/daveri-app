@@ -1,6 +1,7 @@
 import { initCreateBotModal, openCreateModal } from "./bot-create-modal.js";
 import { initEditBotModal, openEditBotModal } from "./bot-edit-modal.js";
 import { getApiUrl } from "./api.js";
+import { getActiveBotId, setActiveBotId } from "./active-bot.js";
 
 const API_BASE = getApiUrl("/api/bots");
 const CREATE_MODAL_URL = new URL("../components/bot-create-modal.html", import.meta.url);
@@ -71,10 +72,10 @@ const ensureCreateButtonBound = () => {
   button.addEventListener("click", () => openCreateModal());
 };
 
-const renderBotCard = (bot) => {
+const renderBotCard = (bot, isActive = false) => {
   const card = document.createElement("button");
   card.type = "button";
-  card.className = "bot-card";
+  card.className = isActive ? "bot-card active" : "bot-card";
   card.dataset.botId = bot.id;
   card.innerHTML = `
     ${createStatusMarkup(!!bot.enabled)}
@@ -98,7 +99,10 @@ const renderBotCard = (bot) => {
       </div>
     </div>
   `;
-  card.addEventListener("click", () => openEditBotModal(bot));
+  card.addEventListener("click", () => {
+    setActiveBotId(bot?.id || "");
+    openEditBotModal(bot);
+  });
   return card;
 };
 
@@ -149,8 +153,16 @@ const loadBots = async () => {
       return;
     }
 
+    const storedActiveBotId = getActiveBotId();
+    const hasStoredActive = storedActiveBotId
+      ? bots.some((bot) => String(bot?.id) === String(storedActiveBotId))
+      : false;
+    const activeBotId = hasStoredActive ? storedActiveBotId : String(bots[0]?.id || "");
+    setActiveBotId(activeBotId);
+
     bots.forEach((bot) => {
-      grid.appendChild(renderBotCard(bot));
+      const isActive = String(bot?.id) === String(activeBotId);
+      grid.appendChild(renderBotCard(bot, isActive));
     });
   } catch (error) {
     console.error("[Bots] Request failed:", error);
@@ -178,6 +190,26 @@ const ensureModalsMounted = async () => {
   }
 };
 
+const waitForAuthReady = async () => {
+  if (window.DaVeriAuth?.ready) {
+    try {
+      await window.DaVeriAuth.ready;
+    } catch {}
+    return;
+  }
+  await new Promise((resolve) => {
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      resolve();
+    };
+    document.addEventListener("auth:ready", finish, { once: true });
+    document.addEventListener("auth:failed", finish, { once: true });
+    window.setTimeout(finish, 1800);
+  });
+};
+
 const init = async () => {
   ensureCreateButtonBound();
 
@@ -190,6 +222,7 @@ const init = async () => {
   initCreateBotModal({ onReloadBots: loadBots });
   initEditBotModal({ onReloadBots: loadBots });
 
+  await waitForAuthReady();
   await loadBots();
 };
 

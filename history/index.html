@@ -204,14 +204,18 @@
   </div>
 
   <script type="module">
-    const API_CONVERSATIONS = "/api/conversations";
-    const API_MESSAGES = "/api/messages";
+    import { getApiUrl } from "../js/api.js";
+    import { getActiveBotId, setActiveBotId, resolveActiveBot } from "../js/active-bot.js";
 
-    const root = document.getElementById('historia_root');
-    const convItems = document.getElementById('convItems');
-    const convCount = document.getElementById('convCount');
-    const convMessages = document.getElementById('convMessages');
-    const convMetaVisitor = document.getElementById('convMetaVisitor');
+    const API_CONVERSATIONS = getApiUrl("/api/conversations");
+    const API_MESSAGES = getApiUrl("/api/messages");
+    const API_BOTS = getApiUrl("/api/bots");
+
+    const root = document.getElementById("historia_root");
+    const convItems = document.getElementById("convItems");
+    const convCount = document.getElementById("convCount");
+    const convMessages = document.getElementById("convMessages");
+    const convMetaVisitor = document.getElementById("convMetaVisitor");
     const i18nText = (id) => document.getElementById(id)?.textContent || "";
 
     function translateDynamicContent() {
@@ -221,9 +225,16 @@
     }
 
     async function fetchJson(url, options = {}) {
+      const method = String(options.method || "GET").toUpperCase();
+      const headers = { ...(options.headers || {}) };
+      if (method !== "GET" && method !== "HEAD" && !("Content-Type" in headers)) {
+        headers["Content-Type"] = "application/json";
+      }
+
       const response = await fetch(url, {
         credentials: "include",
-        ...options
+        ...options,
+        headers,
       });
       let payload = null;
       try {
@@ -237,14 +248,53 @@
       return payload;
     }
 
+    const waitForAuthReady = async () => {
+      if (window.DaVeriAuth?.ready) {
+        try {
+          await window.DaVeriAuth.ready;
+        } catch {}
+        return;
+      }
+
+      await new Promise((resolve) => {
+        let done = false;
+        const finish = () => {
+          if (done) return;
+          done = true;
+          resolve();
+        };
+        document.addEventListener("auth:ready", finish, { once: true });
+        document.addEventListener("auth:failed", finish, { once: true });
+        window.setTimeout(finish, 1800);
+      });
+    };
+
+    const ensureActiveBotId = async () => {
+      const dataBotId = String(root?.dataset?.botId || "").trim();
+      if (dataBotId) {
+        setActiveBotId(dataBotId);
+        return dataBotId;
+      }
+      try {
+        const resolved = await resolveActiveBot({ apiBots: API_BOTS });
+        const botId = resolved?.botId || null;
+        root.dataset.botId = botId || "";
+        return botId;
+      } catch {
+        const fallbackBotId = getActiveBotId();
+        root.dataset.botId = fallbackBotId || "";
+        return fallbackBotId || null;
+      }
+    };
+
     function fmtDate(d) {
-      if (!d) return '';
+      if (!d) return "";
       const dt = new Date(d);
-      return dt.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      return dt.toLocaleDateString("pl-PL", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
     }
 
     async function loadConversations() {
-      const botId = root?.dataset?.botId;
+      const botId = await ensureActiveBotId();
       let endpoint = `${API_CONVERSATIONS}?limit=50`;
       if (botId) endpoint += `&bot_id=${encodeURIComponent(botId)}`;
 
@@ -256,24 +306,26 @@
         console.error("[History] conversations load failed:", error);
         convs = [];
       }
-      convCount.textContent = convs.length;
-      convItems.innerHTML = '';
+
+      convCount.textContent = String(convs.length);
+      convItems.innerHTML = "";
       if (!convs.length) {
         convItems.innerHTML = '<div class="empty-state"><div class="empty-state-text" data-i18n="history.list.empty"></div></div>';
         translateDynamicContent();
         return;
       }
-      convs.forEach(conv => {
-        const el = document.createElement('div');
-        el.className = 'conv-item';
+
+      convs.forEach((conv) => {
+        const el = document.createElement("div");
+        el.className = "conv-item";
         el.innerHTML = `
           <div class="conv-visitor">${conv.visitor_id || conv.visitor_name || i18nText("i18n-history-visitor")}</div>
           <div class="conv-preview">${conv.last_message_preview || conv.last_message || i18nText("i18n-history-preview")}</div>
           <div class="conv-date">${fmtDate(conv.created_at)}</div>
         `;
         el.onclick = () => {
-          document.querySelectorAll('.conv-item').forEach(i => i.classList.remove('active'));
-          el.classList.add('active');
+          document.querySelectorAll(".conv-item").forEach((item) => item.classList.remove("active"));
+          el.classList.add("active");
           loadMessages(conv.id, conv.visitor_id || conv.visitor_name);
         };
         convItems.appendChild(el);
@@ -282,6 +334,7 @@
 
     async function loadMessages(convId, visitorName) {
       convMetaVisitor.textContent = visitorName || i18nText("i18n-history-visitor");
+
       let msgs = [];
       try {
         const payload = await fetchJson(`${API_MESSAGES}?conversation_id=${encodeURIComponent(convId)}`);
@@ -291,22 +344,30 @@
         msgs = [];
       }
 
-      convMessages.innerHTML = '';
-      if (!msgs?.length) {
+      convMessages.innerHTML = "";
+      if (!msgs.length) {
         convMessages.innerHTML = '<div class="empty-state"><div class="empty-state-text" data-i18n="history.messages.empty"></div></div>';
         translateDynamicContent();
         return;
       }
-      msgs.forEach(msg => {
-        const el = document.createElement('div');
-        el.className = `msg ${msg.role === 'user' ? 'user' : 'bot'}`;
-        el.innerHTML = `<div>${msg.content || ''}</div><div class="msg-time">${fmtDate(msg.created_at)}</div>`;
+
+      msgs.forEach((msg) => {
+        const el = document.createElement("div");
+        el.className = `msg ${msg.role === "user" ? "user" : "bot"}`;
+        el.innerHTML = `<div>${msg.content || ""}</div><div class="msg-time">${fmtDate(msg.created_at)}</div>`;
         convMessages.appendChild(el);
       });
       convMessages.scrollTop = convMessages.scrollHeight;
     }
 
-    loadConversations();
+    window.addEventListener("daveri:active-bot-changed", (event) => {
+      const nextBotId = String(event?.detail?.botId || "").trim();
+      root.dataset.botId = nextBotId;
+      loadConversations();
+    });
+
+    await waitForAuthReady();
+    await loadConversations();
   </script>
 
   <script type="module" src="../js/language.js"></script>

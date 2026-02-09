@@ -339,19 +339,16 @@ const drawPlanProgress = (root, remainingPercent) => {
   if (state.rafId != null) return;
 
   const loop = () => {
+    if (!canvas.isConnected) {
+      state.rafId = null;
+      return;
+    }
+
     state.value += (state.target - state.value) * 0.08;
     state.phase += 0.045;
     if (state.phase > Math.PI * 2) state.phase -= Math.PI * 2;
     paintLiquidProgress(ctx, size, state.value, state.phase);
-
-    if (Math.abs(state.target - state.value) > 0.08) {
-      state.rafId = window.requestAnimationFrame(loop);
-      return;
-    }
-
-    state.value = state.target;
-    paintLiquidProgress(ctx, size, state.value, state.phase);
-    state.rafId = null;
+    state.rafId = window.requestAnimationFrame(loop);
   };
 
   state.rafId = window.requestAnimationFrame(loop);

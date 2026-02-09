@@ -1542,6 +1542,7 @@
   <!-- Application Data API -->
   <script type="module">
     import { getApiUrl } from "../js/api.js";
+    import { getActiveBotId, setActiveBotId } from "../js/active-bot.js";
 
     const API_BOTS = getApiUrl("/api/bots");
     const API_FILES = getApiUrl("/api/files");
@@ -1610,6 +1611,8 @@
     }
 
     function getInitialActiveBotId() {
+      const stored = getActiveBotId();
+      if (stored) return stored;
       return (root?.dataset.activeBotId || "").trim() || null;
     }
 
@@ -1631,6 +1634,7 @@
       if (!botSelect) return;
       botSelect.innerHTML = "";
       if (!state.bots.length) {
+        setActiveBotId("");
         const opt = document.createElement("option");
         opt.value = "";
         opt.textContent = i18nText("i18n-dashboard-no-bots");
@@ -1645,7 +1649,10 @@
         opt.textContent = bot.name || ("Bot " + bot.id);
         botSelect.appendChild(opt);
       });
-      if (!state.activeBotId) state.activeBotId = getInitialActiveBotId() || state.bots[0]?.id;
+      const preferredId = state.activeBotId || getInitialActiveBotId();
+      const hasPreferred = preferredId ? state.bots.some((bot) => String(bot.id) === String(preferredId)) : false;
+      state.activeBotId = hasPreferred ? preferredId : state.bots[0]?.id || null;
+      setActiveBotId(state.activeBotId || "");
       botSelect.value = state.activeBotId || "";
       const current = state.bots.find(b => String(b.id) === String(state.activeBotId));
       const botNameEl = document.getElementById("panel-active-bot-name");
@@ -1846,6 +1853,7 @@
         botSelect.__wired = true;
         botSelect.addEventListener("change", () => {
           state.activeBotId = botSelect.value || null;
+          setActiveBotId(state.activeBotId || "");
           const current = state.bots.find(b => String(b.id) === String(state.activeBotId));
           const botNameEl = document.getElementById("panel-active-bot-name");
           if (botNameEl) botNameEl.textContent = current ? (current.name || current.id) : "--";
@@ -1889,6 +1897,7 @@
     // Export initPanel dla systemu autoryzacji
     window.initPanel = function() {
       console.log("[Panel] init...");
+      state.activeBotId = getInitialActiveBotId();
       wirePanel();
       loadBotsForPanel();
       loadSourcesKpiAndFileCount();

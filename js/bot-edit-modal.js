@@ -1,4 +1,5 @@
 import { getApiUrl } from "./api.js";
+import { setActiveBotId } from "./active-bot.js";
 
 const API_BASE = getApiUrl("/api/bots");
 
@@ -93,6 +94,16 @@ const cloneBot = async () => {
       const details = await getJsonError(response);
       console.error("[EditBot] Clone failed:", details);
       return;
+    }
+
+    let cloned = null;
+    try {
+      cloned = await response.json();
+    } catch {
+      cloned = null;
+    }
+    if (cloned?.id) {
+      setActiveBotId(cloned.id);
     }
 
     await onReloadBots();

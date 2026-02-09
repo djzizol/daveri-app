@@ -227,12 +227,17 @@
   </div>
 
   <script type="module">
-    const API_FILES = "/api/files";
+    import { getApiUrl } from "../js/api.js";
+    import { getActiveBotId, setActiveBotId, resolveActiveBot } from "../js/active-bot.js";
 
-    const root = document.getElementById('pliki_root');
-    const tbody = document.getElementById('filesTableBody');
-    const emptyState = document.getElementById('filesEmpty');
-    const dropZone = document.getElementById('dropZone');
+    const API_FILES = getApiUrl("/api/files");
+    const API_BOTS = getApiUrl("/api/bots");
+
+    const root = document.getElementById("pliki_root");
+    const tbody = document.getElementById("filesTableBody");
+    const emptyState = document.getElementById("filesEmpty");
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("fileInput");
     const i18nText = (id) => document.getElementById(id)?.textContent || "";
 
     function translateDynamicContent() {
@@ -242,9 +247,16 @@
     }
 
     async function fetchJson(url, options = {}) {
+      const method = String(options.method || "GET").toUpperCase();
+      const headers = { ...(options.headers || {}) };
+      if (method !== "GET" && method !== "HEAD" && !("Content-Type" in headers)) {
+        headers["Content-Type"] = "application/json";
+      }
+
       const response = await fetch(url, {
         credentials: "include",
         ...options,
+        headers,
       });
       let payload = null;
       try {
@@ -258,19 +270,60 @@
       return payload;
     }
 
+    const waitForAuthReady = async () => {
+      if (window.DaVeriAuth?.ready) {
+        try {
+          await window.DaVeriAuth.ready;
+        } catch {}
+        return;
+      }
+
+      await new Promise((resolve) => {
+        let done = false;
+        const finish = () => {
+          if (done) return;
+          done = true;
+          resolve();
+        };
+        document.addEventListener("auth:ready", finish, { once: true });
+        document.addEventListener("auth:failed", finish, { once: true });
+        window.setTimeout(finish, 1800);
+      });
+    };
+
+    const ensureActiveBotId = async () => {
+      const dataBotId = String(root?.dataset?.botId || "").trim();
+      if (dataBotId) {
+        setActiveBotId(dataBotId);
+        return dataBotId;
+      }
+
+      try {
+        const resolved = await resolveActiveBot({ apiBots: API_BOTS });
+        const botId = resolved?.botId || null;
+        root.dataset.botId = botId || "";
+        return botId;
+      } catch {
+        const fallbackBotId = getActiveBotId();
+        root.dataset.botId = fallbackBotId || "";
+        return fallbackBotId || null;
+      }
+    };
+
     function fmtSize(bytes) {
-      if (!bytes) return '--';
+      if (!bytes) return "--";
       if (bytes < 1024) return `${bytes} ${i18nText("i18n-files-unit-bytes")}`;
       if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} ${i18nText("i18n-files-unit-kb")}`;
       return `${(bytes / 1048576).toFixed(1)} ${i18nText("i18n-files-unit-mb")}`;
     }
+
     function fmtDate(d) {
-      if (!d) return '--';
-      return new Date(d).toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      if (!d) return "--";
+      return new Date(d).toLocaleDateString("pl-PL", { day: "2-digit", month: "2-digit", year: "numeric" });
     }
 
     async function loadFiles() {
-      const botId = root?.dataset?.botId;
+      const botId = await ensureActiveBotId();
       let endpoint = `${API_FILES}?limit=200`;
       if (botId) endpoint += `&bot_id=${encodeURIComponent(botId)}`;
 
@@ -283,18 +336,22 @@
         files = [];
       }
 
-      tbody.innerHTML = '';
-      if (!files.length) { emptyState.style.display = 'flex'; return; }
-      emptyState.style.display = 'none';
+      tbody.innerHTML = "";
+      if (!files.length) {
+        emptyState.style.display = "flex";
+        return;
+      }
+      emptyState.style.display = "none";
 
-      files.forEach(file => {
-        const statusClass = file.status === 'processed' ? 'processed' : file.status === 'processing' ? 'processing' : 'error';
-        const statusLabel = file.status === 'processed'
+      files.forEach((file) => {
+        const statusClass = file.status === "processed" ? "processed" : file.status === "processing" ? "processing" : "error";
+        const statusLabel = file.status === "processed"
           ? i18nText("i18n-files-status-ready")
-          : file.status === 'processing'
+          : file.status === "processing"
             ? i18nText("i18n-files-status-processing")
             : i18nText("i18n-files-status-error");
-        const tr = document.createElement('tr');
+
+        const tr = document.createElement("tr");
         tr.innerHTML = `
           <td><div class="file-name-cell">
             <div class="file-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg></div>
@@ -306,11 +363,42 @@
           <td><button class="delete-btn" onclick="deleteFile('${file.id}')" data-i18n-title="files.actions.delete"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg></button></td>
         `;
         tbody.appendChild(tr);
-        translateDynamicContent();
       });
+      translateDynamicContent();
     }
 
-    window.deleteFile = async function(id) {
+    const uploadFiles = async (filesLike) => {
+      const files = Array.from(filesLike || []);
+      if (!files.length) return;
+
+      const botId = await ensureActiveBotId();
+      if (!botId) {
+        console.warn("[Files] upload skipped - no active bot");
+        return;
+      }
+
+      const payload = {
+        bot_id: botId,
+        files: files.map((file) => ({
+          name: file.name || "File",
+          mime_type: file.type || null,
+          size_bytes: Number.isFinite(file.size) ? file.size : null,
+          status: "processing",
+        })),
+      };
+
+      try {
+        await fetchJson(API_FILES, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        await loadFiles();
+      } catch (error) {
+        console.error("[Files] upload failed:", error);
+      }
+    };
+
+    window.deleteFile = async function (id) {
       if (!confirm(i18nText("i18n-files-confirm-delete"))) return;
       try {
         await fetchJson(`${API_FILES}/${encodeURIComponent(id)}`, { method: "DELETE" });
@@ -320,12 +408,31 @@
       loadFiles();
     };
 
-    // Drag & drop
-    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragover'); });
+    fileInput?.addEventListener("change", async (event) => {
+      await uploadFiles(event.target.files);
+      event.target.value = "";
+    });
 
-    loadFiles();
+    dropZone?.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+    dropZone?.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+    dropZone?.addEventListener("drop", async (event) => {
+      event.preventDefault();
+      dropZone.classList.remove("dragover");
+      await uploadFiles(event.dataTransfer?.files || []);
+    });
+    dropZone?.addEventListener("click", () => fileInput?.click());
+
+    window.addEventListener("daveri:active-bot-changed", (event) => {
+      const nextBotId = String(event?.detail?.botId || "").trim();
+      root.dataset.botId = nextBotId;
+      loadFiles();
+    });
+
+    await waitForAuthReady();
+    await loadFiles();
   </script>
 
   <script type="module" src="../js/language.js"></script>
