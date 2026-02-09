@@ -17,18 +17,38 @@ function getCurrentLang() {
   return "en";
 }
 
-function redirectToLang(lang) {
-  const segments = window.location.pathname.split("/").filter(Boolean);
+function closeAllLangMenus() {
+  document.querySelectorAll("[data-lang-menu]").forEach((menu) => {
+    menu.classList.remove("open");
+  });
+  document.querySelectorAll("[data-lang-dropdown]").forEach((container) => {
+    container.classList.remove("is-open");
+  });
+}
 
+function redirectToLang(lang) {
+  const normalized = SUPPORTED.includes(lang) ? lang : "en";
+  const languageApi = window.DaVeriLanguage;
+
+  if (languageApi?.buildLanguageUrl) {
+    const target = languageApi.buildLanguageUrl(normalized, {
+      pathname: window.location.pathname,
+      search: window.location.search,
+      hash: window.location.hash,
+    });
+    window.location.assign(target);
+    return;
+  }
+
+  const segments = window.location.pathname.split("/").filter(Boolean);
   if (SUPPORTED.includes(segments[0])) {
     segments.shift();
   }
-
   const newPath = segments.length
-    ? `/${lang}/${segments.join("/")}`
-    : `/${lang}/`;
+    ? `/${normalized}/${segments.join("/")}`
+    : `/${normalized}/`;
 
-  window.location.href = newPath;
+  window.location.assign(newPath);
 }
 
 function updateCurrentLangUI() {
@@ -44,12 +64,19 @@ function updateCurrentLangUI() {
 }
 
 document.addEventListener("click", (e) => {
-  const dropdown = e.target.closest("[data-lang-dropdown]");
+  const current = e.target.closest("[data-lang-current]");
 
-  if (e.target.closest("[data-lang-current]")) {
+  if (current) {
+    const dropdown = current.closest("[data-lang-dropdown]");
     if (!dropdown) return;
+    e.preventDefault();
+    e.stopPropagation();
     const menu = dropdown.querySelector("[data-lang-menu]");
     if (!menu) return;
+    const shouldOpen = !menu.classList.contains("open");
+    closeAllLangMenus();
+    if (!shouldOpen) return;
+    dropdown.classList.add("is-open");
     menu.classList.toggle("open");
     return;
   }
@@ -57,18 +84,25 @@ document.addEventListener("click", (e) => {
   const option = e.target.closest(".language-option");
 
   if (option) {
+    e.preventDefault();
+    e.stopPropagation();
     const lang = option.dataset.lang;
 
     if (lang) {
+      closeAllLangMenus();
       redirectToLang(lang);
     }
 
     return;
   }
 
-  document.querySelectorAll("[data-lang-menu]").forEach((menu) =>
-    menu.classList.remove("open")
-  );
+  closeAllLangMenus();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeAllLangMenus();
+  }
 });
 
 document.addEventListener("DOMContentLoaded", () => {
