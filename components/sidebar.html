@@ -16,11 +16,11 @@
   color:#e5e7eb;
 
   /* ===== CHATGPT STYLE - DARK SIDEBAR ===== */
-  --sb-bg:#0b0c10;
-  --sb-bg2:#1e1e1e;
-  --sb-panel:#262626;
-  --sb-surface:#2a2a2a;
-  --sb-surface2:#3a3a3a;
+  --sb-bg:#11141b;
+  --sb-bg2:#171b24;
+  --sb-panel:#1b2130;
+  --sb-surface:#202736;
+  --sb-surface2:#2a3345;
   --sb-stroke:#333333;
   --sb-stroke2:#444444;
   --sb-text:#ececec;
@@ -381,14 +381,12 @@
 
 /* ===== THEME TOGGLE - SINGLE DARK BAR ===== */
 #daveri_sidebar .theme-toggle-section{
-  margin:24px 12px 0;
+  margin:12px 12px 0;
   padding:0;
   border-radius:var(--sb-radius);
   background:transparent;
-  display:flex;
-  flex-direction:column-reverse;
-  gap:12px;
-  order:4;
+  display:block;
+  order:2;
 }
 #daveri_sidebar .theme-toggle-label{
   display:none;
@@ -465,6 +463,10 @@
   max-width:none;
   margin-top:0;
 }
+#daveri_sidebar .language-section{
+  margin:10px 12px 0;
+  order:3;
+}
 #daveri_sidebar .language-selector{
   display:flex;
   align-items:center;
@@ -483,7 +485,8 @@
 #daveri_sidebar .language-dropdown{
   display:none;
   position:absolute;
-  top:100%;
+  top:auto;
+  bottom:calc(100% + 8px);
   left:0;
   width:100%;
   min-width:0;
@@ -545,7 +548,7 @@
 
 /* ===== PLAN CARD - CLEAN ===== */
 #daveri_sidebar .plan-card{
-  margin:8px 12px 0;
+  margin:16px 12px 0;
   padding:12px;
   border-radius:var(--sb-radius);
   border:1px solid var(--sb-stroke);
@@ -555,7 +558,7 @@
   gap:10px;
   position:relative;
   color:var(--sb-text);
-  margin-top:auto;
+  margin-top:12px;
   order:1;
 }
 
@@ -627,14 +630,11 @@
 #daveri_sidebar .user{
   position:relative;
   padding:10px 12px 12px;
-  border-top:1px solid rgba(255,255,255,0.06);
-  margin-top:24px;
-  order:2;
+  border-top:none;
+  margin-top:12px;
+  order:4;
 }
 
-#daveri_sidebar .language-section{
-  margin:24px 12px 0;
-}
 #daveri_sidebar .user-btn{
   width:100%;
   border-radius:var(--sb-radius);
@@ -977,6 +977,10 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
         </button>
       </div>
+    </div>
+
+    <!-- LANGUAGE -->
+    <div class="language-section">
       <div class="language-dropdown-container" data-lang-dropdown>
         <div class="language-selector" data-lang-current>
           <img class="language-flag" data-lang-current-flag src="/assets/flags/en.svg" alt="" width="20" height="14" />

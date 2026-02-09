@@ -24,14 +24,15 @@ const createAIWindowNode = () => {
   const minimize = document.createElement("button");
   minimize.type = "button";
   minimize.className = "ai-window-minimize";
-  minimize.setAttribute("aria-label", "Minimize AI window");
+  minimize.setAttribute("aria-label", "Toggle AI window");
   minimize.innerHTML = `
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
     </svg>
   `;
   minimize.addEventListener("click", () => {
-    agentDockStore.setExpanded(false);
+    const state = agentDockStore.getState();
+    agentDockStore.setExpanded(!state.isExpanded);
   });
 
   const messagesWrap = document.createElement("div");
@@ -69,6 +70,10 @@ const createAIWindowNode = () => {
   const sync = (state) => {
     applyState(windowNode, state);
     messages.render(state.messages);
+    minimize.innerHTML = state.isExpanded
+      ? `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>`
+      : `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 12h12M12 6v12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg>`;
+    minimize.setAttribute("aria-label", state.isExpanded ? "Minimize AI window" : "Expand AI window");
   };
 
   sync(agentDockStore.getState());
