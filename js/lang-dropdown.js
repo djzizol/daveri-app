@@ -54,7 +54,7 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  const option = e.target.closest(".lang-option");
+  const option = e.target.closest(".language-option");
 
   if (option) {
     const lang = option.dataset.lang;
