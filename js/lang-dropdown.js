@@ -30,6 +30,12 @@ function redirectToLang(lang) {
   const normalized = SUPPORTED.includes(lang) ? lang : "en";
   const languageApi = window.DaVeriLanguage;
 
+  if (languageApi?.setCurrentLanguage) {
+    // Persist language before navigation so pages without visible prefix
+    // still resolve to the selected language on reload.
+    languageApi.setCurrentLanguage(normalized, { updateUrl: false });
+  }
+
   if (languageApi?.buildLanguageUrl) {
     const target = languageApi.buildLanguageUrl(normalized, {
       pathname: window.location.pathname,
