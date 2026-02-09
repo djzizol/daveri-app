@@ -10,7 +10,8 @@ const ROUTE_ICON_MAP = {
   instalacja: "install",
 };
 
-const getIconPath = (name) => `${ICON_BASE_PATH}/${name}.svg`;
+const ICON_VERSION = "20260209";
+const getIconPath = (name) => `${ICON_BASE_PATH}/${name}.svg?v=${ICON_VERSION}`;
 
 export const createSidebarIcon = ({ name, alt = "" } = {}) => {
   const wrapper = document.createElement("div");
