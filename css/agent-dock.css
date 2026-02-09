@@ -99,7 +99,7 @@ body.app-layout-root #ambientParticles {
 }
 
 #main-content.app-layout-main-content {
-  padding-bottom: calc(var(--agent-dock-current-height) + 44px) !important;
+  padding-bottom: calc(var(--ai-window-collapsed-height) + 44px) !important;
   background: var(--main-bg);
   position: relative;
   z-index: 1;
@@ -157,18 +157,33 @@ body.app-layout-root .card-icon img {
 }
 
 #daveri_sidebar .nav {
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   min-height: 0;
   padding: 18px 14px 22px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(28, 34, 48, 0.9) transparent;
+}
+
+#daveri_sidebar .nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+#daveri_sidebar .nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#daveri_sidebar .nav::-webkit-scrollbar-thumb {
+  background: rgba(28, 34, 48, 0.9);
+  border-radius: 999px;
 }
 
 #daveri_sidebar .sidebar-spacer {
-  flex: 1 1 auto;
-  min-height: 8px;
+  display: none !important;
 }
 
 #daveri_sidebar .sidebar-bottom {
-  margin-top: auto;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -191,7 +206,7 @@ body.app-layout-root .card-icon img {
 }
 
 #daveri_sidebar .sidebar-bottom .language-dropdown-container {
-  width: fit-content;
+  width: auto;
 }
 
 #daveri_sidebar .sidebar-bottom .language-dropdown {
@@ -311,7 +326,8 @@ body.app-layout-root .card-icon img {
   transform: translateX(-50%);
   border-radius: 14px;
   z-index: 1000;
-  transition: height 180ms ease, transform 180ms ease, opacity 120ms ease;
+  transition: height 260ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 180ms ease;
+  will-change: height, opacity;
 }
 
 #aiWindow.ai-window .chat-container {
@@ -331,10 +347,6 @@ body.app-layout-root .card-icon img {
   background: rgba(255, 255, 255, 0.92);
   border-color: rgba(15, 23, 42, 0.12);
   box-shadow: 0 20px 50px rgba(15, 23, 42, 0.16);
-}
-
-#aiWindow.ai-window.is-expanded {
-  transform: translateX(-50%) translateY(-2px);
 }
 
 .chat-minimize {
@@ -373,20 +385,24 @@ body.app-layout-root .card-icon img {
 .chat-messages-wrap {
   min-height: 0;
   opacity: 0;
-  transform: translateY(6px);
+  transform: translateY(8px);
+  max-height: 0;
+  overflow: hidden;
   pointer-events: none;
-  transition: opacity 120ms ease, transform 180ms ease;
+  transition: opacity 220ms ease, transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1), max-height 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 #aiWindow.ai-window.is-expanded .chat-messages-wrap {
   opacity: 1;
   transform: translateY(0);
+  max-height: 1000px;
   pointer-events: auto;
 }
 
 .ai-messages {
   height: 100%;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   padding: 16px 16px 12px;
   display: flex;
   flex-direction: column;
@@ -402,20 +418,20 @@ body.app-layout-root .card-icon img {
 }
 
 .ai-messages::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(16, 20, 28, 0.58);
   border-radius: 8px;
 }
 
 .ai-messages::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(8, 12, 18, 0.8);
 }
 
 [data-theme="light"] .ai-messages::-webkit-scrollbar-thumb {
-  background: rgba(15, 23, 42, 0.22);
+  background: rgba(15, 23, 42, 0.45);
 }
 
 [data-theme="light"] .ai-messages::-webkit-scrollbar-thumb:hover {
-  background: rgba(15, 23, 42, 0.32);
+  background: rgba(15, 23, 42, 0.62);
 }
 
 .ai-message-row {
@@ -472,6 +488,10 @@ body.app-layout-root .card-icon img {
   background: transparent;
   border: none;
   outline: none;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(8, 12, 18, 0.82) transparent;
   color: rgba(255, 255, 255, 0.9);
   font-size: 14px;
   line-height: 1.5;
@@ -481,6 +501,23 @@ body.app-layout-root .card-icon img {
 
 .chat-input::placeholder {
   color: rgba(255, 255, 255, 0.5);
+}
+
+.chat-input::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-input::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-input::-webkit-scrollbar-thumb {
+  background: rgba(8, 12, 18, 0.82);
+  border-radius: 999px;
+}
+
+.chat-input::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 9, 14, 0.95);
 }
 
 [data-theme="light"] .chat-input {
@@ -602,7 +639,10 @@ body.app-layout-root .card-icon img {
 }
 
 #aiWindow.ai-window.is-collapsed .chat-messages-wrap {
-  display: none;
+  opacity: 0;
+  transform: translateY(8px);
+  max-height: 0;
+  pointer-events: none;
 }
 
 #aiWindow.ai-window.is-collapsed .chat-minimize {
@@ -627,6 +667,7 @@ body.app-layout-root .card-icon img {
   height: 36px;
   min-height: 36px;
   padding: 8px 2px;
+  overflow-y: hidden;
 }
 
 #aiWindow.ai-window.is-collapsed .send-button {
@@ -636,10 +677,6 @@ body.app-layout-root .card-icon img {
 
 [data-theme="light"] #aiWindow.ai-window.is-collapsed .chat-minimize {
   opacity: 1;
-}
-
-#aiWindow.ai-window {
-  z-index: 1000;
 }
 
 /* Dashboard redesign */
@@ -938,7 +975,7 @@ body.app-layout-root .card-icon img {
 
 @media (max-width: 768px) {
   #main-content.app-layout-main-content {
-    padding-bottom: calc(var(--agent-dock-current-height) + 20px) !important;
+    padding-bottom: calc(var(--ai-window-collapsed-height) + 20px) !important;
   }
 
   #aiWindow.ai-window {

@@ -26,7 +26,7 @@ const loadFromStorage = () => {
     const messages = Array.isArray(parsed?.messages) ? parsed.messages.slice(-100) : DEFAULT_STATE.messages;
     return {
       messages,
-      isExpanded: parsed?.isExpanded !== false,
+      isExpanded: typeof parsed?.isExpanded === "boolean" ? parsed.isExpanded : DEFAULT_STATE.isExpanded,
       height: clampHeight(parsed?.height),
     };
   } catch {
