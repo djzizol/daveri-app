@@ -180,17 +180,131 @@ const initCollapseToggle = (root) => {
   });
 };
 
+const formatNumber = (value) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "--";
+  return new Intl.NumberFormat("en-US").format(numeric);
+};
+
+const drawPlanProgress = (root, remainingPercent) => {
+  const canvas = root.querySelector("#planLiquidCanvas");
+  if (!canvas || typeof canvas.getContext !== "function") return;
+
+  const pct = Math.max(0, Math.min(100, Number.isFinite(remainingPercent) ? remainingPercent : 0));
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  const size = 220;
+  const dpr = window.devicePixelRatio || 1;
+  const targetWidth = Math.floor(size * dpr);
+  const targetHeight = Math.floor(size * dpr);
+
+  if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+    canvas.style.width = `${size}px`;
+    canvas.style.height = `${size}px`;
+  }
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, size, size);
+
+  const center = size / 2;
+  const radius = 92;
+  const start = -Math.PI / 2;
+  const end = start + (Math.PI * 2 * pct) / 100;
+
+  ctx.lineWidth = 12;
+  ctx.strokeStyle = "rgba(255,255,255,0.13)";
+  ctx.beginPath();
+  ctx.arc(center, center, radius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  const gradient = ctx.createLinearGradient(0, 0, size, size);
+  gradient.addColorStop(0, "#fb7185");
+  gradient.addColorStop(0.5, "#a855f7");
+  gradient.addColorStop(1, "#60a5fa");
+  ctx.strokeStyle = gradient;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.arc(center, center, radius, start, end);
+  ctx.stroke();
+};
+
+const applyPlanData = (root, plan) => {
+  const planNameEl = root.querySelector("#sidebar-plan-name");
+  const planPillEl = root.querySelector("#sidebar-plan-pill");
+  const planPercentEl = root.querySelector("#sidebar-plan-percent");
+  const creditsMainEl = root.querySelector("#sidebar-plan-credits-main");
+  const creditsSubEl = root.querySelector("#sidebar-plan-credits-sub");
+
+  if (!planNameEl || !planPillEl || !planPercentEl || !creditsMainEl || !creditsSubEl) {
+    return;
+  }
+
+  if (!plan || typeof plan !== "object") {
+    planNameEl.textContent = "Plan";
+    planPillEl.textContent = "PLAN";
+    planPercentEl.textContent = "0%";
+    creditsMainEl.textContent = "Plan data unavailable";
+    creditsSubEl.textContent = "Unable to load credits.";
+    drawPlanProgress(root, 0);
+    return;
+  }
+
+  const planId = typeof plan.id === "string" && plan.id.trim() ? plan.id.trim() : "standard";
+  const normalizedPlanName = `${planId.charAt(0).toUpperCase()}${planId.slice(1)}`;
+  const status = typeof plan.status === "string" && plan.status.trim() ? plan.status.trim() : "active";
+  const limit = Number(plan.credits_limit);
+  const used = Number(plan.credits_used);
+  const hasLimit = Number.isFinite(limit) && limit >= 0;
+  const safeUsed = Number.isFinite(used) ? Math.max(0, used) : 0;
+  const safeRemaining = hasLimit
+    ? Math.max(0, Number.isFinite(Number(plan.credits_remaining)) ? Number(plan.credits_remaining) : limit - safeUsed)
+    : null;
+  const remainingPercent = Number.isFinite(Number(plan.credits_percent_remaining))
+    ? Math.max(0, Math.min(100, Number(plan.credits_percent_remaining)))
+    : hasLimit && limit > 0
+      ? Math.max(0, Math.min(100, Math.round((safeRemaining / limit) * 100)))
+      : 0;
+
+  planNameEl.textContent = normalizedPlanName;
+  planPillEl.textContent = status.toUpperCase();
+  planPercentEl.textContent = `${remainingPercent}%`;
+
+  if (hasLimit) {
+    creditsMainEl.textContent = `${formatNumber(safeRemaining)} / ${formatNumber(limit)} credits`;
+    creditsSubEl.textContent = `Used ${formatNumber(safeUsed)} credits this billing period.`;
+  } else {
+    creditsMainEl.textContent = `${formatNumber(safeUsed)} credits used`;
+    creditsSubEl.textContent = "No monthly limit available.";
+  }
+
+  drawPlanProgress(root, remainingPercent);
+};
+
 const loadUser = async (root, authEndpoint) => {
   try {
     const response = await fetch(authEndpoint, { credentials: "include" });
-    if (!response.ok) return;
+    if (!response.ok) {
+      applyPlanData(root, null);
+      return;
+    }
 
     const data = await response.json();
-    if (!data?.logged) return;
+    if (!data?.logged) {
+      applyPlanData(root, null);
+      return;
+    }
 
     const user = data.user || {};
-    if (user.email) {
+    if (user.id) {
+      root.dataset.userId = user.id;
+    } else if (user.email) {
       root.dataset.userId = user.email;
+    }
+    if (user.email) {
+      root.dataset.userEmail = user.email;
     }
 
     const userName = root.querySelector("#userName");
@@ -204,14 +318,18 @@ const loadUser = async (root, authEndpoint) => {
       userSub.textContent = user.email || "";
     }
     if (avatarBox) {
-      if (user.avatar_url) {
-        avatarBox.innerHTML = `<img src="${user.avatar_url}" alt="Avatar" />`;
+      const avatarUrl = user.avatar_url || user.picture || null;
+      if (avatarUrl) {
+        avatarBox.innerHTML = `<img src="${avatarUrl}" alt="Avatar" />`;
       } else {
         avatarBox.textContent = getInitials(user.name || user.email || "U");
       }
     }
+
+    applyPlanData(root, data.plan || null);
   } catch (error) {
     console.error("[Sidebar] auth load failed", error);
+    applyPlanData(root, null);
   }
 };
 

@@ -204,13 +204,10 @@
   </div>
 
   <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-    const SUPABASE_URL = "https://inayqymryrriobowyysw.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_r3Lvhhf751_SNXg_rmCLQA_LJXv381f";
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const API_CONVERSATIONS = "/api/conversations";
+    const API_MESSAGES = "/api/messages";
 
     const root = document.getElementById('historia_root');
-    const userId = root?.dataset?.userId;
     const convItems = document.getElementById('convItems');
     const convCount = document.getElementById('convCount');
     const convMessages = document.getElementById('convMessages');
@@ -223,6 +220,23 @@
       }
     }
 
+    async function fetchJson(url, options = {}) {
+      const response = await fetch(url, {
+        credentials: "include",
+        ...options
+      });
+      let payload = null;
+      try {
+        payload = await response.json();
+      } catch {
+        payload = null;
+      }
+      if (!response.ok) {
+        throw new Error(payload?.error || `Request failed: ${response.status}`);
+      }
+      return payload;
+    }
+
     function fmtDate(d) {
       if (!d) return '';
       const dt = new Date(d);
@@ -230,12 +244,18 @@
     }
 
     async function loadConversations() {
-      if (!userId) return;
       const botId = root?.dataset?.botId;
-      let query = supabase.from('conversations').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(50);
-      if (botId) query = query.eq('bot_id', botId);
-      const { data: convs, error } = await query;
-      if (error || !convs) return;
+      let endpoint = `${API_CONVERSATIONS}?limit=50`;
+      if (botId) endpoint += `&bot_id=${encodeURIComponent(botId)}`;
+
+      let convs = [];
+      try {
+        const payload = await fetchJson(endpoint);
+        convs = Array.isArray(payload?.conversations) ? payload.conversations : [];
+      } catch (error) {
+        console.error("[History] conversations load failed:", error);
+        convs = [];
+      }
       convCount.textContent = convs.length;
       convItems.innerHTML = '';
       if (!convs.length) {
@@ -247,14 +267,14 @@
         const el = document.createElement('div');
         el.className = 'conv-item';
         el.innerHTML = `
-          <div class="conv-visitor">${conv.visitor_name || i18nText("i18n-history-visitor")}</div>
-          <div class="conv-preview">${conv.last_message || i18nText("i18n-history-preview")}</div>
+          <div class="conv-visitor">${conv.visitor_id || conv.visitor_name || i18nText("i18n-history-visitor")}</div>
+          <div class="conv-preview">${conv.last_message_preview || conv.last_message || i18nText("i18n-history-preview")}</div>
           <div class="conv-date">${fmtDate(conv.created_at)}</div>
         `;
         el.onclick = () => {
           document.querySelectorAll('.conv-item').forEach(i => i.classList.remove('active'));
           el.classList.add('active');
-          loadMessages(conv.id, conv.visitor_name);
+          loadMessages(conv.id, conv.visitor_id || conv.visitor_name);
         };
         convItems.appendChild(el);
       });
@@ -262,11 +282,14 @@
 
     async function loadMessages(convId, visitorName) {
       convMetaVisitor.textContent = visitorName || i18nText("i18n-history-visitor");
-      const { data: msgs, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', convId)
-        .order('created_at', { ascending: true });
+      let msgs = [];
+      try {
+        const payload = await fetchJson(`${API_MESSAGES}?conversation_id=${encodeURIComponent(convId)}`);
+        msgs = Array.isArray(payload?.messages) ? payload.messages : [];
+      } catch (error) {
+        console.error("[History] messages load failed:", error);
+        msgs = [];
+      }
 
       convMessages.innerHTML = '';
       if (!msgs?.length) {

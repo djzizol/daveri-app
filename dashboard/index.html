@@ -1428,7 +1428,7 @@
 
       const root = document.getElementById('panel_root');
       if (root) {
-        root.dataset.userId = data.user.email;
+        root.dataset.userId = data.user.id || data.user.email || "";
       }
 
       document.getElementById('auth-screen').style.display = 'none';
@@ -1539,21 +1539,14 @@
 
   <script type="module" src="../js/sidebar-loader.js"></script>
 
-  <!-- Supabase Integration -->
+  <!-- Application Data API -->
   <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-    const SUPABASE_URL = "https://inayqymryrriobowyysw.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_r3Lvhhf751_SNXg_rmCLQA_LJXv381f";
-    const BOTS_TABLE = "bots";
-    const FILES_TABLE = "bot_files";
-    const CONVERSATIONS_TABLE = "conversations";
-    const MESSAGES_TABLE = "messages";
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const API_BOTS = "/api/bots";
+    const API_FILES = "/api/files";
+    const API_CONVERSATIONS = "/api/conversations";
+    const API_MESSAGES = "/api/messages";
     const root = document.getElementById("panel_root");
     const botSelect = document.getElementById("panel-active-bot");
-    const botLabel = document.getElementById("panel-active-bot-label");
     const kpiConversationsEl = document.getElementById("kpi-conversations");
     const kpiMessagesEl = document.getElementById("kpi-messages");
     const kpiSourcesEl = document.getElementById("kpi-sources");
@@ -1583,8 +1576,31 @@
       selectedConversationId: null
     };
 
+    const fetchJson = async (url, options = {}) => {
+      const response = await fetch(url, {
+        credentials: "include",
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...(options.headers || {})
+        }
+      });
+
+      let payload = null;
+      try {
+        payload = await response.json();
+      } catch {
+        payload = null;
+      }
+
+      if (!response.ok) {
+        throw new Error(payload?.error || `Request failed: ${response.status}`);
+      }
+      return payload;
+    };
+
     function getUserId() {
-      const id = (root?.dataset.userId || "").trim();
+      const id = String(root?.dataset.userId || window?.DaVeriAuth?.user?.id || "").trim();
       return id || null;
     }
 
@@ -1635,18 +1651,11 @@
     }
 
     async function loadBotsForPanel() {
-      const userId = getUserId();
-      if (!userId) return;
       try {
-        const { data, error } = await supabase
-          .from(BOTS_TABLE)
-          .select("id, name, status, installed")
-          .eq("bubble_user_id", userId)
-          .order("created_at", { ascending: true });
-        if (error) { console.error("[Panel] blad SELECT bots:", error); return; }
-        state.bots = data || [];
+        const payload = await fetchJson(API_BOTS);
+        state.bots = Array.isArray(payload) ? payload : (Array.isArray(payload?.bots) ? payload.bots : []);
         renderBotsInPanel();
-      } catch (e) { console.error("[Panel] wyjatek loadBotsForPanel:", e); }
+      } catch (e) { console.error("[Panel] loadBotsForPanel failed:", e); }
     }
 
     function updateChecklist() {
@@ -1670,19 +1679,14 @@
     }
 
     async function loadSourcesKpiAndFileCount() {
-      const userId = getUserId();
-      if (!userId || !kpiSourcesEl) return;
+      if (!kpiSourcesEl) return;
       try {
-        const { count, error } = await supabase
-          .from(FILES_TABLE)
-          .select("id", { count: "exact", head: true })
-          .eq("owner_id", userId);
-        if (error) { console.warn("[Panel] blad count plikow:", error); return; }
-        const total = typeof count === "number" ? count : 0;
+        const payload = await fetchJson(`${API_FILES}?limit=1&include_count=1`);
+        const total = Number.isFinite(Number(payload?.count)) ? Number(payload.count) : 0;
         state.totalFilesForUser = total;
         kpiSourcesEl.textContent = total;
         updateChecklist();
-      } catch (e) { console.error("[Panel] wyjatek loadSourcesKpi:", e); }
+      } catch (e) { console.error("[Panel] loadSourcesKpiAndFileCount failed:", e); }
     }
 
     function formatDateTime(iso) {
@@ -1694,14 +1698,12 @@
     }
 
     async function loadFilesList() {
-      const userId = getUserId();
-      if (!userId || !filesListEl) return;
+      if (!filesListEl) return;
       try {
-        let q = supabase.from(FILES_TABLE).select("id, name, bot_id, created_at").eq("owner_id", userId).order("created_at", { ascending: false }).limit(8);
-        if (state.activeBotId) q = q.eq("bot_id", state.activeBotId);
-        const { data, error } = await q;
-        if (error) { filesEmptyEl.style.display = "block"; filesListEl.innerHTML = ""; return; }
-        const rows = data || [];
+        let endpoint = `${API_FILES}?limit=8`;
+        if (state.activeBotId) endpoint += `&bot_id=${encodeURIComponent(state.activeBotId)}`;
+        const payload = await fetchJson(endpoint);
+        const rows = Array.isArray(payload?.files) ? payload.files : [];
       if (!rows.length) { filesEmptyEl.style.display = "block"; filesListEl.innerHTML = ""; return; }
       filesEmptyEl.style.display = "none";
       filesListEl.innerHTML = "";
@@ -1779,9 +1781,8 @@
       convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div><div data-i18n="dashboard.conversations.loading"></div></div>';
       translateDynamicContent();
       try {
-        const { data, error } = await supabase.from(MESSAGES_TABLE).select("sender, role, content, created_at").eq("conversation_id", conversationId).order("created_at", { ascending: true });
-        if (error) { convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg></div><div data-i18n="dashboard.conversations.loadError"></div></div>'; translateDynamicContent(); return; }
-        const msgs = data || [];
+        const payload = await fetchJson(`${API_MESSAGES}?conversation_id=${encodeURIComponent(conversationId)}`);
+        const msgs = Array.isArray(payload?.messages) ? payload.messages : [];
         if (!msgs.length) { convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg></div><div data-i18n="dashboard.conversations.noMessages"></div></div>'; translateDynamicContent(); return; }
         convMessagesEl.innerHTML = "";
         msgs.forEach(m => {
@@ -1815,23 +1816,15 @@
         translateDynamicContent();
         return;
       }
-      const now = new Date();
-      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
       try {
-        const { data: convs, error: convErr } = await supabase.from(CONVERSATIONS_TABLE).select("id, visitor_id, last_message_preview, last_message_at, created_at").eq("bot_id", botId).gte("created_at", sevenDaysAgo).order("last_message_at", { ascending: false, nullsLast: true });
-        if (convErr) { convListEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg></div><div data-i18n="dashboard.conversations.loadError"></div></div>'; translateDynamicContent(); return; }
-        state.conversations = convs || [];
+        const payload = await fetchJson(`${API_CONVERSATIONS}?bot_id=${encodeURIComponent(botId)}&days=7&limit=100&include_message_count=1`);
+        state.conversations = Array.isArray(payload?.conversations) ? payload.conversations : [];
         state.selectedConversationId = null;
         if (kpiConversationsEl) kpiConversationsEl.textContent = state.conversations.length;
         renderConversationList();
         convMessagesEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg></div><div data-i18n="dashboard.conversations.selectConversation"></div></div>';
         translateDynamicContent();
-        let totalMessages = 0;
-        if (state.conversations.length) {
-          const convIds = state.conversations.map(c => c.id);
-          const { count, error: msgErr } = await supabase.from(MESSAGES_TABLE).select("id", { count: "exact", head: true }).in("conversation_id", convIds).gte("created_at", sevenDaysAgo);
-          if (!msgErr && typeof count === "number") totalMessages = count;
-        }
+        const totalMessages = Number.isFinite(Number(payload?.messages_count)) ? Number(payload.messages_count) : 0;
         if (kpiMessagesEl) kpiMessagesEl.textContent = totalMessages;
         if (kpiAvgTimeEl) kpiAvgTimeEl.textContent = "--";
       } catch (e) {

@@ -194,10 +194,7 @@
   </div>
 
   <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-    const SUPABASE_URL = "https://inayqymryrriobowyysw.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_r3Lvhhf751_SNXg_rmCLQA_LJXv381f";
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const API_BOTS = "/api/bots";
 
     const root = document.getElementById('prompt_root');
     const textarea = document.getElementById('promptTextarea');
@@ -206,6 +203,27 @@
     const saveBtn = document.getElementById('saveBtn');
     const i18nText = (id) => document.getElementById(id)?.textContent || "";
 
+    async function fetchJson(url, options = {}) {
+      const response = await fetch(url, {
+        credentials: "include",
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...(options.headers || {})
+        }
+      });
+      let payload = null;
+      try {
+        payload = await response.json();
+      } catch {
+        payload = null;
+      }
+      if (!response.ok) {
+        throw new Error(payload?.error || `Request failed: ${response.status}`);
+      }
+      return payload;
+    }
+
     textarea.addEventListener('input', () => {
       charCount.textContent = textarea.value.length;
     });
@@ -213,14 +231,17 @@
     async function loadPrompt() {
       const botId = root?.dataset?.botId;
       if (!botId) return;
-      const { data, error } = await supabase
-        .from('bots')
-        .select('system_prompt')
-        .eq('id', botId)
-        .single();
-      if (data?.system_prompt) {
-        textarea.value = data.system_prompt;
-        charCount.textContent = data.system_prompt.length;
+      try {
+        const data = await fetchJson(`${API_BOTS}/${encodeURIComponent(botId)}`);
+        if (data?.system_prompt) {
+          textarea.value = data.system_prompt;
+          charCount.textContent = data.system_prompt.length;
+        } else {
+          textarea.value = "";
+          charCount.textContent = "0";
+        }
+      } catch (error) {
+        console.error("[Prompts] load failed:", error);
       }
     }
 
@@ -233,17 +254,18 @@
         return;
       }
       saveBtn.disabled = true;
-      const { error } = await supabase
-        .from('bots')
-        .update({ system_prompt: textarea.value })
-        .eq('id', botId);
 
-      if (error) {
-        saveStatus.textContent = i18nText("i18n-prompts-save-error");
-        saveStatus.className = 'save-status show error';
-      } else {
+      try {
+        await fetchJson(`${API_BOTS}/${encodeURIComponent(botId)}`, {
+          method: "PATCH",
+          body: JSON.stringify({ system_prompt: textarea.value })
+        });
         saveStatus.textContent = i18nText("i18n-prompts-save-success");
         saveStatus.className = 'save-status show success';
+      } catch (error) {
+        console.error("[Prompts] save failed:", error);
+        saveStatus.textContent = i18nText("i18n-prompts-save-error");
+        saveStatus.className = 'save-status show error';
       }
       saveBtn.disabled = false;
       setTimeout(() => saveStatus.className = 'save-status', 2500);
