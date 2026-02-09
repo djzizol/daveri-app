@@ -1,14 +1,14 @@
 ﻿:root {
-  --sidebar-bg: #10131a;
-  --main-bg: #151a24;
-  --card-bg: #151821;
+  --sidebar-bg: #0b0c0f;
+  --main-bg: #111217;
+  --card-bg: #181a20;
+  --card-hover: #1c1f26;
   --border-subtle: rgba(255, 255, 255, 0.05);
   --text-primary: rgba(255, 255, 255, 0.92);
   --text-secondary: rgba(255, 255, 255, 0.6);
   --accent-primary: #8b5cf6;
   --accent-hover: #a78bfa;
   --accent-subtle: rgba(139, 92, 246, 0.12);
-  --logo-grad: linear-gradient(135deg, #8b5cf6, #ec4899, #3b82f6);
 
   --ai-window-width: 720px;
   --ai-window-max-width: 90vw;
@@ -52,13 +52,19 @@
 }
 
 #daveri_sidebar .nav-item.active {
-  background: rgba(124, 58, 237, 0.18);
-  box-shadow: 0 0 14px rgba(139, 92, 246, 0.22);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: none;
+  position: relative;
 }
 
 #daveri_sidebar .nav-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
   width: 2px;
-  background: var(--logo-grad);
+  background: var(--accent-primary);
 }
 
 /* Floating AI window */
@@ -71,7 +77,7 @@
   height: var(--ai-window-collapsed-height);
   transform: translateX(-50%);
   border-radius: 16px;
-  background: rgba(15, 15, 20, 0.72);
+  background: rgba(24, 26, 32, 0.85);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
@@ -328,7 +334,7 @@
 .stats-row .stat-card,
 .stats-row .metric {
   position: relative;
-  background: #151821;
+  background: var(--card-bg);
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
   padding: 16px;
@@ -338,6 +344,7 @@
 .stats-row .stat-card:hover,
 .stats-row .metric:hover {
   transform: translateY(-2px);
+  background: var(--card-hover);
   border-color: rgba(139, 92, 246, 0.4);
 }
 
@@ -350,7 +357,7 @@
   transform: translateX(-50%);
   min-width: 220px;
   max-width: 280px;
-  background: #151821;
+  background: var(--card-bg);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   padding: 8px 10px;
@@ -373,7 +380,7 @@
 .insights-section,
 .dashboard-checklist-muted,
 .dashboard-redesign .dashboard-section.glass-card {
-  background: #151821;
+  background: var(--card-bg);
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
   padding: 20px;
@@ -401,7 +408,7 @@
 .messages-graph {
   height: 120px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.02);
+  background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.04);
   padding: 8px;
 }
@@ -446,7 +453,7 @@
   gap: 12px;
   padding: 10px 12px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--card-bg);
   border: 1px solid rgba(255, 255, 255, 0.04);
   transition: all 120ms ease;
 }
@@ -454,7 +461,7 @@
 .recent-bot-item:hover {
   transform: translateY(-2px);
   border-color: rgba(139, 92, 246, 0.35);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--card-hover);
 }
 
 .recent-bot-name {

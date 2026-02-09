@@ -28,7 +28,7 @@
 .language-selector .lang-arrow {
   margin-left: auto;
   font-size: 12px;
-  color: #cbd5e1;
+  color: rgba(255,255,255,0.62);
   transition: transform .18s ease;
 }
 
@@ -42,7 +42,7 @@
   top: calc(100% + 8px);
   left: 0;
   width: 100%;
-  background: #0b1220;
+  background: #181a20;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 10px;
   padding: 6px;
