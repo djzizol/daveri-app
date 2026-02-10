@@ -3722,11 +3722,11 @@
 
     #dv-configurator .appearance-sidebar {
       grid-column: 1;
-      grid-row: 2;
+      grid-row: 3;
       width: 100% !important;
       min-width: 0 !important;
       max-width: none !important;
-      height: calc(100vh - 214px);
+      height: 100vh;
       overflow-y: auto;
       overflow-x: hidden;
       border: none;
@@ -4513,8 +4513,8 @@
 
     #dv-configurator .chat-preview-wrapper,
     #dv-configurator .device-preview-stage {
-      height: var(--preview-block-height);
-      min-height: 560px;
+      height: auto;
+      min-height: 0;
     }
 
     #dv-configurator .chat-live-preview {
