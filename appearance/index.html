@@ -4962,6 +4962,226 @@
       box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.42), 0 0 0 4px rgba(139, 92, 246, 0.18);
     }
 
+    /* ===== Final Preview Stage Overrides ===== */
+    #dv-configurator .live-preview-column,
+    #dv-configurator .device-preview-column {
+      min-width: 0;
+      min-height: 0;
+      overflow: auto;
+    }
+
+    #dv-configurator .preview-desktop .desktop-preview {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: transparent;
+      border: none;
+    }
+
+    #dv-configurator #monitorFrame {
+      width: min(100%, 396px);
+      aspect-ratio: 16 / 10;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      box-shadow: 0 24px 52px rgba(0, 0, 0, 0.52);
+      background: #0c111b;
+      overflow: hidden;
+      margin: 0 auto;
+      position: relative;
+      isolation: isolate;
+    }
+
+    #dv-configurator #monitorScreen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(88% 120% at 82% 88%, rgba(124, 58, 237, 0.24), rgba(124, 58, 237, 0) 62%),
+        radial-gradient(66% 94% at 74% 84%, rgba(236, 72, 153, 0.16), rgba(236, 72, 153, 0) 64%),
+        linear-gradient(160deg, #090d13 0%, #0e1320 52%, #131a2a 100%);
+    }
+
+    #dv-configurator #monitorViewport {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 1440px;
+      height: 900px;
+      transform: translate(-50%, -50%) scale(1);
+      transform-origin: top left;
+      background: transparent;
+      overflow: visible;
+    }
+
+    #dv-configurator #monitorChat {
+      position: absolute;
+      border-radius: 16px;
+      overflow: hidden;
+      background: transparent;
+      z-index: 5;
+    }
+
+    #dv-configurator .preview-chat .chat-window {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    #dv-configurator .preview-chat .chat-messages {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    #dv-configurator .preview-chat .quick-replies-top,
+    #dv-configurator .preview-chat .quick-replies-bottom {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 12px;
+      background: rgba(12, 17, 26, 0.58);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      flex-shrink: 0;
+      z-index: 3;
+    }
+
+    #dv-configurator .preview-chat .quick-reply-chip,
+    #dv-configurator .preview-chat .quick-replies-top button,
+    #dv-configurator .preview-chat .quick-replies-bottom button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 32px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.1;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: transform 120ms ease, filter 120ms ease, background 120ms ease;
+      white-space: nowrap;
+    }
+
+    #dv-configurator .preview-chat .quick-reply-chip:hover,
+    #dv-configurator .preview-chat .quick-replies-top button:hover,
+    #dv-configurator .preview-chat .quick-replies-bottom button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+    }
+
+    #dv-configurator .preview-mobile .mobile-preview {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      padding: 0;
+      border: none;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    #dv-configurator .phone-frame {
+      width: min(100%, 360px);
+      aspect-ratio: 9 / 16;
+      height: auto;
+      max-height: calc(100vh - 220px);
+      margin: 0 auto;
+      border-radius: 30px;
+      border: 2px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.03), 0 34px 86px rgba(0, 0, 0, 0.62);
+      background: #0b0f19;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+    }
+
+    #dv-configurator .phone-frame #mobileChatRoot {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #dv-configurator .preview-mobile .preview-chat--mobile,
+    #dv-configurator .preview-mobile .preview-chat--mobile .chat-window {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+    }
+
+    #dv-configurator .preview-mobile .preview-chat--mobile .chat-header {
+      position: sticky;
+      top: 0;
+      z-index: 4;
+    }
+
+    #dv-configurator .preview-mobile .preview-chat--mobile .chat-messages {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 14px 12px 10px;
+    }
+
+    #dv-configurator .preview-mobile .preview-chat--mobile .quick-replies-bottom {
+      position: sticky;
+      bottom: 68px;
+      z-index: 4;
+    }
+
+    #dv-configurator .preview-mobile .preview-chat--mobile .chat-input {
+      position: sticky;
+      bottom: 0;
+      z-index: 5;
+      background: rgba(10, 14, 22, 0.88);
+      backdrop-filter: blur(8px);
+    }
+
+    #dv-configurator .chat-icon {
+      position: absolute;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+      overflow: hidden;
+    }
+
+    #dv-configurator .chat-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    #dv-configurator #workChatIcon {
+      left: 24px;
+      bottom: 24px;
+    }
+
+    #dv-configurator #monitorChatIcon {
+      bottom: 16px;
+      right: 16px;
+    }
+
+    #dv-configurator #mobileChatIcon {
+      right: 16px;
+      bottom: 24px;
+    }
+
     @media (max-width: 1700px) {
       #dv-configurator .header-left {
         gap: 12px;
@@ -5787,7 +6007,7 @@
                     </div>
                     <div class="chat-icon small" id="workChatIcon"
                       style="display: none; position: absolute; left: 32px; bottom: 32px;">
-                      <i class="fas fa-comment"></i>
+                      <img src="/assets/icons/logo.svg" alt="Chat launcher" />
                     </div>
                   </div>
                 </div>
@@ -5799,6 +6019,7 @@
               <div class="device-toggle" id="appearanceDeviceToggle">
                 <button type="button" class="device-btn device-button device-toggle-btn active" data-device="desktop">Desktop</button>
                 <button type="button" class="device-btn device-button device-toggle-btn" data-device="mobile">Mobile</button>
+                <div id="monitorModeSwitch" hidden aria-hidden="true"></div>
               </div>
               <div class="device-preview-stage">
                 <div class="preview-section device-preview-mode device-preview-mobile preview-mobile">
@@ -5807,16 +6028,20 @@
                       <div class="mobile-chat-root preview-chat-host" id="mobileChatRoot"></div>
                     </div>
                     <div class="chat-icon small mobile-icon" id="mobileChatIcon" style="display: none;">
-                      <i class="fas fa-comment"></i>
+                      <img src="/assets/icons/logo.svg" alt="Chat launcher" />
                     </div>
                   </div>
                 </div>
                 <div class="preview-section device-preview-mode device-preview-desktop preview-desktop">
                   <div class="desktop-preview" id="desktopPreview">
                     <div class="monitor-frame" id="monitorFrame">
-                      <div class="monitor-chat preview-chat-host" id="monitorChat"></div>
-                      <div class="chat-icon monitor-icon" id="monitorChatIcon" style="display: none;">
-                        <i class="fas fa-comment"></i>
+                      <div class="monitor-screen" id="monitorScreen">
+                        <div class="monitor-viewport" id="monitorViewport">
+                          <div class="monitor-chat preview-chat-host" id="monitorChat"></div>
+                          <div class="chat-icon monitor-icon" id="monitorChatIcon" style="display: none;">
+                            <img src="/assets/icons/logo.svg" alt="Chat launcher" />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -5931,6 +6156,13 @@
       const WATERMARK_ICON = "/assets/icons/logo.svg";
       const DEFAULT_BOT_AVATAR = "/assets/logo.svg";
       const FIXED_CHAT_DIMENSIONS = Object.freeze({ width: 360, height: 520 });
+      const DESKTOP_STAGE_SIZE = Object.freeze({ width: 1440, height: 900 });
+      const DEFAULT_LAUNCHER_ICON = "/assets/icons/logo.svg";
+      const getDefaultStarterReplies = () => {
+        const first = (i18nText("i18n-appearance-quick-default-1") || "Cennik / Pricing").trim();
+        const second = (i18nText("i18n-appearance-quick-default-2") || "Kontakt / Contact").trim();
+        return [first || "Cennik / Pricing", second || "Kontakt / Contact"];
+      };
       const PREVIEW_DEMO_MESSAGES = Object.freeze([
         { type: "bot", text: "Hello! How can I help you today?", time: "12:00" },
         { type: "user", text: "Hi! I want to customize my chatbot.", time: "12:01" },
@@ -6154,7 +6386,7 @@
         animationPreset: "fade",
         animationEnabled: true,
       quickReplies: {
-        messages: [i18nText("i18n-appearance-quick-default-1"), i18nText("i18n-appearance-quick-default-2")],
+        messages: getDefaultStarterReplies(),
         top: false
       },
       quickReplyStyle: "filled",
@@ -6294,6 +6526,9 @@
       function setWorkOption(key, value) {
         // Setting work option
         const next = deepClone(workState);
+        if (key === 'quickRepliesTop') {
+          key = 'quickReplies.top';
+        }
         // Obsługa zagnieżdżonych właściwości
         const keys = key.split('.');
         if (keys.length === 1) {
@@ -6312,6 +6547,14 @@
             if (!next.quickReplies[keys[1]]) next.quickReplies[keys[1]] = {};
             next.quickReplies[keys[1]][keys[2]] = value;
           }
+        }
+        if (key === 'quickReplies.messages') {
+          const normalizedReplies = Array.isArray(value)
+            ? value.map((entry) => String(entry || '').trim()).filter(Boolean)
+            : [];
+          next.quickReplies.messages = normalizedReplies.length
+            ? normalizedReplies
+            : getDefaultStarterReplies();
         }
         // Automatyczne przełączenie na preset "Custom" przy ręcznej zmianie
         if (currentPreset !== "custom") {
@@ -6362,8 +6605,10 @@
         // Setting device option
         const next = deepClone(deviceState);
         if (key === 'width' || key === 'height') {
-          next.width = FIXED_CHAT_DIMENSIONS.width;
-          next.height = FIXED_CHAT_DIMENSIONS.height;
+          const numeric = Number(value);
+          if (Number.isFinite(numeric)) {
+            next[key] = Math.max(180, Math.round(numeric));
+          }
         } else {
           next[key] = value;
         }
@@ -6443,8 +6688,8 @@
                 deviceState[key] = parsed.device[key];
               }
             });
-            deviceState.width = FIXED_CHAT_DIMENSIONS.width;
-            deviceState.height = FIXED_CHAT_DIMENSIONS.height;
+            deviceState.width = Number(deviceState.width) || FIXED_CHAT_DIMENSIONS.width;
+            deviceState.height = Number(deviceState.height) || FIXED_CHAT_DIMENSIONS.height;
           }
           if (parsed.preset) {
             currentPreset = parsed.preset;
@@ -6797,7 +7042,10 @@
       }
 
       function initDevicePreviewToggle() {
-        root.dataset.devicePreview = deviceState.deviceType === 'mobile' ? 'mobile' : 'desktop';
+        const mode = deviceState.deviceType === 'mobile' ? 'mobile' : 'desktop';
+        root.dataset.devicePreview = mode;
+        root.classList.toggle('is-desktop', mode === 'desktop');
+        root.classList.toggle('is-mobile', mode === 'mobile');
       }
       /* ========== SYNCHRONIZACJA UI ========== */
       function syncUISelectionStates(workSnapshot, deviceSnapshot) {
@@ -6858,7 +7106,9 @@
           const key = checkbox.getAttribute("data-key");
           let current;
           if (group === "work") {
-            current = workSnapshot[key];
+            current = key === 'quickRepliesTop'
+              ? !!workSnapshot.quickReplies?.top
+              : workSnapshot[key];
           } else if (group === "device") {
             current = deviceSnapshot[key];
           }
@@ -7198,8 +7448,12 @@
       }
       /* ========== AKTUALIZACJA DEVICE CHAT ========== */
       function updateDeviceChatSize() {
-        // Preview uses fixed dimensions; scaling no longer required
-        return;
+        const monitorChat = document.getElementById('monitorChat');
+        if (monitorChat) {
+          applyMonitorChatDimensions(monitorChat, deviceState);
+          applyMonitorChatPosition(monitorChat, deviceState);
+        }
+        updateMonitorScale();
       }
       function updateDeviceType() {
         const monitorFrame = document.getElementById('monitorFrame');
@@ -7207,6 +7461,8 @@
         const activeDevice = deviceState.deviceType === 'mobile' ? 'mobile' : 'desktop';
 
         root.dataset.devicePreview = activeDevice;
+        root.classList.toggle('is-desktop', activeDevice === 'desktop');
+        root.classList.toggle('is-mobile', activeDevice === 'mobile');
 
         if (monitorFrame) {
           monitorFrame.classList.remove('desktop', 'mobile', 'active');
@@ -7219,6 +7475,7 @@
             btn.classList.remove('active');
           }
         });
+        updateMonitorScale();
       }
       /* ========== SYNC ALL PREVIEW CLONES ========== */
       function syncDeviceFrameClones(snapshot, deviceSnapshot) {
@@ -7266,6 +7523,16 @@
       function applyMonitorChatPosition(monitorChat, deviceSnapshot) {
         if (!monitorChat) return;
         const position = (deviceSnapshot && deviceSnapshot.position) || deviceState.position || 'bottom-right';
+        const widgetWidth = Number(deviceSnapshot?.width) || FIXED_CHAT_DIMENSIONS.width;
+        const widgetHeight = Number(deviceSnapshot?.height) || FIXED_CHAT_DIMENSIONS.height;
+        const edgeX = Math.max(12, Number(deviceSnapshot?.offsetX ?? deviceSnapshot?.x ?? 32));
+        const edgeY = Math.max(12, Number(deviceSnapshot?.offsetY ?? deviceSnapshot?.y ?? 32));
+        const customX = Number(deviceSnapshot?.customX);
+        const customY = Number(deviceSnapshot?.customY);
+        const maxLeft = Math.max(12, DESKTOP_STAGE_SIZE.width - widgetWidth - 12);
+        const maxTop = Math.max(12, DESKTOP_STAGE_SIZE.height - widgetHeight - 12);
+        const normalizedLeft = Number.isFinite(customX) ? Math.max(12, Math.min(maxLeft, customX)) : null;
+        const normalizedTop = Number.isFinite(customY) ? Math.max(12, Math.min(maxTop, customY)) : null;
         // Reset all positions
         monitorChat.style.left = 'auto';
         monitorChat.style.right = 'auto';
@@ -7274,20 +7541,24 @@
         
         switch(position) {
           case 'bottom-left':
-            monitorChat.style.left = '12px';
-            monitorChat.style.bottom = '12px';
+            monitorChat.style.left = `${edgeX}px`;
+            monitorChat.style.bottom = `${edgeY}px`;
             break;
           case 'bottom-right':
-            monitorChat.style.right = '12px';
-            monitorChat.style.bottom = '12px';
+            monitorChat.style.right = `${edgeX}px`;
+            monitorChat.style.bottom = `${edgeY}px`;
             break;
           case 'top-left':
-            monitorChat.style.left = '12px';
-            monitorChat.style.top = '12px';
+            monitorChat.style.left = `${edgeX}px`;
+            monitorChat.style.top = `${edgeY}px`;
             break;
           case 'top-right':
-            monitorChat.style.right = '12px';
-            monitorChat.style.top = '12px';
+            monitorChat.style.right = `${edgeX}px`;
+            monitorChat.style.top = `${edgeY}px`;
+            break;
+          case 'custom':
+            if (normalizedLeft !== null) monitorChat.style.left = `${normalizedLeft}px`;
+            if (normalizedTop !== null) monitorChat.style.top = `${normalizedTop}px`;
             break;
         }
         
@@ -7300,20 +7571,24 @@
           monitorIcon.style.bottom = 'auto';
           switch(position) {
             case 'bottom-left':
-              monitorIcon.style.left = '12px';
-              monitorIcon.style.bottom = '12px';
+              monitorIcon.style.left = `${edgeX}px`;
+              monitorIcon.style.bottom = `${edgeY}px`;
               break;
             case 'bottom-right':
-              monitorIcon.style.right = '12px';
-              monitorIcon.style.bottom = '12px';
+              monitorIcon.style.right = `${edgeX}px`;
+              monitorIcon.style.bottom = `${edgeY}px`;
               break;
             case 'top-left':
-              monitorIcon.style.left = '12px';
-              monitorIcon.style.top = '12px';
+              monitorIcon.style.left = `${edgeX}px`;
+              monitorIcon.style.top = `${edgeY}px`;
               break;
             case 'top-right':
-              monitorIcon.style.right = '12px';
-              monitorIcon.style.top = '12px';
+              monitorIcon.style.right = `${edgeX}px`;
+              monitorIcon.style.top = `${edgeY}px`;
+              break;
+            case 'custom':
+              if (normalizedLeft !== null) monitorIcon.style.left = `${normalizedLeft}px`;
+              if (normalizedTop !== null) monitorIcon.style.top = `${normalizedTop}px`;
               break;
           }
         }
@@ -7322,9 +7597,9 @@
       // Apply dimensions to monitor chat based on device state
       function applyMonitorChatDimensions(monitorChat, deviceSnapshot) {
         if (!monitorChat) return;
-        // Fixed dimensions for a consistent SaaS preview footprint
-        const width = FIXED_CHAT_DIMENSIONS.width;
-        const height = FIXED_CHAT_DIMENSIONS.height;
+        // Desktop preview uses stage-space px; the whole stage is scaled uniformly.
+        const width = Math.max(240, Number(deviceSnapshot?.width) || FIXED_CHAT_DIMENSIONS.width);
+        const height = Math.max(320, Number(deviceSnapshot?.height) || FIXED_CHAT_DIMENSIONS.height);
         monitorChat.style.width = `${width}px`;
         monitorChat.style.height = `${height}px`;
       }
@@ -7412,34 +7687,38 @@
         const mobileIcon = document.getElementById('mobileChatIcon');
         const monitorIcon = document.getElementById('monitorChatIcon');
         const position = deviceState.position || 'bottom-right';
-        
-        [mobileIcon, monitorIcon].forEach(icon => {
-          if (!icon) return;
-          // Reset all positions
-          icon.style.left = 'auto';
-          icon.style.right = 'auto';
-          icon.style.top = 'auto';
-          icon.style.bottom = 'auto';
-          
+
+        if (mobileIcon) {
+          mobileIcon.style.left = 'auto';
+          mobileIcon.style.right = '16px';
+          mobileIcon.style.top = 'auto';
+          mobileIcon.style.bottom = '24px';
+        }
+
+        if (monitorIcon) {
+          monitorIcon.style.left = 'auto';
+          monitorIcon.style.right = 'auto';
+          monitorIcon.style.top = 'auto';
+          monitorIcon.style.bottom = 'auto';
           switch(position) {
             case 'bottom-left':
-              icon.style.left = '16px';
-              icon.style.bottom = '24px';
+              monitorIcon.style.left = '16px';
+              monitorIcon.style.bottom = '16px';
               break;
             case 'bottom-right':
-              icon.style.right = '16px';
-              icon.style.bottom = '24px';
+              monitorIcon.style.right = '16px';
+              monitorIcon.style.bottom = '16px';
               break;
             case 'top-left':
-              icon.style.left = '16px';
-              icon.style.top = '24px';
+              monitorIcon.style.left = '16px';
+              monitorIcon.style.top = '16px';
               break;
             case 'top-right':
-              icon.style.right = '16px';
-              icon.style.top = '24px';
+              monitorIcon.style.right = '16px';
+              monitorIcon.style.top = '16px';
               break;
           }
-        });
+        }
       }
       function updateDeviceChat(workSnapshot, deviceSnapshot) {
         // cloning is handled in syncDeviceFrameClones inside notify
@@ -7853,7 +8132,10 @@ ${i18nText("i18n-appearance-scale-fit")}
       }
       /* ========== QUICK REPLIES ========== */
       function renderQuickReplies(snapshot) {
-        const messages = snapshot?.quickReplies?.messages || [];
+        const baseMessages = Array.isArray(snapshot?.quickReplies?.messages)
+          ? snapshot.quickReplies.messages.map((entry) => String(entry || '').trim()).filter(Boolean)
+          : [];
+        const messages = baseMessages.length ? baseMessages : getDefaultStarterReplies();
         const isTop = snapshot?.quickReplies?.top || false;
         const workTopContainer = document.getElementById('workQuickRepliesTop');
         const workBottomContainer = document.getElementById('workQuickRepliesBottom');
@@ -7880,6 +8162,7 @@ ${i18nText("i18n-appearance-scale-fit")}
       }
       function createQuickReplyButton(text, chatType) {
         const btn = document.createElement('button');
+        btn.className = 'quick-reply-chip';
         btn.textContent = text;
         btn.addEventListener('click', () => {
           simulateQuickReply(text);
@@ -7898,7 +8181,10 @@ ${i18nText("i18n-appearance-scale-fit")}
       function renderQuickRepliesEditor(snapshot, forceRender = false) {
         const box = document.getElementById('quickRepliesEditor');
         if (!box) return;
-        const messages = snapshot?.quickReplies?.messages || [];
+        const baseMessages = Array.isArray(snapshot?.quickReplies?.messages)
+          ? snapshot.quickReplies.messages
+          : [];
+        const messages = baseMessages.length ? baseMessages : getDefaultStarterReplies();
         // Nie renderuj jeśli input jest aktywny (chyba że wymuszone)
         const activeEl = document.activeElement;
         const isInputActive = activeEl && activeEl.closest('#quickRepliesEditor input');
@@ -8016,6 +8302,11 @@ ${i18nText("i18n-appearance-scale-fit")}
         const iconPreview = document.getElementById('iconPreview');
         const iconSizeSlider = document.getElementById('iconSizeSlider');
         const iconModeToggle = document.getElementById('iconModeToggle');
+        const renderIconPreview = (src) => {
+          if (!iconPreview) return;
+          iconPreview.innerHTML = `<img src="${escapeHtml(src)}" alt="Icon" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">`;
+        };
+        renderIconPreview(workState.iconImage || DEFAULT_LAUNCHER_ICON);
         if (iconUploadBtn && iconUpload) {
           iconUploadBtn.addEventListener('click', () => iconUpload.click());
         }
@@ -8026,9 +8317,7 @@ ${i18nText("i18n-appearance-scale-fit")}
             const reader = new FileReader();
             reader.onload = function (event) {
               setWorkOption('iconImage', event.target.result);
-              if (iconPreview) {
-                iconPreview.innerHTML = `<img src="${event.target.result}" alt="Icon" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">`;
-              }
+              renderIconPreview(event.target.result);
             };
             reader.readAsDataURL(file);
           });
@@ -8036,9 +8325,7 @@ ${i18nText("i18n-appearance-scale-fit")}
         if (iconRemoveBtn) {
           iconRemoveBtn.addEventListener('click', function () {
             setWorkOption('iconImage', null);
-            if (iconPreview) {
-              iconPreview.innerHTML = '<i class="fas fa-image"></i>';
-            }
+            renderIconPreview(DEFAULT_LAUNCHER_ICON);
             if (iconUpload) iconUpload.value = '';
           });
         }
@@ -8077,16 +8364,8 @@ ${i18nText("i18n-appearance-scale-fit")}
         const shapeRadius = shape === 'circle' ? '50%' : shape === 'rounded' ? '16px' : '8px';
 
         // Generate icon HTML
-        const iconMap = {
-          robot: 'fa-robot',
-          comment: 'fa-comment',
-          comments: 'fa-comments',
-          headset: 'fa-headset'
-        };
-        const iconClass = iconMap[iconType] || 'fa-robot';
-        const iconHTML = customImage
-          ? `<img src="${customImage}" alt="Chat icon" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">`
-          : `<i class="fas ${iconClass}"></i>`;
+        const launcherSrc = customImage || DEFAULT_LAUNCHER_ICON;
+        const iconHTML = `<img src="${escapeHtml(launcherSrc)}" alt="Chat icon" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">`;
 
         // Apply icon styles
         function styleIcon(iconEl, sizeOverride) {
@@ -8098,27 +8377,29 @@ ${i18nText("i18n-appearance-scale-fit")}
           iconEl.style.background = bgColor;
           iconEl.style.color = iconColor;
           iconEl.style.fontSize = Math.round(s * 0.4) + 'px';
+          iconEl.style.boxShadow = '0 12px 30px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.14)';
+          iconEl.style.zIndex = '20';
           iconEl.innerHTML = iconHTML;
         }
 
         if (iconMode) {
           // === MINIMIZED STATE ===
-          // Work chat: hide chat, show icon on LEFT
-          if (workChat) workChat.style.display = 'none';
+          // Work chat: keep open preview and show launcher simultaneously
+          if (workChat) workChat.style.display = 'flex';
           if (workChatIcon) {
             styleIcon(workChatIcon, 48);
             workChatIcon.style.display = 'flex';
             workChatIcon.onclick = () => setWorkOption('iconMode', false);
           }
-          // Mobile: hide chat, show icon in BOTTOM-LEFT of phone
+          // Mobile: hide full-screen chat and show launcher bubble
           if (mobileChatRoot) mobileChatRoot.style.display = 'none';
           if (mobileChatIcon) {
             styleIcon(mobileChatIcon, 44);
             mobileChatIcon.style.display = 'flex';
             mobileChatIcon.onclick = () => setWorkOption('iconMode', false);
           }
-          // Monitor: hide chat, show icon in BOTTOM-LEFT (pixel-accurate)
-          if (monitorChat) monitorChat.style.display = 'none';
+          // Desktop monitor: keep chat visible and add launcher preview
+          if (monitorChat) monitorChat.style.display = 'flex';
           if (monitorChatIcon) {
             styleIcon(monitorChatIcon, size);
             monitorChatIcon.style.display = 'flex';
@@ -8272,9 +8553,16 @@ ${i18nText("i18n-appearance-scale-fit")}
         const screenHeight = monitorScreen.clientHeight;
 
         if (screenWidth > 0 && screenHeight > 0) {
-          // CRITICAL: Scale = min(containerWidth/1920, containerHeight/1080)
-          const scale = Math.min(screenWidth / 1920, screenHeight / 1080);
-          viewport.style.transform = `scale(${scale})`;
+          viewport.style.width = `${DESKTOP_STAGE_SIZE.width}px`;
+          viewport.style.height = `${DESKTOP_STAGE_SIZE.height}px`;
+          // Scale monitor stage from base desktop coordinates (1440x900) to fit preview container.
+          const scale = Math.min(
+            screenWidth / DESKTOP_STAGE_SIZE.width,
+            screenHeight / DESKTOP_STAGE_SIZE.height
+          );
+          viewport.style.transformOrigin = 'top left';
+          viewport.style.transform = `translate(-50%, -50%) scale(${scale})`;
+          viewport.dataset.scale = String(scale);
         }
       }
       
