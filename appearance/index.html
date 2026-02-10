@@ -32,6 +32,7 @@
       --dv-text2: #b0b0b0;
       --dv-muted: #808080;
       --dv-muted2: #606060;
+      --text-primary: var(--dv-text);
       /* ===== BRAND GRADIENTS ===== */
       --dv-burg: #fb7185;
       --dv-vio: #a855f7;
@@ -79,6 +80,7 @@
       --dv-muted: #6a6a6a;
       --dv-muted2: #9a9a9a;
       --dv-divider: rgba(0, 0, 0, .06);
+      --text-primary: var(--dv-text);
     }
 
     /* ========== BODY - ONE CANVAS WITH AMBIENT LIGHT ========== */
@@ -1062,9 +1064,8 @@
     }
 
     .chat-scale {
-      transform: scale(1);
+      transform: none;
       transform-origin: center center;
-      transition: transform 0.2s ease;
       width: 100%;
       height: 100%;
       display: flex;
@@ -1105,9 +1106,8 @@
     }
 
     .phone-scale {
-      transform: scale(1);
+      transform: none;
       transform-origin: center center;
-      transition: transform 0.2s ease;
       width: 100%;
       height: 100%;
       display: flex;
@@ -4512,18 +4512,16 @@
     }
 
     #dv-configurator .device-preview-desktop .desktop-preview {
-      width: min(520px, 100%);
-      height: 340px;
-      border-radius: 14px;
+      width: 380px;
+      height: 640px;
+      border-radius: 18px;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      background:
-        radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.08), transparent 70%),
-        rgba(255, 255, 255, 0.02);
+      background: #0e1116;
       position: relative;
-      padding: 14px;
       display: flex;
-      align-items: stretch;
-      justify-content: stretch;
+      align-items: flex-end;
+      justify-content: flex-end;
+      padding: 0;
     }
 
     #dv-configurator .device-preview-desktop .monitor-wrapper {
@@ -4558,8 +4556,8 @@
     }
 
     #dv-configurator .device-preview-mobile .mobile-column {
-      width: 244px;
-      height: 500px;
+      width: 320px;
+      height: 640px;
       padding: 0;
       display: flex;
       align-items: stretch;
@@ -4576,11 +4574,11 @@
     }
 
     #dv-configurator .device-preview-mobile .mobile-preview {
-      width: 244px;
-      height: 500px;
-      border-radius: 34px;
+      width: 320px;
+      height: 640px;
+      border-radius: 28px;
       border: none;
-      background: transparent;
+      background: #0e1116;
       position: relative;
     }
 
@@ -4785,53 +4783,36 @@
     }
 
     #dv-configurator .device-preview-desktop .desktop-preview {
-      width: min(560px, 100%);
-      height: 100%;
-      max-height: 640px;
-      border-radius: 14px;
+      width: 380px;
+      height: 640px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      border-radius: 18px;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      background:
-        radial-gradient(64% 82% at 86% 84%, rgba(124, 58, 237, 0.25), rgba(124, 58, 237, 0) 72%),
-        radial-gradient(58% 72% at 68% 66%, rgba(236, 72, 153, 0.14), rgba(236, 72, 153, 0) 72%),
-        linear-gradient(162deg, #0a0f15 0%, #0d1118 56%, #121926 100%);
+      background: #0e1116;
       position: relative;
       overflow: hidden;
       padding: 0;
     }
 
     #dv-configurator .device-preview-desktop .desktop-preview::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 12px;
-      right: 12px;
-      height: 1px;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(139, 92, 246, 0.56),
-        rgba(236, 72, 153, 0.52),
-        rgba(59, 130, 246, 0.56),
-        transparent
-      );
-      pointer-events: none;
-      z-index: 1;
+      display: none;
     }
 
     #dv-configurator .monitor-chat {
       position: absolute;
       right: 12px;
       bottom: 12px;
-      width: 380px;
-      height: 640px;
+      width: 360px;
+      height: 520px;
       max-width: calc(100% - 24px);
       max-height: calc(100% - 24px);
-      min-height: 440px;
       border-radius: 16px;
       overflow: hidden;
-      background: #111217;
+      background: transparent;
       z-index: 2;
-      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.42);
+      box-shadow: none;
     }
 
     #dv-configurator .device-preview-mobile .mobile-column.mobile-preview {
@@ -4843,72 +4824,38 @@
       border-radius: 28px;
       overflow: hidden;
       background: #0e1116;
-      border: 1px solid rgba(255, 255, 255, 0.08);
       position: relative;
     }
 
     #dv-configurator .device-preview-mobile .mobile-column.mobile-preview::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 12px;
-      right: 12px;
-      height: 1px;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(139, 92, 246, 0.56),
-        rgba(236, 72, 153, 0.5),
-        rgba(59, 130, 246, 0.56),
-        transparent
-      );
-      pointer-events: none;
-      z-index: 2;
+      display: none;
     }
 
     #dv-configurator .device-preview-mobile .iphone-frame {
       width: 100%;
       height: 100%;
       border-radius: 28px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: linear-gradient(165deg, #1c2029 0%, #0e1016 74%);
-      padding: 10px;
-      box-shadow: 0 24px 56px rgba(0, 0, 0, 0.48);
+      border: none;
+      background: transparent;
+      padding: 0;
+      box-shadow: none;
       position: relative;
     }
 
     #dv-configurator .device-preview-mobile .iphone-frame::before {
-      content: "";
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 78px;
-      height: 20px;
-      border-radius: 12px;
-      background: #090b10;
-      z-index: 6;
+      display: none;
     }
 
     #dv-configurator .device-preview-mobile .iphone-frame::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      bottom: 8px;
-      transform: translateX(-50%);
-      width: 94px;
-      height: 4px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.16);
-      z-index: 6;
+      display: none;
     }
 
     #dv-configurator .device-preview-mobile .iphone-screen {
       width: 100%;
       height: 100%;
-      border-radius: 22px;
+      border-radius: inherit;
       overflow: hidden;
-      background: #0f1118;
+      background: transparent;
       position: relative;
     }
 
@@ -4925,6 +4872,7 @@
       border-radius: inherit;
       display: flex;
       flex-direction: column;
+      color: var(--text-primary, var(--dv-text));
       opacity: 1;
       visibility: visible;
     }
@@ -4935,6 +4883,7 @@
       display: flex;
       flex-direction: column;
       background: transparent;
+      color: var(--text-primary, var(--dv-text));
       opacity: 1;
       visibility: visible;
     }
@@ -5074,27 +5023,16 @@
       display: block;
     }
 
-    #dv-configurator .preview-chat .message-body {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-      max-width: 75%;
-    }
-
-    #dv-configurator .preview-chat .message.message-user .message-body {
-      align-items: flex-end;
-    }
-
     #dv-configurator .preview-chat .message-bubble {
       display: inline-block;
       padding: 10px 14px;
       border-radius: 12px;
       font-size: 14px;
       line-height: 1.4;
-      max-width: 100%;
+      max-width: 75%;
       word-wrap: break-word;
       white-space: pre-wrap;
-      color: #e7edf7;
+      color: var(--text-primary, #e7edf7);
       opacity: 1;
       visibility: visible;
       border: 1px solid transparent;
@@ -5137,7 +5075,9 @@
       padding: 0 14px;
       border: 1px solid rgba(255, 255, 255, 0.12);
       background: rgba(255, 255, 255, 0.05);
-      color: #e7edf7;
+      color: var(--text-primary, #e7edf7);
+      opacity: 1;
+      visibility: visible;
       font-size: 14px;
     }
 
@@ -5289,7 +5229,7 @@
       }
 
       #dv-configurator .device-preview-desktop .desktop-preview {
-        width: min(520px, 100%);
+        width: 380px;
       }
     }
   </style>
@@ -7339,6 +7279,48 @@
         }
       }
 
+      function applyPreviewTypography(chatElement, snapshot) {
+        if (!chatElement || !snapshot) return;
+        if (snapshot?.fontFamily) {
+          const fontFamilyMap = {
+            'system': "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            'inter': "'Inter', system-ui, sans-serif",
+            'roboto': "'Roboto', 'Segoe UI', sans-serif",
+            'open-sans': "'Open Sans', sans-serif",
+            'montserrat': "'Montserrat', sans-serif",
+            'poppins': "'Poppins', sans-serif",
+            'sf-pro': "'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif",
+            'geist': "'Geist', 'Segoe UI', system-ui, sans-serif"
+          };
+          chatElement.style.fontFamily = fontFamilyMap[snapshot.fontFamily] || fontFamilyMap.system;
+        }
+
+        if (snapshot?.fontSize) {
+          chatElement.style.setProperty('--chat-font-size', `${snapshot.fontSize}px`);
+        }
+      }
+
+      function clonePreviewChatShell({ mobile } = {}) {
+        const workChat = document.getElementById('workChat');
+        if (!workChat) return null;
+        const clone = workChat.cloneNode(true);
+        clone.removeAttribute('id');
+        clone.classList.remove('work-chat');
+        clone.classList.add('preview-chat');
+        if (mobile) {
+          clone.classList.add('preview-chat--mobile');
+        } else {
+          clone.classList.remove('preview-chat--mobile');
+        }
+        clone.style.width = '100%';
+        clone.style.height = '100%';
+        clone.style.maxWidth = '100%';
+        clone.style.maxHeight = '100%';
+        clone.style.margin = '0';
+        clone.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'));
+        return clone;
+      }
+
       function createPreviewMessageElement(message, snapshot, options = {}) {
         const type = message?.type === 'user' ? 'user' : 'bot';
         const text = String(message?.text || '').trim();
@@ -7349,7 +7331,6 @@
         row.style.visibility = 'visible';
 
         if (options.animateLast && workState.animationEnabled) {
-          row.style.opacity = '0';
           if (workState.animationPreset === 'fade') {
             row.classList.add('fade-animated');
           } else if (workState.animationPreset === 'slide') {
@@ -7366,23 +7347,12 @@
           row.appendChild(avatar);
         }
 
-        const body = document.createElement('div');
-        body.className = 'message-body';
         const bubble = document.createElement('div');
         bubble.className = 'message-bubble';
         bubble.textContent = text;
         bubble.style.opacity = '1';
         bubble.style.visibility = 'visible';
-        body.appendChild(bubble);
-
-        if (time) {
-          const timeLabel = document.createElement('div');
-          timeLabel.className = 'message-time';
-          timeLabel.textContent = time;
-          body.appendChild(timeLabel);
-        }
-
-        row.appendChild(body);
+        row.appendChild(bubble);
         return row;
       }
 
@@ -7449,14 +7419,15 @@
         deviceSnapshot = deviceSnapshot || deviceState;
 
         if (mobileRoot) {
-          mobileRoot.innerHTML = generateMonitorChatHTML(snapshot, { mobile: true });
-          const mobileChat = mobileRoot.querySelector('.preview-chat');
-          if (mobileChat) {
-            applyColorsToChat(mobileChat, snapshot);
-            updateChatBackground(mobileChat, snapshot);
-            updateChatOverlay(mobileChat, snapshot);
-            applyPreviewTypography(mobileChat, snapshot);
-            const messagesContainer = mobileChat.querySelector('.chat-messages');
+          mobileRoot.innerHTML = '';
+          const mobileClone = clonePreviewChatShell({ mobile: true });
+          if (mobileClone) {
+            mobileRoot.appendChild(mobileClone);
+            applyColorsToChat(mobileClone, snapshot);
+            updateChatBackground(mobileClone, snapshot);
+            updateChatOverlay(mobileClone, snapshot);
+            applyPreviewTypography(mobileClone, snapshot);
+            const messagesContainer = mobileClone.querySelector('.chat-messages');
             if (messagesContainer) {
               messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
@@ -7464,14 +7435,15 @@
         }
 
         if (monitorChat) {
-          monitorChat.innerHTML = generateMonitorChatHTML(snapshot, { mobile: false });
-          const desktopChat = monitorChat.querySelector('.preview-chat');
-          if (desktopChat) {
-            applyColorsToChat(desktopChat, snapshot);
-            updateChatBackground(desktopChat, snapshot);
-            updateChatOverlay(desktopChat, snapshot);
-            applyPreviewTypography(desktopChat, snapshot);
-            const messagesContainer = desktopChat.querySelector('.chat-messages');
+          monitorChat.innerHTML = '';
+          const desktopClone = clonePreviewChatShell({ mobile: false });
+          if (desktopClone) {
+            monitorChat.appendChild(desktopClone);
+            applyColorsToChat(desktopClone, snapshot);
+            updateChatBackground(desktopClone, snapshot);
+            updateChatOverlay(desktopClone, snapshot);
+            applyPreviewTypography(desktopClone, snapshot);
+            const messagesContainer = desktopClone.querySelector('.chat-messages');
             if (messagesContainer) {
               messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
@@ -7494,20 +7466,20 @@
         
         switch(position) {
           case 'bottom-left':
-            monitorChat.style.left = '40px';
-            monitorChat.style.bottom = '40px';
+            monitorChat.style.left = '12px';
+            monitorChat.style.bottom = '12px';
             break;
           case 'bottom-right':
-            monitorChat.style.right = '40px';
-            monitorChat.style.bottom = '40px';
+            monitorChat.style.right = '12px';
+            monitorChat.style.bottom = '12px';
             break;
           case 'top-left':
-            monitorChat.style.left = '40px';
-            monitorChat.style.top = '40px';
+            monitorChat.style.left = '12px';
+            monitorChat.style.top = '12px';
             break;
           case 'top-right':
-            monitorChat.style.right = '40px';
-            monitorChat.style.top = '40px';
+            monitorChat.style.right = '12px';
+            monitorChat.style.top = '12px';
             break;
         }
         
@@ -7520,20 +7492,20 @@
           monitorIcon.style.bottom = 'auto';
           switch(position) {
             case 'bottom-left':
-              monitorIcon.style.left = '40px';
-              monitorIcon.style.bottom = '40px';
+              monitorIcon.style.left = '12px';
+              monitorIcon.style.bottom = '12px';
               break;
             case 'bottom-right':
-              monitorIcon.style.right = '40px';
-              monitorIcon.style.bottom = '40px';
+              monitorIcon.style.right = '12px';
+              monitorIcon.style.bottom = '12px';
               break;
             case 'top-left':
-              monitorIcon.style.left = '40px';
-              monitorIcon.style.top = '40px';
+              monitorIcon.style.left = '12px';
+              monitorIcon.style.top = '12px';
               break;
             case 'top-right':
-              monitorIcon.style.right = '40px';
-              monitorIcon.style.top = '40px';
+              monitorIcon.style.right = '12px';
+              monitorIcon.style.top = '12px';
               break;
           }
         }
@@ -7623,129 +7595,6 @@
         });
       }
 
-      function generateMonitorChatHTML(snapshot) {
-        const messages = snapshot.messages || [];
-        const quickReplies = snapshot.quickReplies?.messages || [];
-        const botName = snapshot.botName || i18nText("i18n-appearance-default-bot-name");
-        const watermarkEnabled = snapshot.watermarkEnabled !== false;
-        const avatarImage = snapshot.avatarImage;
-        const colors = snapshot.colors || {};
-        const bubbleRadius = snapshot.bubbleRadius || 14;
-        
-        // Avatar HTML - albo obrazek albo ikona
-        const avatarHTML = avatarImage 
-          ? `<div class="chat-avatar" style="background-image: url(${avatarImage}); background-size: cover; background-position: center;"></div>`
-          : `<div class="chat-avatar"><i class="fas fa-robot"></i></div>`;
-        
-        let messagesHTML = messages.map(msg => {
-          const isBotMsg = msg.type === 'bot';
-          const bgColor = isBotMsg ? (colors.botBubble || '#1E293B') : (colors.userBubble || '#7C3AED');
-          const textColor = isBotMsg ? (colors.botText || '#E2E8F0') : (colors.userText || '#F8F9FB');
-          return `
-<div class="message ${msg.type}">
-<div class="message-content" style="background-color: ${bgColor}; color: ${textColor}; border-radius: ${bubbleRadius}px;">${msg.text}</div>
-</div>
-`;
-        }).join('');
-
-        let quickRepliesHTML = '';
-        if (quickReplies.length > 0 && !snapshot.quickReplies?.top) {
-          quickRepliesHTML = `
-<div class="quick-replies-bottom">
-${quickReplies.map(text => `<button>${text}</button>`).join('')}
-</div>
-`;
-        }
-        
-        let watermarkHTML = '';
-        if (watermarkEnabled) {
-          watermarkHTML = `
-<div class="chat-watermark">
-<span class="watermark-label">Powered by</span>
-<img class="watermark-icon" src="${WATERMARK_ICON}" alt="">
-<span class="watermark-brand">${WATERMARK_BRAND}</span>
-</div>
-`;
-        }
-        
-        const headerBg = colors.chatHeader || 'rgba(255, 255, 255, .03)';
-        const inputBg = colors.chatInput || 'rgba(255, 255, 255, .02)';
-        const textColor = colors.botText || '#E2E8F0';
-        const accentColor = colors.chatAccent || '#7C3AED';
-        
-        return `
-<div class="chat-header" style="background-color: ${headerBg};">
-<div class="chat-brand">
-${avatarHTML}
-<div class="chat-info">
-<div class="chat-name" style="color: ${textColor};">${botName}</div>
-<div class="chat-status" style="color: ${textColor}; opacity: 0.7;">${i18nText("appearance.preview.online")}</div>
-</div>
-</div>
-<div class="chat-actions">
-<button class="close-btn" style="color: ${textColor};"><i class="fas fa-times"></i></button>
-</div>
-</div>
-<div class="chat-messages" style="background-color: transparent;">
-${messagesHTML}
-</div>
-${quickRepliesHTML}
-<div class="chat-input" style="background-color: transparent;">
-<input type="text" placeholder="${i18nText("appearance.preview.inputPlaceholder")}" disabled style="color: ${textColor}; background-color: ${inputBg};">
-<button class="send-btn" style="background-color: ${accentColor};"><i class="fas fa-paper-plane"></i></button>
-</div>
-${watermarkHTML}
-`;
-      }
-      function generateDeviceChatHTML(snapshot) {
-        const messages = snapshot.messages || [];
-        const quickReplies = snapshot.quickReplies?.messages || [];
-        const botName = snapshot.botName || i18nText("i18n-appearance-default-bot-name");
-        const watermarkEnabled = snapshot.watermarkEnabled !== false;
-        let messagesHTML = messages.map(msg => `
-<div class="message ${msg.type}">
-<div class="message-content">${msg.text}</div>
-</div>
-`).join('');
-        let quickRepliesHTML = '';
-        if (quickReplies.length > 0 && !snapshot.quickReplies?.top) {
-          quickRepliesHTML = `
-<div class="quick-replies-bottom">
-${quickReplies.map(text => `<button>${text}</button>`).join('')}
-</div>
-`;
-        }
-        let watermarkHTML = '';
-        if (watermarkEnabled) {
-          watermarkHTML = `
-<div class="chat-watermark">
-<span class="watermark-label">Powered by</span>
-<img class="watermark-icon" src="${WATERMARK_ICON}" alt="">
-<span class="watermark-brand">${WATERMARK_BRAND}</span>
-</div>
-`;
-        }
-        return `
-<div class="chat-header">
-<div class="chat-brand">
-<div class="chat-avatar"><i class="fas fa-robot"></i></div>
-<div class="chat-info">
-<div class="chat-name">${botName}</div>
-<div class="chat-status">${i18nText("appearance.preview.online")}</div>
-</div>
-</div>
-</div>
-<div class="chat-messages">
-${messagesHTML}
-</div>
-${quickRepliesHTML}
-<div class="chat-input">
-<input type="text" placeholder="${i18nText("appearance.preview.inputPlaceholder")}" disabled>
-<button class="send-btn"><i class="fas fa-paper-plane"></i></button>
-</div>
-${watermarkHTML}
-`;
-      }
       function applyChatPosition() {
         const deviceChat = document.getElementById('deviceChat');
         if (!deviceChat || deviceState.deviceType !== 'desktop') return;
