@@ -3032,6 +3032,7 @@
       background-size: cover;
       background-position: center;
       border: 1px solid var(--dv-stroke);
+      overflow: hidden;
       margin: 0 auto;
       display: flex;
       align-items: center;
@@ -3043,6 +3044,14 @@
     .avatar-preview.has-image {
       border: 2px solid var(--dv-vio);
       box-shadow: 0 0 12px rgba(139, 92, 246, .3);
+    }
+
+    .avatar-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: inherit;
+      display: block;
     }
 
     .avatar-preview i {
@@ -4704,12 +4713,15 @@
     }
 
     #dv-configurator .chat-live-preview {
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: none;
       border-radius: 16px;
-      background: #181a20;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
-      padding: 10px;
+      background: transparent;
+      box-shadow: none;
+      padding: 0;
       overflow: hidden;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
     }
 
     #dv-configurator .chat-live-preview::before {
@@ -4849,12 +4861,30 @@
       width: 100%;
       height: 100%;
       position: relative;
+      display: flex;
+      align-items: stretch;
+      justify-content: stretch;
+      background: transparent;
+      padding: 0;
+    }
+
+    #dv-configurator .preview-chat-host.mobile-chat-root {
+      padding: 0;
+      background: transparent;
+    }
+
+    #dv-configurator #monitorChat,
+    #dv-configurator #mobileChatRoot {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
     }
 
     #dv-configurator .preview-chat {
       width: 100%;
       height: 100%;
-      background: #111217;
+      background: transparent;
       border-radius: inherit;
       display: flex;
       flex-direction: column;
@@ -4972,9 +5002,11 @@
 
     #dv-configurator .preview-chat .message {
       display: flex;
+      flex-direction: row;
       align-items: flex-end;
       gap: 8px;
       width: 100%;
+      max-width: 100%;
       opacity: 1;
       visibility: visible;
     }
@@ -5755,7 +5787,7 @@
                           </button>
                         </div>
                         <div class="avatar-preview" id="avatarPreview">
-                          <i class="fas fa-user-circle"></i>
+                          <img src="/assets/logo.svg" alt="DaVeri logo">
                         </div>
                       </div>
                     </div>
@@ -6118,7 +6150,12 @@
         return normalized.length ? normalized : cloneDemoMessages();
       };
       const resolveAvatarUrl = (snapshot) => {
-        const avatar = String(snapshot?.avatarImage || "").trim();
+        const avatar = String(
+          snapshot?.avatarImage ||
+          snapshot?.avatar ||
+          snapshot?.bot?.avatar ||
+          ""
+        ).trim();
         return avatar || DEFAULT_BOT_AVATAR;
       };
       const resolveApiOrigin = () => {
@@ -7096,8 +7133,8 @@
         if (!workChat) return;
 
         const chatWindow = workChat.querySelector('.chat-window');
-        workChat.style.width = '340px';
-        workChat.style.height = '520px';
+        workChat.style.width = '100%';
+        workChat.style.height = '100%';
 
         if (snapshot?.windowRadius !== undefined) {
           workChat.style.borderRadius = `${snapshot.windowRadius}px`;
@@ -7912,6 +7949,11 @@ ${i18nText("i18n-appearance-scale-fit")}
         const avatarUploadBtn = document.getElementById('avatarUploadBtn');
         const avatarRemoveBtn = document.getElementById('avatarRemoveBtn');
         const avatarPreview = document.getElementById('avatarPreview');
+        if (avatarPreview && !workState.avatarImage) {
+          avatarPreview.style.backgroundImage = 'none';
+          avatarPreview.classList.remove('has-image');
+          avatarPreview.innerHTML = `<img src="${escapeHtml(DEFAULT_BOT_AVATAR)}" alt="DaVeri logo">`;
+        }
         if (avatarUploadBtn && avatarUpload) {
           avatarUploadBtn.addEventListener('click', () => avatarUpload.click());
         }
@@ -7937,7 +7979,7 @@ ${i18nText("i18n-appearance-scale-fit")}
             if (avatarPreview) {
               avatarPreview.style.backgroundImage = 'none';
               avatarPreview.classList.remove('has-image');
-              avatarPreview.innerHTML = '<i class="fas fa-user-circle"></i>';
+              avatarPreview.innerHTML = `<img src="${escapeHtml(DEFAULT_BOT_AVATAR)}" alt="DaVeri logo">`;
             }
             if (avatarUpload) avatarUpload.value = '';
           });
@@ -8303,7 +8345,16 @@ ${i18nText("i18n-appearance-scale-fit")}
           const bot = await fetchJson(`${API_BOTS}/${encodeURIComponent(botId)}`);
           const candidate = bot?.appearance || bot?.config?.ready_config || null;
           if (!candidate) return false;
-          return importState(candidate);
+          const enriched = {
+            ...candidate,
+            work: {
+              ...(candidate.work || {}),
+            },
+          };
+          if (!enriched.work.avatarImage && bot?.avatar) {
+            enriched.work.avatarImage = bot.avatar;
+          }
+          return importState(enriched);
         } catch (error) {
           console.error("[Appearance] load from API failed:", error);
           return false;
