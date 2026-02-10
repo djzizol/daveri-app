@@ -2314,14 +2314,8 @@
     }
 
     .work-chat::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(300px 200px at 0% 0%, rgba(255, 255, 255, .03), transparent 60%),
-        radial-gradient(250px 180px at 100% 100%, rgba(255, 255, 255, .02), transparent 60%);
-      pointer-events: none;
-      z-index: 0;
+      content: none;
+      display: none;
     }
 
     /* PRAWY CHAT - DEVICE CHAT (SYMULACJA STRONY) */
@@ -4347,10 +4341,10 @@
       max-width: 340px;
       height: 520px;
       border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: #181a20;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
-      padding: 10px;
+      border: none;
+      background: transparent;
+      box-shadow: none;
+      padding: 0;
       display: flex;
       align-items: stretch;
       justify-content: center;
@@ -4359,22 +4353,8 @@
     }
 
     #dv-configurator .chat-live-preview::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 1px;
-      background: linear-gradient(
-        130deg,
-        rgba(139, 92, 246, 0.64),
-        rgba(236, 72, 153, 0.5),
-        rgba(59, 130, 246, 0.62)
-      );
-      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
-      opacity: 0.9;
+      display: none !important;
+      content: none !important;
     }
 
     #dv-configurator .chat-live-preview .chat-scale {
@@ -4580,6 +4560,9 @@
       border: none;
       background: #0e1116;
       position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     #dv-configurator .device-preview-mobile .iphone-frame {
@@ -4635,8 +4618,11 @@
     }
 
     #dv-configurator .device-preview-mobile .mobile-chat-root {
+      width: 100%;
       height: 100%;
-      padding-top: 38px;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
     }
 
     #dv-configurator .device-preview-mobile .mobile-header {
@@ -5928,15 +5914,14 @@
     <!-- Desktop Chat Preview -->
     <div class="preview-section live-preview-section">
       <div class="chat-preview-wrapper">
-        <div class="work-column chat-live-preview">
-          <div class="chat-scale">
-            <!-- Chat (visible when not minimized) -->
-            <div class="work-chat preview-chat" id="workChat">
-              <div class="chat-window">
-                <div class="chat-header">
-                  <div class="chat-brand">
-                    <div class="chat-avatar" id="workChatAvatar"></div>
-                    <div class="chat-info">
+        <div class="work-column chat-live-preview preview-chat-host">
+          <!-- Chat (visible when not minimized) -->
+          <div class="preview-chat" id="workChat">
+            <div class="chat-window">
+              <div class="chat-header">
+                <div class="chat-brand">
+                  <div class="chat-avatar" id="workChatAvatar"></div>
+                  <div class="chat-info">
                       <div class="chat-name" id="workChatName" data-i18n="appearance.preview.botName"></div>
                       <div class="chat-status" data-i18n="appearance.preview.online"></div>
                     </div>
@@ -5963,12 +5948,12 @@
                 </div>
               </div>
             </div>
-            <!-- Minimized icon (LEFT side, hidden by default) -->
-            <div class="chat-icon small" id="workChatIcon"
-              style="display: none; position: absolute; left: 32px; bottom: 32px;">
-              <i class="fas fa-comment"></i>
-            </div>
-          </div><!-- /chat-scale -->
+          </div>
+          <!-- Minimized icon (LEFT side, hidden by default) -->
+          <div class="chat-icon small" id="workChatIcon"
+            style="display: none; position: absolute; left: 32px; bottom: 32px;">
+            <i class="fas fa-comment"></i>
+          </div>
         </div><!-- /work-column -->
       </div><!-- /chat-preview-wrapper -->
     </div><!-- /preview-section Konfigurator -->
@@ -5981,16 +5966,12 @@
       <div class="device-preview-stage">
         <!-- Mobile iPhone Preview -->
         <div class="preview-section device-preview-mode device-preview-mobile">
-          <div class="mobile-column mobile-preview">
-            <div class="iphone-frame">
-              <div class="iphone-screen">
-                <div class="mobile-chat-root preview-chat-host" id="mobileChatRoot"></div>
-                <div class="chat-icon small mobile-icon" id="mobileChatIcon" style="display: none;">
-                  <i class="fas fa-comment"></i>
-                </div>
-              </div>
+          <div class="mobile-preview">
+            <div class="mobile-chat-root preview-chat-host" id="mobileChatRoot"></div>
+            <div class="chat-icon small mobile-icon" id="mobileChatIcon" style="display: none;">
+              <i class="fas fa-comment"></i>
             </div>
-          </div><!-- /mobile-column -->
+          </div><!-- /mobile-preview -->
         </div><!-- /preview-section Mobile -->
 
         <!-- Desktop Monitor -->
@@ -7374,24 +7355,8 @@
       }
       /* ========== AKTUALIZACJA DEVICE CHAT ========== */
       function updateDeviceChatSize() {
-        const deviceChat = document.getElementById('deviceChat');
-        const viewport = document.getElementById('viewport');
-        if (!deviceChat || !viewport || deviceState.deviceType !== 'desktop') return;
-        // Monitor symuluje ekran 1920x1080
-        const VIRTUAL_SCREEN_WIDTH = 1920;
-        const VIRTUAL_SCREEN_HEIGHT = 1080;
-        // Rzeczywiste wymiary viewport monitora
-        const viewportWidth = viewport.clientWidth;
-        const viewportHeight = viewport.clientHeight;
-        // Skala: ile pikseli monitora przypada na 1 piksel wirtualnego ekranu
-        const scaleX = viewportWidth / VIRTUAL_SCREEN_WIDTH;
-        const scaleY = viewportHeight / VIRTUAL_SCREEN_HEIGHT;
-        const scale = Math.min(scaleX, scaleY);
-        // Przelicz rozmiar chatu z px ustawionych na suwaku na proporcjonalny rozmiar w monitorze
-        const scaledWidth = FIXED_CHAT_DIMENSIONS.width * scale;
-        const scaledHeight = FIXED_CHAT_DIMENSIONS.height * scale;
-        deviceChat.style.width = `${scaledWidth}px`;
-        deviceChat.style.height = `${scaledHeight}px`;
+        // Preview uses fixed dimensions; scaling no longer required
+        return;
       }
       function updateDeviceType() {
         const monitorFrame = document.getElementById('monitorFrame');
@@ -7596,26 +7561,7 @@
       }
 
       function applyChatPosition() {
-        const deviceChat = document.getElementById('deviceChat');
-        if (!deviceChat || deviceState.deviceType !== 'desktop') return;
-        // RESET pozycji
-        deviceChat.style.left = '';
-        deviceChat.style.right = '';
-        deviceChat.style.top = '';
-        deviceChat.style.bottom = '';
-        // Mniejszy margines dla lepszego dopasowania w monitorze
-        const MARGIN = 20;
-        // USUŃ WSZYSTKIE KLASY POZYCJI
-        deviceChat.classList.remove(
-          'chat-position-bottom-left',
-          'chat-position-bottom-right',
-          'chat-position-top-left',
-          'chat-position-top-right'
-        );
-        // DODAJ WŁAŚCIWĄ KLASĘ - pozycja jest obsługiwana przez CSS
-        deviceChat.classList.add(`chat-position-${deviceState.position}`);
-        
-        // Also update mobile icon position based on chat position
+        applyMonitorChatPosition(document.getElementById('monitorChat'), deviceState);
         applyMobileIconPosition();
       }
       
@@ -7653,134 +7599,11 @@
         });
       }
       function updateDeviceChat(workSnapshot, deviceSnapshot) {
-        const deviceChat = document.getElementById('deviceChat');
-        if (!deviceChat) return;
-        // DLA MOBILE - fullscreen i idealne skalowanie
-        if (deviceSnapshot.deviceType === 'mobile') {
-          deviceChat.style.width = '100%';
-          deviceChat.style.height = '100%';
-          deviceChat.style.borderRadius = '0';
-          deviceChat.style.position = 'relative';
-          deviceChat.style.left = '0';
-          deviceChat.style.right = '0';
-          deviceChat.style.top = '0';
-          deviceChat.style.bottom = '0';
-          deviceChat.style.transform = 'none';
-          // Usuń klasy pozycji
-          deviceChat.classList.remove(
-            'chat-position-bottom-left',
-            'chat-position-bottom-right',
-            'chat-position-top-left',
-            'chat-position-top-right'
-          );
-          // Zastosuj specjalne style dla mobile
-          deviceChat.style.maxWidth = 'none';
-          deviceChat.style.maxHeight = 'none';
-          // Chat idealnie dopasowany do ekranu telefonu
-          deviceChat.style.borderRadius = '0';
-          deviceChat.style.boxShadow = 'none';
-          deviceChat.style.border = 'none';
-        } else {
-          // DLA DESKTOP
-          updateDeviceChatSize();
-          applyChatPosition();
-          deviceChat.style.borderRadius = `${workSnapshot.windowRadius || 12}px`;
-          deviceChat.style.border = '1px solid var(--dv-stroke)';
-          deviceChat.style.boxShadow = '0 4px 12px rgba(0,0,0,.3)';
-        }
-        // Skopiuj zawartość z work chat
-        updateDeviceChatContent();
-        // Zastosuj kolory i tło
-        applyColorsToChat(deviceChat, workSnapshot);
-        updateChatBackground(deviceChat, workSnapshot);
-        updateChatOverlay(deviceChat, workSnapshot);
-        // Zastosuj czcionkę
-        if (workSnapshot?.fontFamily) {
-          const fontFamilyMap = {
-            'system': "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-            'inter': "'Inter', system-ui, sans-serif",
-            'roboto': "'Roboto', 'Segoe UI', sans-serif",
-            'open-sans': "'Open Sans', sans-serif",
-            'montserrat': "'Montserrat', sans-serif",
-            'poppins': "'Poppins', sans-serif",
-            'sf-pro': "'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif",
-            'geist': "'Geist', 'Segoe UI', system-ui, sans-serif"
-          };
-          deviceChat.style.fontFamily = fontFamilyMap[workSnapshot.fontFamily] || fontFamilyMap.system;
-        }
-        // Rozmiar czcionki
-        if (workSnapshot?.fontSize) {
-          deviceChat.style.setProperty('--chat-font-size', `${workSnapshot.fontSize}px`);
-        }
-        // Zaokrąglenie dymków
-        const messages = deviceChat.querySelectorAll('.message .message-content');
-        if (workSnapshot.bubbleRadius !== undefined) {
-          messages.forEach(msg => {
-            msg.style.borderRadius = `${workSnapshot.bubbleRadius}px`;
-          });
-        }
-        calculateAndApplyScale();
+        // cloning is handled in syncDeviceFrameClones inside notify
+        applyMobileIconPosition();
       }
       function updateDeviceChatContent() {
-        const workChat = document.getElementById('workChat');
-        const deviceChat = document.getElementById('deviceChat');
-        if (!workChat || !deviceChat) return;
-        // Zachowaj overlay tła
-        const overlay = deviceChat.querySelector('.chat-background-overlay');
-        // Skopiuj strukturę ale zachowaj overlay
-        deviceChat.innerHTML = '';
-        if (overlay) {
-          deviceChat.appendChild(overlay);
-        }
-        // Skopiuj resztę zawartości z workChat (pomijając overlay)
-        const workChatContent = workChat.cloneNode(true);
-        const workOverlay = workChatContent.querySelector('.chat-background-overlay');
-        if (workOverlay) {
-          workOverlay.remove();
-        }
-        // Dodaj sklonowaną zawartość
-        const fragment = document.createDocumentFragment();
-        while (workChatContent.firstChild) {
-          fragment.appendChild(workChatContent.firstChild);
-        }
-        deviceChat.appendChild(fragment);
-        // Aktualizuj avatar w device chat
-        const deviceAvatar = deviceChat.querySelector('.chat-avatar');
-        if (deviceAvatar) {
-          deviceAvatar.style.display = workState.avatarEnabled ? 'flex' : 'none';
-          if (workState.avatarImage) {
-            deviceAvatar.style.backgroundImage = `url(${workState.avatarImage})`;
-            deviceAvatar.style.backgroundSize = 'cover';
-            deviceAvatar.style.backgroundPosition = 'center';
-            deviceAvatar.innerHTML = '';
-          } else {
-            // Generuj inicjały z nazwy bota
-            const initials = getInitialsFromName(workState.botName);
-            deviceAvatar.style.backgroundImage = 'none';
-            deviceAvatar.innerHTML = initials;
-          }
-        }
-        // Aktualizuj nazwę bota
-        const deviceName = deviceChat.querySelector('.chat-name');
-        if (deviceName) {
-          deviceName.textContent = workState.botName || i18nText("i18n-appearance-default-bot-name");
-        }
-        // Aktualizuj watermark
-        const deviceWatermark = deviceChat.querySelector('.chat-watermark');
-        if (deviceWatermark) {
-          deviceWatermark.style.display = workState.watermarkEnabled ? 'flex' : 'none';
-          const brandElement = deviceWatermark.querySelector('.watermark-brand');
-          if (brandElement) {
-            brandElement.textContent = WATERMARK_BRAND;
-          }
-        }
-        // Dodaj przycisk X do device chat
-        const deviceCloseBtn = deviceChat.querySelector('#workChatCloseBtn');
-        if (deviceCloseBtn) {
-          deviceCloseBtn.addEventListener('click', () => {
-            setWorkOption('iconMode', true);
-          });
-        }
+        syncDeviceFrameClones(workState, deviceState);
       }
       function getInitialsFromName(name) {
         if (!name || typeof name !== 'string') return i18nText("i18n-appearance-default-avatar");
@@ -8121,48 +7944,31 @@ ${i18nText("i18n-appearance-scale-fit")}
         }
       }
       function applyAvatarToChats(avatarUrl) {
-        // LEWY CHAT
-        const workAvatar = document.querySelector('#workChat .chat-avatar');
-        if (workAvatar) {
-          if (avatarUrl) {
-            workAvatar.style.backgroundImage = `url(${avatarUrl})`;
-            workAvatar.style.backgroundSize = 'cover';
-            workAvatar.style.backgroundPosition = 'center';
-            workAvatar.innerHTML = '';
-          } else {
-            // Generuj inicjały
-            const initials = getInitialsFromName(workState.botName);
-            workAvatar.style.backgroundImage = 'none';
-            workAvatar.innerHTML = initials;
-          }
-        }
-        // PRAWY CHAT
-        const deviceAvatar = document.querySelector('#deviceChat .chat-avatar');
-        if (deviceAvatar) {
-          if (avatarUrl) {
-            deviceAvatar.style.backgroundImage = `url(${avatarUrl})`;
-            deviceAvatar.style.backgroundSize = 'cover';
-            deviceAvatar.style.backgroundPosition = 'center';
-            deviceAvatar.innerHTML = '';
-          } else {
-            const initials = getInitialsFromName(workState.botName);
-            deviceAvatar.style.backgroundImage = 'none';
-            deviceAvatar.innerHTML = initials;
-          }
-        }
+        const src = escapeHtml(avatarUrl || DEFAULT_BOT_AVATAR);
+        const targets = [
+          document.querySelector('#workChat .chat-avatar'),
+          document.querySelector('#monitorChat .chat-avatar'),
+          document.querySelector('#mobileChatRoot .chat-avatar')
+        ].filter(Boolean);
+        targets.forEach((avatar) => {
+          avatar.style.backgroundImage = 'none';
+          avatar.innerHTML = `<img src="${src}" alt="">`;
+        });
       }
       function resetAvatarToDefault() {
         const workAvatar = document.querySelector('#workChat .chat-avatar');
-        const deviceAvatar = document.querySelector('#deviceChat .chat-avatar');
-        const initials = getInitialsFromName(workState.botName);
         if (workAvatar) {
           workAvatar.style.backgroundImage = 'none';
-          workAvatar.innerHTML = initials;
+          workAvatar.innerHTML = `<img src="${escapeHtml(DEFAULT_BOT_AVATAR)}" alt="">`;
         }
-        if (deviceAvatar) {
-          deviceAvatar.style.backgroundImage = 'none';
-          deviceAvatar.innerHTML = initials;
-        }
+        const deviceTargets = [
+          document.querySelector('#monitorChat .chat-avatar'),
+          document.querySelector('#mobileChatRoot .chat-avatar')
+        ].filter(Boolean);
+        deviceTargets.forEach((avatar) => {
+          avatar.style.backgroundImage = 'none';
+          avatar.innerHTML = `<img src="${escapeHtml(DEFAULT_BOT_AVATAR)}" alt="">`;
+        });
       }
       function updateBotName(name) {
         // LEWY CHAT
@@ -8170,22 +7976,16 @@ ${i18nText("i18n-appearance-scale-fit")}
         if (workName) {
           workName.textContent = name || i18nText("i18n-appearance-default-bot-name");
         }
-        // PRAWY CHAT
-        const deviceName = document.querySelector('#deviceChat .chat-name');
-        if (deviceName) {
-          deviceName.textContent = name || i18nText("i18n-appearance-default-bot-name");
-        }
+        const deviceNames = [
+          document.querySelector('#monitorChat .chat-name'),
+          document.querySelector('#mobileChatRoot .chat-name')
+        ].filter(Boolean);
+        deviceNames.forEach((node) => {
+          node.textContent = name || i18nText("i18n-appearance-default-bot-name");
+        });
         // Aktualizuj avatar jeśli nie ma obrazka
         if (!workState.avatarImage) {
-          const initials = getInitialsFromName(name);
-          const workAvatar = document.querySelector('#workChat .chat-avatar');
-          const deviceAvatar = document.querySelector('#deviceChat .chat-avatar');
-          if (workAvatar) {
-            workAvatar.innerHTML = initials;
-          }
-          if (deviceAvatar) {
-            deviceAvatar.innerHTML = initials;
-          }
+          applyAvatarToChats(null);
         }
       }
       function updateWatermarkText(text) {
@@ -8195,11 +7995,13 @@ ${i18nText("i18n-appearance-scale-fit")}
         if (workWatermark) {
           workWatermark.textContent = brandText;
         }
-        // PRAWY CHAT
-        const deviceWatermark = document.querySelector('#deviceChat .chat-watermark .watermark-brand');
-        if (deviceWatermark) {
-          deviceWatermark.textContent = brandText;
-        }
+        const deviceWatermarks = [
+          document.querySelector('#monitorChat .chat-watermark .watermark-brand'),
+          document.querySelector('#mobileChatRoot .chat-watermark .watermark-brand')
+        ].filter(Boolean);
+        deviceWatermarks.forEach((node) => {
+          node.textContent = brandText;
+        });
       }
       /* ========== QUICK REPLIES ========== */
       function renderQuickReplies(snapshot) {
@@ -8328,6 +8130,7 @@ ${i18nText("i18n-appearance-scale-fit")}
         });
         workChatInput.value = '';
         renderWorkChatMessages();
+        updateDeviceChatContent();
         // Automatyczna odpowiedź bota
         setTimeout(() => {
           const responses = [
