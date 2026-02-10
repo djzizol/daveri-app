@@ -3538,6 +3538,7 @@
     #dv-configurator {
       padding: 18px 24px 20px;
       max-width: 100%;
+      --preview-block-height: clamp(560px, calc(100vh - 236px), 640px);
     }
 
     #dv-configurator .app-header {
@@ -3547,11 +3548,20 @@
       padding: 0;
     }
 
+    #dv-configurator .header-left {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
     #dv-configurator .appearance-page-header {
       display: flex;
       align-items: center;
       gap: 14px;
       min-width: 0;
+      flex: 0 1 auto;
     }
 
     #dv-configurator .page-header-icon {
@@ -3599,6 +3609,115 @@
       margin: 0;
       font-size: 13px;
       color: var(--dv-text2);
+    }
+
+    #dv-configurator .appearance-bot-picker {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+      min-width: 220px;
+      max-width: 300px;
+    }
+
+    #dv-configurator .appearance-bot-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #8f99ac;
+      flex-shrink: 0;
+    }
+
+    #dv-configurator .appearance-bot-select-shell {
+      position: relative;
+      height: 36px;
+      min-width: 220px;
+      border-radius: 11px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #151821;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 32px 0 12px;
+      transition: all 120ms ease;
+    }
+
+    #dv-configurator .appearance-bot-select-shell:hover {
+      border-color: rgba(139, 92, 246, 0.35);
+      background: #181c27;
+    }
+
+    #dv-configurator .appearance-bot-select-shell i:first-child {
+      color: #9ea8bb;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    #dv-configurator .appearance-bot-select-shell i:last-child {
+      position: absolute;
+      right: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 10px;
+      color: #8f99ac;
+      pointer-events: none;
+    }
+
+    #dv-configurator #appearanceBotSelect {
+      appearance: none;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: #e5eaf5;
+      width: 100%;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1;
+      cursor: pointer;
+      padding-right: 2px;
+    }
+
+    #dv-configurator #appearanceBotSelect option {
+      background: #111318;
+      color: #e5eaf5;
+    }
+
+    #dv-configurator .header-right {
+      margin-left: auto;
+      flex: 0 0 auto;
+    }
+
+    #dv-configurator .header-right .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #dv-configurator .header-right .btn {
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #151821;
+      color: #d9e0ef;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    #dv-configurator .header-right .btn:hover {
+      border-color: rgba(139, 92, 246, 0.34);
+      background: #1a1f2c;
+    }
+
+    #dv-configurator .header-right .btn.btn-primary {
+      background: rgba(139, 92, 246, 0.16);
+      border-color: rgba(139, 92, 246, 0.4);
+      color: #f3f6ff;
+    }
+
+    #dv-configurator .header-right .btn.btn-primary:hover {
+      background: rgba(139, 92, 246, 0.24);
+      border-color: rgba(139, 92, 246, 0.55);
     }
 
     #dv-configurator .appearance-layout {
@@ -4003,49 +4122,77 @@
     }
 
     #dv-configurator .appearance-sidebar .color-tile {
-      height: 36px;
-      padding: 0 10px;
+      height: 38px;
+      padding: 0 11px;
       flex-direction: row;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 10px;
-      background: rgba(255, 255, 255, 0.02);
+      background: #1a1e29;
       transform: none;
       box-shadow: none;
+      overflow: hidden;
+      position: relative;
+      isolation: isolate;
     }
 
     #dv-configurator .appearance-sidebar .color-tile::before {
-      display: none;
+      content: "";
+      position: absolute;
+      inset: 1px;
+      border-radius: 9px;
+      background: linear-gradient(
+        112deg,
+        rgba(255, 255, 255, 0.02) 0 46%,
+        var(--tile-color, #7C3AED) 53% 100%
+      );
+      z-index: 0;
+      opacity: 0.95;
+      pointer-events: none;
+    }
+
+    #dv-configurator .appearance-sidebar .color-tile::after {
+      content: "";
+      position: absolute;
+      top: -4px;
+      bottom: -4px;
+      left: 49%;
+      width: 1px;
+      background: rgba(255, 255, 255, 0.42);
+      transform: skewX(-28deg);
+      z-index: 1;
+      pointer-events: none;
     }
 
     #dv-configurator .appearance-sidebar .color-tile:hover {
       transform: none;
       outline: none;
       border-color: rgba(139, 92, 246, 0.35);
-      background: rgba(139, 92, 246, 0.1);
+      background: #202637;
       box-shadow: none;
     }
 
     #dv-configurator .appearance-sidebar .color-tile.active {
       border-color: rgba(139, 92, 246, 0.45);
-      box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.24);
+      box-shadow:
+        inset 0 0 0 1px rgba(139, 92, 246, 0.24),
+        0 0 0 1px rgba(139, 92, 246, 0.14);
     }
 
     #dv-configurator .appearance-sidebar .color-preview {
-      width: 14px;
-      height: 14px;
-      border-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.24);
-      flex-shrink: 0;
-      order: 2;
+      display: none;
     }
 
     #dv-configurator .appearance-sidebar .color-label {
       font-size: 11px;
       text-align: left;
-      color: #dbe0ea;
+      color: #e1e7f5;
       order: 1;
+      position: relative;
+      z-index: 2;
+      font-weight: 700;
+      letter-spacing: 0.01em;
     }
 
     #dv-configurator .appearance-sidebar .bg-options {
@@ -4190,9 +4337,8 @@
       align-items: center;
       justify-content: center;
       width: 100%;
-      height: calc(100vh - 252px);
-      min-height: 520px;
-      max-height: 620px;
+      height: var(--preview-block-height);
+      min-height: 560px;
     }
 
     #dv-configurator .chat-live-preview {
@@ -4208,6 +4354,27 @@
       display: flex;
       align-items: stretch;
       justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #dv-configurator .chat-live-preview::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(
+        130deg,
+        rgba(139, 92, 246, 0.64),
+        rgba(236, 72, 153, 0.5),
+        rgba(59, 130, 246, 0.62)
+      );
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      opacity: 0.9;
     }
 
     #dv-configurator .chat-live-preview .chat-scale {
@@ -4226,6 +4393,17 @@
       max-height: none !important;
       box-shadow: none !important;
       margin: 0 !important;
+      background-size: cover !important;
+      background-position: center !important;
+    }
+
+    #dv-configurator .chat-live-preview #workChat .chat-messages {
+      background: transparent !important;
+    }
+
+    #dv-configurator .chat-live-preview #workChat .chat-input {
+      background: transparent !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     #dv-configurator .preview-device-column {
@@ -4236,18 +4414,24 @@
 
     #dv-configurator .device-toggle {
       display: flex;
-      gap: 8px;
+      gap: 2px;
       margin: 0 0 14px;
       align-items: center;
       justify-content: flex-start;
+      padding: 3px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #151821;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      width: fit-content;
     }
 
     #dv-configurator .device-toggle .device-button {
-      height: 32px;
-      padding: 0 12px;
+      height: 30px;
+      padding: 0 14px;
       flex: 0 0 auto;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 999px;
+      border: none;
       background: transparent;
       color: var(--dv-text2);
       font-size: 12px;
@@ -4260,27 +4444,49 @@
     }
 
     #dv-configurator .device-toggle .device-button.active {
-      background: rgba(139, 92, 246, 0.15);
-      border: 1px solid rgba(139, 92, 246, 0.35);
+      background: rgba(255, 255, 255, 0.14);
       color: #fff;
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.32);
     }
 
     #dv-configurator .device-toggle .device-button:hover {
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(255, 255, 255, 0.07);
     }
 
     #dv-configurator .device-preview-stage {
-      height: calc(100vh - 252px);
-      min-height: 520px;
-      max-height: 620px;
+      height: var(--preview-block-height);
+      min-height: 560px;
       border-radius: 14px;
       border: 1px solid rgba(255, 255, 255, 0.08);
       background: #181a20;
-      padding: 18px;
+      padding: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
+      overflow: visible;
+      position: relative;
+      isolation: isolate;
+    }
+
+    #dv-configurator .device-preview-stage::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(
+        130deg,
+        rgba(139, 92, 246, 0.64),
+        rgba(236, 72, 153, 0.5),
+        rgba(59, 130, 246, 0.62)
+      );
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      opacity: 0.9;
     }
 
     #dv-configurator .device-preview-mode {
@@ -4352,8 +4558,8 @@
     }
 
     #dv-configurator .device-preview-mobile .mobile-column {
-      width: 260px;
-      height: 520px;
+      width: 244px;
+      height: 500px;
       padding: 0;
       display: flex;
       align-items: stretch;
@@ -4364,12 +4570,15 @@
       width: 100%;
       height: 100%;
       transform: none !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     #dv-configurator .device-preview-mobile .mobile-preview {
-      width: 260px;
-      height: 520px;
-      border-radius: 36px;
+      width: 244px;
+      height: 500px;
+      border-radius: 34px;
       border: none;
       background: transparent;
       position: relative;
@@ -4378,10 +4587,10 @@
     #dv-configurator .device-preview-mobile .iphone-frame {
       width: 100%;
       height: 100%;
-      border-radius: 36px;
+      border-radius: 34px;
       border: 1px solid rgba(255, 255, 255, 0.14);
       background: linear-gradient(165deg, #1d212b 0%, #0e1016 74%);
-      padding: 12px;
+      padding: 10px;
       box-shadow:
         0 24px 58px rgba(0, 0, 0, 0.48),
         inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -4420,7 +4629,7 @@
     }
 
     #dv-configurator .device-preview-mobile .iphone-screen {
-      border-radius: 26px;
+      border-radius: 24px;
       overflow: hidden;
       height: 100%;
       width: 100%;
@@ -4487,23 +4696,25 @@
     }
 
     #dv-configurator .chat-watermark .watermark-brand {
-      color: #dbe3f1;
+      background: linear-gradient(90deg, #8b5cf6, #ec4899, #3b82f6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
       font-weight: 700;
       letter-spacing: 0.01em;
     }
 
     #dv-configurator .chat-watermark .watermark-icon {
-      width: 14px;
-      height: 14px;
+      width: 13px;
+      height: 13px;
       object-fit: contain;
       display: block;
       opacity: 0.94;
     }
 
     #dv-configurator .bottom-actions {
-      margin-top: 18px;
-      padding-top: 14px;
-      border-top: 1px solid var(--dv-divider);
+      display: none !important;
     }
 
     #dv-configurator .steps-nav .step-item:focus-visible,
@@ -4514,6 +4725,18 @@
     }
 
     @media (max-width: 1700px) {
+      #dv-configurator .header-left {
+        gap: 12px;
+      }
+
+      #dv-configurator .appearance-bot-picker {
+        min-width: 200px;
+      }
+
+      #dv-configurator .appearance-bot-select-shell {
+        min-width: 200px;
+      }
+
       #dv-configurator .appearance-layout {
         grid-template-columns: minmax(520px, 1.45fr) 340px minmax(460px, 1fr);
         gap: 16px 22px;
@@ -4526,6 +4749,22 @@
     }
 
     @media (max-width: 1380px) {
+      #dv-configurator .app-header {
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 10px 12px;
+      }
+
+      #dv-configurator .header-left {
+        width: 100%;
+      }
+
+      #dv-configurator .header-right {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+      }
+
       #dv-configurator .appearance-layout {
         grid-template-columns: 1fr;
         grid-template-rows: auto auto auto;
@@ -4552,7 +4791,7 @@
       #dv-configurator .chat-preview-wrapper,
       #dv-configurator .device-preview-stage {
         height: auto;
-        min-height: 540px;
+        min-height: 560px;
       }
     }
 
@@ -4593,18 +4832,24 @@
       <main id="dv-configurator" class="app-container" data-device-preview="desktop" data-builder-step="layout">
         <!-- Top Bar -->
         <header class="app-header">
-          <div class="appearance-page-header">
-            <div class="page-header-icon">
-              <img src="/assets/icons/appearance.svg" alt="" />
+          <div class="header-left">
+            <div class="appearance-page-header">
+              <div class="page-header-icon">
+                <img src="/assets/icons/appearance.svg" alt="" />
+              </div>
+              <div class="page-header-text">
+                <h1 data-i18n="appearance.page.title"></h1>
+                <p>Build and preview your chatbot visuals step by step.</p>
+              </div>
             </div>
-            <div class="page-header-text">
-              <h1 data-i18n="appearance.page.title"></h1>
-              <p>Build and preview your chatbot visuals step by step.</p>
+            <div class="appearance-bot-picker" id="appearanceBotPicker">
+              <label class="appearance-bot-label" for="appearanceBotSelect">Bot</label>
+              <div class="appearance-bot-select-shell">
+                <i class="fas fa-robot" aria-hidden="true"></i>
+                <select id="appearanceBotSelect" aria-label="Select bot to edit"></select>
+                <i class="fas fa-chevron-down" aria-hidden="true"></i>
+              </div>
             </div>
-          </div>
-          <div class="app-logo">
-            <img src="/images/design-mode/ikonawyglad.png" alt="Wygląd" class="app-logo-img" />
-            <h1 data-i18n="appearance.page.title"></h1>
           </div>
           <div class="header-right">
             <div class="control-group">
@@ -5296,7 +5541,7 @@
               </div>
               <div class="chat-watermark" id="workChatWatermark">
                 <span class="watermark-label">Powered by</span>
-                <img class="watermark-icon" src="/assets/icons/poweredby.svg" alt="" />
+                <img class="watermark-icon" src="/assets/icons/logo.svg" alt="" />
                 <span class="watermark-brand">DaVeri</span>
               </div>
             </div>
@@ -5369,15 +5614,6 @@
       </div>
     </div>
   </div><!-- /preview-area -->
-        </div>
-        <!-- Bottom Actions -->
-        <div class="bottom-actions">
-          <button class="btn btn-secondary" data-role="action-load">
-            <i class="fas fa-folder-open"></i> <span data-i18n="appearance.actions.load"></span>
-          </button>
-          <button class="btn btn-primary" data-role="action-save">
-            <i class="fas fa-save"></i> <span data-i18n="appearance.actions.saveChanges"></span>
-          </button>
         </div>
         <!-- Color Editor Modal -->
         <div class="color-editor-modal" id="colorEditor" hidden>
@@ -5482,7 +5718,7 @@
       };
       const ACTIVE_BOT_KEY = "daveri_active_bot_id";
       const WATERMARK_BRAND = "DaVeri";
-      const WATERMARK_ICON = "/assets/icons/poweredby.svg";
+      const WATERMARK_ICON = "/assets/icons/logo.svg";
       const FIXED_CHAT_DIMENSIONS = Object.freeze({ width: 360, height: 520 });
       const resolveApiOrigin = () => {
         if (typeof window.DaVeriApiOrigin === "string" && window.DaVeriApiOrigin.trim()) {
@@ -5498,6 +5734,21 @@
         return origin ? `${origin}${normalized}` : normalized;
       };
       const API_BOTS = getApiUrl("/api/bots");
+      const extractBots = (payload) => {
+        if (Array.isArray(payload)) return payload;
+        if (Array.isArray(payload?.bots)) return payload.bots;
+        if (Array.isArray(payload?.data)) return payload.data;
+        return [];
+      };
+      const getBotDisplayName = (bot, index = 0) => {
+        const fromName = String(bot?.name || "").trim();
+        if (fromName) return fromName;
+        const fromTitle = String(bot?.title || "").trim();
+        if (fromTitle) return fromTitle;
+        const fromBotName = String(bot?.bot_name || "").trim();
+        if (fromBotName) return fromBotName;
+        return `Bot ${bot?.id || index + 1}`;
+      };
       const getStoredActiveBotId = () => {
         const raw = window.localStorage.getItem(ACTIVE_BOT_KEY);
         return raw && raw.trim() ? raw.trim() : null;
@@ -5535,7 +5786,7 @@
       const resolveActiveBotId = async () => {
         const stored = getStoredActiveBotId();
         const payload = await fetchJson(API_BOTS);
-        const bots = Array.isArray(payload) ? payload : (Array.isArray(payload?.bots) ? payload.bots : []);
+        const bots = extractBots(payload);
         if (!bots.length) {
           setStoredActiveBotId("");
           return null;
@@ -5545,6 +5796,66 @@
         setStoredActiveBotId(nextBotId);
         return nextBotId || null;
       };
+
+      async function initBotPicker() {
+        const botSelect = document.getElementById("appearanceBotSelect");
+        if (!botSelect) return;
+
+        botSelect.disabled = true;
+        botSelect.innerHTML = '<option value="">Loading bots...</option>';
+
+        try {
+          const payload = await fetchJson(API_BOTS);
+          const bots = extractBots(payload);
+
+          if (!bots.length) {
+            setStoredActiveBotId("");
+            botSelect.innerHTML = '<option value="">No bots</option>';
+            botSelect.disabled = true;
+            return;
+          }
+
+          const stored = getStoredActiveBotId();
+          const hasStored = stored ? bots.some((bot) => String(bot?.id) === String(stored)) : false;
+          const nextBotId = hasStored ? stored : String(bots[0]?.id || "");
+          setStoredActiveBotId(nextBotId);
+
+          botSelect.innerHTML = "";
+          bots.forEach((bot, index) => {
+            const option = document.createElement("option");
+            option.value = String(bot?.id || "");
+            option.textContent = getBotDisplayName(bot, index);
+            botSelect.appendChild(option);
+          });
+          botSelect.value = nextBotId;
+          botSelect.disabled = false;
+        } catch (error) {
+          console.error("[Appearance] bot picker init failed:", error);
+          botSelect.innerHTML = '<option value="">Error loading bots</option>';
+          botSelect.disabled = true;
+        }
+
+        if (!botSelect.__wired) {
+          botSelect.__wired = true;
+          botSelect.addEventListener("change", async () => {
+            const nextBotId = String(botSelect.value || "").trim();
+            if (!nextBotId) return;
+            setStoredActiveBotId(nextBotId);
+            await loadStateFromBackend();
+          });
+        }
+      }
+
+      function syncBotPickerSelection(botId) {
+        const botSelect = document.getElementById("appearanceBotSelect");
+        if (!botSelect) return;
+        const value = String(botId || "").trim();
+        if (!value) return;
+        const optionExists = Array.from(botSelect.options).some((opt) => opt.value === value);
+        if (optionExists) {
+          botSelect.value = value;
+        }
+      }
       const waitForAuthReady = async () => {
         if (window.DaVeriAuth?.ready) {
           try {
@@ -6275,13 +6586,28 @@
             el.classList.remove("active");
           }
         });
-        // Color tiles - aktualizacja kolorów
+        // Color tiles - synchronizacja aktywnego koloru i filla kafelka
         const colorTiles = root.querySelectorAll(".color-tile");
         colorTiles.forEach((tile) => {
           const key = tile.getAttribute("data-key");
+          if (!key) return;
+
+          let currentColor = null;
+          if (workSnapshot.colors && Object.prototype.hasOwnProperty.call(workSnapshot.colors, key)) {
+            currentColor = workSnapshot.colors[key];
+          } else if (Object.prototype.hasOwnProperty.call(workSnapshot, key)) {
+            currentColor = workSnapshot[key];
+          } else {
+            currentColor = tile.getAttribute("data-value");
+          }
+
+          if (!currentColor) return;
+          tile.setAttribute("data-value", currentColor);
+          tile.style.setProperty("--tile-color", currentColor);
+
           const preview = tile.querySelector(".color-preview");
-          if (preview && workSnapshot.colors && workSnapshot.colors[key]) {
-            preview.style.backgroundColor = workSnapshot.colors[key];
+          if (preview) {
+            preview.style.backgroundColor = currentColor;
           }
         });
         // Checkboxes
@@ -6428,23 +6754,40 @@
       function applyColorsToChat(chatElement, snapshot) {
         if (!chatElement || !snapshot?.colors) return;
         const textColor = snapshot.colors.botText || '#E2E8F0';
-        
-        // Tło chatu
-        if (snapshot.backgroundType === 'color') {
-          chatElement.style.backgroundColor = snapshot.colors.chatBackground;
-        }
+
+        // Tło chatu - zawsze na całym oknie
+        chatElement.style.backgroundColor = snapshot.colors.chatBackground || '#0F0F14';
+
         // Header - set color on parent so children inherit
         const header = chatElement.querySelector('.chat-header');
         if (header) {
           header.style.backgroundColor = snapshot.colors.chatHeader;
           header.style.color = textColor;
         }
-        
-        // Input
+
+        // Messages area stays transparent so full chat background is visible
+        const messagesArea = chatElement.querySelector('.chat-messages');
+        if (messagesArea) {
+          messagesArea.style.backgroundColor = 'transparent';
+        }
+
+        // Input container + field
         const inputArea = chatElement.querySelector('.chat-input');
-        if (inputArea) inputArea.style.backgroundColor = snapshot.colors.chatInput;
+        if (inputArea) {
+          inputArea.style.backgroundColor = 'transparent';
+          inputArea.style.borderTop = '1px solid rgba(255,255,255,0.08)';
+        }
         const inputField = chatElement.querySelector('.chat-input input');
-        if (inputField) inputField.style.color = textColor;
+        if (inputField) {
+          inputField.style.color = textColor;
+          inputField.style.backgroundColor = snapshot.colors.chatInput;
+          inputField.style.borderColor = 'rgba(255,255,255,0.12)';
+        }
+
+        const sendBtn = chatElement.querySelector('.send-btn');
+        if (sendBtn) {
+          sendBtn.style.backgroundColor = snapshot.colors.chatAccent;
+        }
         
         // Wiadomości bota
         chatElement.querySelectorAll('.message.bot .message-content').forEach(msg => {
@@ -6480,8 +6823,6 @@
       }
       function updateChatBackground(chatElement, snapshot) {
         if (!chatElement) return;
-        const overlay = chatElement.querySelector('.chat-background-overlay');
-        if (!overlay) return;
         if (snapshot.backgroundType === 'preset' && snapshot.backgroundPreset) {
           const bgUrl = PRESET_BACKGROUNDS[snapshot.backgroundPreset];
           if (bgUrl) {
@@ -6924,7 +7265,6 @@ ${quickReplies.map(text => `<button>${text}</button>`).join('')}
         const inputBg = colors.chatInput || 'rgba(255, 255, 255, .02)';
         const textColor = colors.botText || '#E2E8F0';
         const accentColor = colors.chatAccent || '#7C3AED';
-        const chatBg = colors.chatBackground || '#0F0F14';
         
         return `
 <div class="chat-header" style="background-color: ${headerBg};">
@@ -6939,12 +7279,12 @@ ${avatarHTML}
 <button class="close-btn" style="color: ${textColor};"><i class="fas fa-times"></i></button>
 </div>
 </div>
-<div class="chat-messages" style="background-color: ${chatBg};">
+<div class="chat-messages" style="background-color: transparent;">
 ${messagesHTML}
 </div>
 ${quickRepliesHTML}
-<div class="chat-input" style="background-color: ${inputBg};">
-<input type="text" placeholder="${i18nText("appearance.preview.inputPlaceholder")}" disabled style="color: ${textColor};">
+<div class="chat-input" style="background-color: transparent;">
+<input type="text" placeholder="${i18nText("appearance.preview.inputPlaceholder")}" disabled style="color: ${textColor}; background-color: ${inputBg};">
 <button class="send-btn" style="background-color: ${accentColor};"><i class="fas fa-paper-plane"></i></button>
 </div>
 ${watermarkHTML}
@@ -7404,6 +7744,8 @@ ${i18nText("i18n-appearance-scale-fit")}
               // Zaktualizuj preview w kafelku
               const tile = document.querySelector(`.color-tile[data-key="${currentColorKey}"]`);
               if (tile) {
+                tile.setAttribute("data-value", input.value);
+                tile.style.setProperty("--tile-color", input.value);
                 const preview = tile.querySelector('.color-preview');
                 if (preview) preview.style.backgroundColor = input.value;
               }
@@ -7989,6 +8331,7 @@ ${i18nText("i18n-appearance-scale-fit")}
         // NAPRAWA: renderuj wiadomości przy starcie
         renderWorkChatMessages();
         await waitForAuthReady();
+        await initBotPicker();
         await loadStateFromBackend();
         // Wywołaj notify aby zsynchronizować UI
         notify();
@@ -8021,8 +8364,10 @@ ${i18nText("i18n-appearance-scale-fit")}
       
       // Expose globally for sidebar sync
       window.updateMonitorScale = updateMonitorScale;
-      window.addEventListener("daveri:active-bot-changed", () => {
-        loadStateFromBackend();
+      window.addEventListener("daveri:active-bot-changed", async (event) => {
+        const botId = event?.detail?.botId || getStoredActiveBotId();
+        syncBotPickerSelection(botId);
+        await loadStateFromBackend();
       });
 
       // Run on load and resize
