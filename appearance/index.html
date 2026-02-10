@@ -295,8 +295,8 @@
 
     /* ========== SINGLE ROW CANVAS LAYOUT ========== */
     .content-area {
-      display: flex;
-      flex-direction: row;
+      display: grid;
+      grid-template-columns: clamp(260px, 20vw, 360px) minmax(0, 1fr) minmax(0, 1fr);
       align-items: stretch;
       height: 100vh;
       overflow: hidden;
@@ -306,13 +306,14 @@
       z-index: 1;
     }
 
-    /* LEFT OPTIONS - Responsive clamp width */
+    .layout-mobile-tabs {
+      display: none;
+    }
+
     .config-column {
-      width: clamp(240px, 16vw, 300px);
       min-width: 240px;
       height: 100vh;
-      overflow-y: auto;
-      overflow-x: hidden;
+      overflow: auto;
       border-right: 1px solid var(--dv-divider);
       background: transparent;
       flex-shrink: 0;
@@ -339,18 +340,21 @@
       background-color: rgba(255, 255, 255, 0.4);
     }
 
-    /* RIGHT CANVAS - Elastic, fills all remaining space */
-    .preview-area {
-      flex: 1 1 auto;
-      display: flex;
-      flex-direction: row;
-      align-items: stretch;
-      justify-content: flex-start;
-      gap: 32px;
-      padding: 24px;
-      height: 100%;
+    .live-preview-column,
+    .device-preview-column {
       min-width: 0;
-      overflow: hidden;
+      height: 100vh;
+      overflow: auto;
+    }
+
+    .live-preview-column {
+      border-right: 1px solid var(--dv-divider);
+    }
+
+    .preview-area {
+      min-width: 0;
+      min-height: 0;
+      overflow: visible;
       background: transparent;
     }
     
@@ -1129,30 +1133,15 @@
     /* ========== MONITOR FRAME - PROSTY 16:9 ========== */
     .monitor-frame {
       position: relative;
-      width: 100%;
-      max-width: 560px;
+      width: min(100%, 640px);
+      max-width: 100%;
       aspect-ratio: 16 / 9;
-      background: linear-gradient(145deg, #1f1f1f 0%, #0a0a0a 100%);
-      border-radius: 8px;
-      border: 2px solid #333;
-      box-shadow: 
-        0 0 0 1px rgba(255, 255, 255, 0.03),
-        0 16px 48px rgba(0, 0, 0, 0.4);
+      margin: 0 auto;
+      background: linear-gradient(162deg, #090d13 0%, #0d1118 48%, #141829 100%);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       overflow: hidden;
-      flex-shrink: 0;
-    }
-
-    /* Delikatny efekt szkla na monitorze */
-    .monitor-frame::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 30%;
-      background: linear-gradient(180deg, rgba(255,255,255,0.015) 0%, transparent 100%);
-      pointer-events: none;
-      z-index: 2;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
     }
 
     .monitor-screen {
@@ -1213,11 +1202,11 @@
 
     /* DEPRECATED - old classes kept for compatibility */
     .monitor-column {
-      display: contents;
+      display: block;
     }
 
     .desktop-monitor-wrapper {
-      display: contents;
+      display: block;
     }
 
     .desktop-monitor-label {
@@ -1225,7 +1214,7 @@
     }
 
     .desktop-monitor {
-      display: contents;
+      display: block;
     }
 
     .desktop-monitor-stand {
@@ -1234,7 +1223,7 @@
 
     /* DEPRECATED - Remove old sections */
     .top-section {
-      display: contents;
+      display: block;
     }
 
     .bottom-section {
@@ -1353,7 +1342,7 @@
     }
 
     .device-preview-column {
-      display: none;
+      display: block;
     }
 
     /* ========== MONITOR CHAT - REAL PIXEL DIMENSIONS ========== */
@@ -2009,82 +1998,6 @@
       display: none !important;
     }
 
-    /* ========== MONITOR FRAME - MINIMAL ========== */
-    .monitor-frame {
-      position: relative;
-      width: 100%;
-      max-width: 480px;
-      aspect-ratio: 16 / 9;
-      background: #0f0f0f;
-      border-radius: var(--dv-radius-md);
-      border: 2px solid rgba(255, 255, 255, .06);
-      display: flex;
-      justify-content: flex-end;
-      align-items: flex-end;
-      pointer-events: none;
-      margin: 0 auto;
-      overflow: hidden;
-    }
-
-    .monitor-frame.desktop {
-      width: 100%;
-      max-width: 480px;
-      aspect-ratio: 16 / 9;
-      padding: 6px;
-    }
-
-    .monitor-frame.desktop::after {
-      content: "";
-      position: absolute;
-      bottom: -6px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 40px;
-      height: 2px;
-      background: rgba(255, 255, 255, .08);
-      border-radius: 1px;
-    }
-
-    /* Telefon - minimal */
-    .monitor-frame.mobile {
-      width: 220px;
-      height: 440px;
-      aspect-ratio: auto;
-      max-width: none;
-      padding: 6px;
-      border-radius: 24px;
-      border: 2px solid rgba(255, 255, 255, .06);
-      background: #0f0f0f;
-    }
-
-    /* Dynamic Island */
-    .monitor-frame.mobile::before {
-      content: "";
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 50px;
-      height: 16px;
-      background: rgba(255, 255, 255, .08);
-      border-radius: 8px;
-      z-index: 10;
-    }
-
-    /* Home indicator */
-    .monitor-frame.mobile::after {
-      content: "";
-      position: absolute;
-      bottom: 5px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60px;
-      height: 3px;
-      background: rgba(255, 255, 255, .15);
-      border-radius: 2px;
-      z-index: 10;
-    }
-
     /* Viewport */
     .viewport {
       width: 100%;
@@ -2156,22 +2069,6 @@
       top: 20px !important;
       left: auto !important;
       bottom: auto !important;
-    }
-
-    /* Mobile - CHAT DOPASOWANY DO TELEFONU */
-    .monitor-frame.mobile .device-chat {
-      width: 100% !important;
-      height: 100% !important;
-      position: relative !important;
-      border-radius: 24px !important;
-      transform: none !important;
-      left: 0 !important;
-      right: 0 !important;
-      top: 0 !important;
-      bottom: 0 !important;
-      max-width: none !important;
-      font-size: 12px !important;
-      max-height: none !important;
     }
 
     /* Overlay z informacją o skali (hover) */
@@ -3132,150 +3029,8 @@
 
     /* ========== RESPONSIVE - ELASTIC SCALING ========== */
     @media (max-width: 1400px) {
-      .preview-area {
-        gap: 20px;
-        padding: 16px;
-      }
-
-      .work-column {
-        width: clamp(240px, 20vw, 320px);
-      }
-
-      .mobile-column {
-        width: clamp(220px, 18vw, 280px);
-      }
-
-      .monitor-frame {
-        max-width: 480px;
-      }
-    }
-
-    @media (max-width: 1200px) {
-      .monitor-wrapper {
-        display: none;
-      }
-
-      .preview-area {
-        gap: 32px;
-        justify-content: center;
-      }
-
-      .work-column,
-      .mobile-column {
-        width: auto;
-        flex: 0 0 auto;
-      }
-    }
-
-    @media (max-width: 900px) {
-      .content-area {
-        flex-direction: column;
-        height: auto;
-        overflow: visible;
-      }
-
-      .config-column {
-        width: 100%;
-        min-width: 100%;
-        height: auto;
-        max-height: 50vh;
-        border-right: none;
-        border-bottom: 1px solid var(--dv-divider);
-      }
-
-      .preview-area {
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: flex-start;
-        justify-content: center;
-        height: auto;
-        padding: 24px;
-        gap: 24px;
-      }
-
-      .work-column,
-      .mobile-column {
-        width: auto;
-        max-width: 320px;
-        height: 480px;
-        padding: 12px;
-      }
-
-      .work-column .work-chat {
-        max-width: 280px;
-        max-height: 460px;
-      }
-
-      .iphone-frame {
-        max-width: 240px;
-        max-height: 460px;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .app-container {
-        padding: 12px;
-      }
-
-      .app-header {
-        flex-direction: column;
-        gap: 16px;
-        padding: 16px;
-      }
-
-      .control-group {
-        width: 100%;
-        justify-content: stretch;
-      }
-
-      .preset-bar {
-        grid-template-columns: repeat(3, 1fr);
-        height: auto;
-        flex-wrap: wrap;
-      }
-
-      .preset-segment:first-child {
-        display: none;
-      }
-
-      .preset-segment {
-        min-width: 100px;
-      }
-
-      .preview-area {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .work-column,
-      .mobile-column {
-        width: 100%;
-        max-width: 300px;
-        height: 420px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .option-tiles {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .color-tiles-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .work-preview {
-        padding: 8px;
-        justify-content: center;
-      }
-
-      .bg-options {
-        grid-template-columns: 1fr;
-      }
-
-      .work-column,
-      .mobile-column {
-        height: 380px;
+      #monitorFrame {
+        width: min(100%, 560px);
       }
     }
 
@@ -3725,12 +3480,12 @@
 
     #dv-configurator .appearance-layout {
       display: grid;
-      grid-template-columns: minmax(640px, 1.75fr) 340px minmax(560px, 1fr);
-      grid-template-rows: auto minmax(0, 1fr);
-      gap: 18px 26px;
-      align-items: start;
-      height: calc(100vh - 128px);
-      min-height: 680px;
+      grid-template-columns: clamp(280px, 22vw, 360px) minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-rows: auto auto minmax(0, 1fr);
+      gap: 14px 20px;
+      align-items: stretch;
+      height: 100vh;
+      min-height: 0;
       overflow: hidden;
       background: transparent;
     }
@@ -3749,6 +3504,66 @@
 
     #dv-configurator .steps-nav::-webkit-scrollbar {
       display: none;
+    }
+
+    #dv-configurator .layout-mobile-tabs {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      display: none;
+      gap: 4px;
+      width: fit-content;
+      padding: 3px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #151821;
+    }
+
+    #dv-configurator .layout-tab-btn {
+      height: 30px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: var(--dv-text2);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 120ms ease;
+    }
+
+    #dv-configurator .layout-tab-btn.active {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.32);
+    }
+
+    #dv-configurator .appearance-sidebar {
+      grid-column: 1;
+      grid-row: 3;
+      min-width: 0;
+      height: 100vh;
+      min-height: 0;
+      overflow: auto;
+    }
+
+    #dv-configurator .live-preview-column {
+      grid-column: 2;
+      grid-row: 3;
+      min-width: 0;
+      height: 100vh;
+      min-height: 0;
+      overflow: auto;
+    }
+
+    #dv-configurator .device-preview-column {
+      grid-column: 3;
+      grid-row: 3;
+      min-width: 0;
+      height: 100vh;
+      min-height: 0;
+      overflow: auto;
     }
 
     #dv-configurator .step-item {
@@ -4314,12 +4129,7 @@
     }
 
     #dv-configurator .preview-area.appearance-preview-grid {
-      grid-column: 2 / 4;
-      grid-row: 2;
-      display: grid;
-      grid-template-columns: 340px minmax(560px, 1fr);
-      gap: 24px;
-      align-items: start;
+      display: block;
       min-width: 0;
       min-height: 0;
       padding: 0;
@@ -4445,7 +4255,8 @@
     }
 
     #dv-configurator .device-preview-stage {
-      height: var(--preview-block-height);
+      width: 100%;
+      height: min(72vh, var(--preview-block-height));
       min-height: 560px;
       border-radius: 14px;
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -4501,47 +4312,15 @@
     }
 
     #dv-configurator .device-preview-desktop .desktop-preview {
-      width: 380px;
-      height: 640px;
-      border-radius: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: #0e1116;
-      position: relative;
+      width: 100%;
+      max-width: 680px;
       display: flex;
-      align-items: flex-end;
-      justify-content: flex-end;
-      padding: 0;
-    }
-
-    #dv-configurator .device-preview-desktop .monitor-wrapper {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-
-    #dv-configurator .device-preview-desktop .monitor-frame {
-      width: 100%;
-      height: 100%;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      background: #111217;
+      align-items: center;
+      justify-content: center;
+      position: relative;
       overflow: hidden;
-    }
-
-    #dv-configurator .device-preview-desktop .monitor-screen {
-      width: 100%;
-      height: 100%;
-      border-radius: 10px;
-      overflow: hidden;
-      background:
-        radial-gradient(96% 130% at 86% 84%, rgba(124, 58, 237, 0.24), rgba(124, 58, 237, 0) 58%),
-        radial-gradient(70% 90% at 74% 78%, rgba(236, 72, 153, 0.15), rgba(236, 72, 153, 0) 62%),
-        linear-gradient(162deg, #090d13 0%, #0d1118 48%, #141829 100%);
-    }
-
-    #dv-configurator .device-preview-desktop .monitor-viewport {
-      background: transparent;
+      padding: 0;
+      min-width: 0;
     }
 
     #dv-configurator .device-preview-mobile .mobile-column {
@@ -4781,14 +4560,12 @@
     }
 
     #dv-configurator .device-preview-desktop .desktop-preview {
-      width: 380px;
-      height: 640px;
+      width: 100%;
+      max-width: 680px;
+      min-width: 0;
       display: flex;
-      align-items: flex-end;
-      justify-content: flex-end;
-      border-radius: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: #0e1116;
+      align-items: center;
+      justify-content: center;
       position: relative;
       overflow: hidden;
       padding: 0;
@@ -5164,90 +4941,89 @@
         gap: 12px;
       }
 
-      #dv-configurator .appearance-bot-picker {
-        min-width: 200px;
-      }
-
+      #dv-configurator .appearance-bot-picker,
       #dv-configurator .appearance-bot-select-shell {
         min-width: 200px;
       }
-
-      #dv-configurator .appearance-layout {
-        grid-template-columns: minmax(520px, 1.45fr) 340px minmax(460px, 1fr);
-        gap: 16px 22px;
-      }
-
-      #dv-configurator .preview-area.appearance-preview-grid {
-        grid-template-columns: 340px minmax(440px, 1fr);
-        gap: 20px;
-      }
     }
 
-    @media (max-width: 1380px) {
-      #dv-configurator .app-header {
-        flex-wrap: wrap;
-        align-items: flex-start;
-        gap: 10px 12px;
-      }
-
-      #dv-configurator .header-left {
-        width: 100%;
-      }
-
-      #dv-configurator .header-right {
-        width: 100%;
-        display: flex;
-        justify-content: flex-end;
-      }
-
+    @media (max-width: 1200px) {
       #dv-configurator .appearance-layout {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto;
-        height: auto;
-        min-height: 0;
-        overflow: visible;
+        grid-template-columns: clamp(260px, 28vw, 340px) minmax(0, 1fr);
+        grid-template-rows: auto auto minmax(0, 1fr);
+      }
+
+      #dv-configurator .layout-mobile-tabs {
+        display: inline-flex;
       }
 
       #dv-configurator .appearance-sidebar {
         grid-column: 1;
-        grid-row: 2;
-        height: auto;
-        max-height: none;
-        overflow: visible;
-        padding-right: 0;
       }
 
-      #dv-configurator .preview-area.appearance-preview-grid {
-        grid-column: 1;
-        grid-row: 3;
-        grid-template-columns: 360px minmax(0, 1fr);
+      #dv-configurator .live-preview-column,
+      #dv-configurator .device-preview-column {
+        grid-column: 2;
       }
 
-      #dv-configurator .chat-preview-wrapper,
-      #dv-configurator .device-preview-stage {
-        height: auto;
-        min-height: 560px;
+      #dv-configurator .device-preview-column {
+        display: none;
+      }
+
+      #dv-configurator .appearance-layout[data-active-panel="device"] .live-preview-column {
+        display: none;
+      }
+
+      #dv-configurator .appearance-layout[data-active-panel="device"] .device-preview-column {
+        display: block;
+      }
+
+      #dv-configurator .layout-tab-btn[data-panel="options"] {
+        display: none;
       }
     }
 
-    @media (max-width: 1080px) {
-      #dv-configurator .preview-area.appearance-preview-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
+    @media (max-width: 860px) {
+      #dv-configurator .appearance-layout {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto auto minmax(0, 1fr);
+      }
+
+      #dv-configurator .layout-tab-btn[data-panel="options"] {
+        display: inline-flex;
+      }
+
+      #dv-configurator .appearance-sidebar,
+      #dv-configurator .live-preview-column,
+      #dv-configurator .device-preview-column {
+        grid-column: 1;
+        grid-row: 3;
+        height: auto;
+        max-height: none;
+      }
+
+      #dv-configurator .appearance-sidebar,
+      #dv-configurator .live-preview-column,
+      #dv-configurator .device-preview-column {
+        display: none;
+      }
+
+      #dv-configurator .appearance-layout[data-active-panel="options"] .appearance-sidebar {
+        display: block;
+      }
+
+      #dv-configurator .appearance-layout[data-active-panel="preview"] .live-preview-column {
+        display: block;
+      }
+
+      #dv-configurator .appearance-layout[data-active-panel="device"] .device-preview-column {
+        display: block;
       }
 
       #dv-configurator .chat-preview-wrapper,
       #dv-configurator .device-preview-stage {
         min-height: 0;
         height: auto;
-      }
-
-      #dv-configurator .chat-live-preview {
-        margin: 0 auto;
-      }
-
-      #dv-configurator .device-preview-desktop .desktop-preview {
-        width: 380px;
       }
     }
   </style>
@@ -5348,6 +5124,11 @@
               </span>
             </button>
           </nav>
+          <div class="layout-mobile-tabs" id="appearanceLayoutTabs" role="tablist" aria-label="Layout panels">
+            <button type="button" class="layout-tab-btn active" data-panel="options" aria-selected="true">Options</button>
+            <button type="button" class="layout-tab-btn" data-panel="preview" aria-selected="false">Preview</button>
+            <button type="button" class="layout-tab-btn" data-panel="device" aria-selected="false">Device</button>
+          </div>
           <!-- LEFT - Configurator Panel (FULL HEIGHT) -->
           <div class="config-column appearance-sidebar">
             <!-- Preset Bar inside configurator -->
@@ -5941,83 +5722,80 @@
               </div>
             </section>
           </div><!-- /config-column -->
-  <!-- RIGHT CANVAS - Single horizontal row: CHAT | DEVICE -->
-  <div class="preview-area appearance-preview-grid">
-    <!-- Desktop Chat Preview -->
-    <div class="preview-section live-preview-section">
-      <div class="chat-preview-wrapper">
-        <div class="work-column chat-live-preview preview-chat-host">
-          <!-- Chat (visible when not minimized) -->
-          <div class="preview-chat" id="workChat">
-            <div class="chat-window">
-              <div class="chat-header">
-                <div class="chat-brand">
-                  <div class="chat-avatar" id="workChatAvatar"></div>
-                  <div class="chat-info">
-                      <div class="chat-name" id="workChatName" data-i18n="appearance.preview.botName"></div>
-                      <div class="chat-status" data-i18n="appearance.preview.online"></div>
+          <div class="live-preview-column">
+            <div class="preview-area appearance-preview-grid">
+              <div class="preview-section live-preview-section">
+                <div class="chat-preview-wrapper">
+                  <div class="work-column chat-live-preview preview-chat-host">
+                    <div class="preview-chat" id="workChat">
+                      <div class="chat-window">
+                        <div class="chat-header">
+                          <div class="chat-brand">
+                            <div class="chat-avatar" id="workChatAvatar"></div>
+                            <div class="chat-info">
+                              <div class="chat-name" id="workChatName" data-i18n="appearance.preview.botName"></div>
+                              <div class="chat-status" data-i18n="appearance.preview.online"></div>
+                            </div>
+                          </div>
+                          <div class="chat-actions">
+                            <button class="close-btn" id="workChatCloseBtn" type="button">
+                              <i class="fas fa-times"></i>
+                            </button>
+                          </div>
+                        </div>
+                        <div class="quick-replies-top" id="workQuickRepliesTop" style="display: none;"></div>
+                        <div class="chat-messages" id="workChatMessages"></div>
+                        <div class="quick-replies-bottom" id="workQuickRepliesBottom"></div>
+                        <div class="chat-input">
+                          <input type="text" data-i18n-placeholder="appearance.preview.inputPlaceholder" placeholder="" id="workChatInput">
+                          <button class="send-btn" id="workSendBtn" type="button">
+                            <i class="fas fa-paper-plane"></i>
+                          </button>
+                        </div>
+                        <div class="chat-watermark" id="workChatWatermark">
+                          <span class="watermark-label">Powered by</span>
+                          <img class="watermark-icon" src="/assets/icons/logo.svg" alt="" />
+                          <span class="watermark-brand">DaVeri</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="chat-icon small" id="workChatIcon"
+                      style="display: none; position: absolute; left: 32px; bottom: 32px;">
+                      <i class="fas fa-comment"></i>
                     </div>
                   </div>
-                  <div class="chat-actions">
-                    <button class="close-btn" id="workChatCloseBtn" type="button">
-                      <i class="fas fa-times"></i>
-                    </button>
+                </div>
+              </div>
+            </div><!-- /preview-area -->
+          </div><!-- /live-preview-column -->
+          <div class="device-preview-column">
+            <div class="preview-device-column">
+              <div class="device-toggle" id="appearanceDeviceToggle">
+                <button type="button" class="device-btn device-button device-toggle-btn active" data-device="desktop">Desktop</button>
+                <button type="button" class="device-btn device-button device-toggle-btn" data-device="mobile">Mobile</button>
+              </div>
+              <div class="device-preview-stage">
+                <div class="preview-section device-preview-mode device-preview-mobile">
+                  <div class="mobile-preview">
+                    <div class="mobile-chat-root preview-chat-host" id="mobileChatRoot"></div>
+                    <div class="chat-icon small mobile-icon" id="mobileChatIcon" style="display: none;">
+                      <i class="fas fa-comment"></i>
+                    </div>
                   </div>
                 </div>
-                <div class="quick-replies-top" id="workQuickRepliesTop" style="display: none;"></div>
-                <div class="chat-messages" id="workChatMessages"></div>
-                <div class="quick-replies-bottom" id="workQuickRepliesBottom"></div>
-                <div class="chat-input">
-                  <input type="text" data-i18n-placeholder="appearance.preview.inputPlaceholder" placeholder="" id="workChatInput">
-                  <button class="send-btn" id="workSendBtn" type="button">
-                    <i class="fas fa-paper-plane"></i>
-                  </button>
-                </div>
-                <div class="chat-watermark" id="workChatWatermark">
-                  <span class="watermark-label">Powered by</span>
-                  <img class="watermark-icon" src="/assets/icons/logo.svg" alt="" />
-                  <span class="watermark-brand">DaVeri</span>
+                <div class="preview-section device-preview-mode device-preview-desktop">
+                  <div class="desktop-preview" id="desktopPreview">
+                    <div class="monitor-frame" id="monitorFrame">
+                      <div class="monitor-chat preview-chat-host" id="monitorChat"></div>
+                      <div class="chat-icon monitor-icon" id="monitorChatIcon" style="display: none;">
+                        <i class="fas fa-comment"></i>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <!-- Minimized icon (LEFT side, hidden by default) -->
-          <div class="chat-icon small" id="workChatIcon"
-            style="display: none; position: absolute; left: 32px; bottom: 32px;">
-            <i class="fas fa-comment"></i>
-          </div>
-        </div><!-- /work-column -->
-      </div><!-- /chat-preview-wrapper -->
-    </div><!-- /preview-section Konfigurator -->
-
-    <div class="preview-device-column">
-      <div class="device-toggle" id="appearanceDeviceToggle">
-        <button type="button" class="device-btn device-button device-toggle-btn active" data-device="desktop">Desktop</button>
-        <button type="button" class="device-btn device-button device-toggle-btn" data-device="mobile">Mobile</button>
-      </div>
-      <div class="device-preview-stage">
-        <!-- Mobile iPhone Preview -->
-        <div class="preview-section device-preview-mode device-preview-mobile">
-          <div class="mobile-preview">
-            <div class="mobile-chat-root preview-chat-host" id="mobileChatRoot"></div>
-            <div class="chat-icon small mobile-icon" id="mobileChatIcon" style="display: none;">
-              <i class="fas fa-comment"></i>
-            </div>
-          </div><!-- /mobile-preview -->
-        </div><!-- /preview-section Mobile -->
-
-        <!-- Desktop Monitor -->
-        <div class="preview-section device-preview-mode device-preview-desktop">
-          <div class="desktop-preview" id="desktopPreview">
-            <div class="monitor-chat preview-chat-host" id="monitorChat"></div>
-            <div class="chat-icon monitor-icon" id="monitorChatIcon" style="display: none;">
-              <i class="fas fa-comment"></i>
-            </div>
-          </div><!-- /desktop-preview -->
-        </div><!-- /preview-section Desktop -->
-      </div>
-    </div>
-  </div><!-- /preview-area -->
+          </div><!-- /device-preview-column -->
         </div>
         <!-- Color Editor Modal -->
         <div class="color-editor-modal" id="colorEditor" hidden>
@@ -8580,7 +8358,44 @@ ${i18nText("i18n-appearance-scale-fit")}
     }
     })();
     </script>
-    
+
+    <script>
+    (function() {
+      const layout = document.querySelector('#dv-configurator .appearance-layout');
+      const tabsRoot = document.getElementById('appearanceLayoutTabs');
+      if (!layout || !tabsRoot) return;
+
+      const tabs = Array.from(tabsRoot.querySelectorAll('.layout-tab-btn[data-panel]'));
+      const applyPanel = (panel) => {
+        layout.dataset.activePanel = panel;
+        tabs.forEach((tab) => {
+          const isActive = tab.dataset.panel === panel;
+          tab.classList.toggle('active', isActive);
+          tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+      };
+
+      tabs.forEach((tab) => {
+        tab.addEventListener('click', () => applyPanel(tab.dataset.panel));
+      });
+
+      const setDefaultPanel = () => {
+        if (window.innerWidth < 860) {
+          applyPanel(layout.dataset.activePanel || 'options');
+          return;
+        }
+        if (window.innerWidth < 1200) {
+          applyPanel(layout.dataset.activePanel === 'device' ? 'device' : 'preview');
+          return;
+        }
+        applyPanel('preview');
+      };
+
+      setDefaultPanel();
+      window.addEventListener('resize', setDefaultPanel);
+    })();
+    </script>
+
     <!-- Ambient Particles Animation -->
     <script>
     (function() {
