@@ -296,7 +296,7 @@
     /* ========== SINGLE ROW CANVAS LAYOUT ========== */
     .content-area {
       display: grid;
-      grid-template-columns: clamp(260px, 20vw, 360px) minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-columns: 320px minmax(0, 1fr) 420px;
       align-items: stretch;
       height: 100vh;
       overflow: hidden;
@@ -3480,7 +3480,7 @@
 
     #dv-configurator .appearance-layout {
       display: grid;
-      grid-template-columns: clamp(280px, 22vw, 360px) minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-columns: 320px minmax(0, 1fr) 420px;
       grid-template-rows: auto auto minmax(0, 1fr);
       gap: 14px 20px;
       align-items: stretch;
@@ -4303,12 +4303,39 @@
       display: none !important;
     }
 
-    #dv-configurator[data-device-preview="desktop"] .device-preview-mobile {
+    .is-desktop .preview-desktop { display: block; }
+    .is-desktop .preview-mobile { display: none; }
+    .is-mobile .preview-desktop { display: none; }
+    .is-mobile .preview-mobile { display: block; }
+
+    #dv-configurator[data-device-preview="desktop"] .preview-desktop,
+    #dv-configurator[data-device-preview="mobile"] .preview-mobile {
+      display: block !important;
+    }
+
+    #dv-configurator[data-device-preview="desktop"] .preview-mobile,
+    #dv-configurator[data-device-preview="mobile"] .preview-desktop {
       display: none !important;
     }
 
-    #dv-configurator[data-device-preview="mobile"] .device-preview-desktop {
-      display: none !important;
+    #dv-configurator .phone-frame {
+      width: 360px;
+      height: 640px;
+      margin: 0 auto;
+      border-radius: 28px;
+      background: #0b0f19;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.03), 0 30px 80px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      position: relative;
+      max-width: 100%;
+    }
+
+    #dv-configurator .phone-frame #mobileChatRoot {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      overflow: hidden;
     }
 
     #dv-configurator .device-preview-desktop .desktop-preview {
@@ -5775,15 +5802,17 @@
                 <button type="button" class="device-btn device-button device-toggle-btn" data-device="mobile">Mobile</button>
               </div>
               <div class="device-preview-stage">
-                <div class="preview-section device-preview-mode device-preview-mobile">
+                <div class="preview-section device-preview-mode device-preview-mobile preview-mobile">
                   <div class="mobile-preview">
-                    <div class="mobile-chat-root preview-chat-host" id="mobileChatRoot"></div>
+                    <div class="phone-frame">
+                      <div class="mobile-chat-root preview-chat-host" id="mobileChatRoot"></div>
+                    </div>
                     <div class="chat-icon small mobile-icon" id="mobileChatIcon" style="display: none;">
                       <i class="fas fa-comment"></i>
                     </div>
                   </div>
                 </div>
-                <div class="preview-section device-preview-mode device-preview-desktop">
+                <div class="preview-section device-preview-mode device-preview-desktop preview-desktop">
                   <div class="desktop-preview" id="desktopPreview">
                     <div class="monitor-frame" id="monitorFrame">
                       <div class="monitor-chat preview-chat-host" id="monitorChat"></div>
