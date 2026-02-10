@@ -4713,6 +4713,483 @@
       opacity: 0.94;
     }
 
+    #dv-configurator .chat-preview-wrapper,
+    #dv-configurator .device-preview-stage {
+      height: var(--preview-block-height);
+      min-height: 560px;
+    }
+
+    #dv-configurator .chat-live-preview {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      background: #181a20;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    #dv-configurator .chat-live-preview::before {
+      display: none !important;
+    }
+
+    #dv-configurator .chat-live-preview .chat-scale {
+      width: 100%;
+      height: 100%;
+    }
+
+    #dv-configurator .chat-live-preview #workChat {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: none !important;
+      max-height: none !important;
+      margin: 0 !important;
+      box-shadow: none !important;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    #dv-configurator .device-preview-stage {
+      padding: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      background: #181a20;
+      overflow: hidden;
+      position: relative;
+      isolation: isolate;
+    }
+
+    #dv-configurator .device-preview-stage::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 14px;
+      right: 14px;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(139, 92, 246, 0.6),
+        rgba(236, 72, 153, 0.56),
+        rgba(59, 130, 246, 0.6),
+        transparent
+      );
+      pointer-events: none;
+      opacity: 0.95;
+    }
+
+    #dv-configurator .device-preview-mode {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #dv-configurator .device-preview-desktop .desktop-preview {
+      width: min(560px, 100%);
+      height: 100%;
+      max-height: 640px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background:
+        radial-gradient(64% 82% at 86% 84%, rgba(124, 58, 237, 0.25), rgba(124, 58, 237, 0) 72%),
+        radial-gradient(58% 72% at 68% 66%, rgba(236, 72, 153, 0.14), rgba(236, 72, 153, 0) 72%),
+        linear-gradient(162deg, #0a0f15 0%, #0d1118 56%, #121926 100%);
+      position: relative;
+      overflow: hidden;
+      padding: 0;
+    }
+
+    #dv-configurator .device-preview-desktop .desktop-preview::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 12px;
+      right: 12px;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(139, 92, 246, 0.56),
+        rgba(236, 72, 153, 0.52),
+        rgba(59, 130, 246, 0.56),
+        transparent
+      );
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    #dv-configurator .monitor-chat {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      width: 380px;
+      height: 640px;
+      max-width: calc(100% - 24px);
+      max-height: calc(100% - 24px);
+      min-height: 440px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #111217;
+      z-index: 2;
+      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.42);
+    }
+
+    #dv-configurator .device-preview-mobile .mobile-column.mobile-preview {
+      width: 320px;
+      height: 640px;
+      max-width: 100%;
+      max-height: 100%;
+      padding: 0;
+      border-radius: 28px;
+      overflow: hidden;
+      background: #0e1116;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      position: relative;
+    }
+
+    #dv-configurator .device-preview-mobile .mobile-column.mobile-preview::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 12px;
+      right: 12px;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(139, 92, 246, 0.56),
+        rgba(236, 72, 153, 0.5),
+        rgba(59, 130, 246, 0.56),
+        transparent
+      );
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    #dv-configurator .device-preview-mobile .iphone-frame {
+      width: 100%;
+      height: 100%;
+      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: linear-gradient(165deg, #1c2029 0%, #0e1016 74%);
+      padding: 10px;
+      box-shadow: 0 24px 56px rgba(0, 0, 0, 0.48);
+      position: relative;
+    }
+
+    #dv-configurator .device-preview-mobile .iphone-frame::before {
+      content: "";
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 78px;
+      height: 20px;
+      border-radius: 12px;
+      background: #090b10;
+      z-index: 6;
+    }
+
+    #dv-configurator .device-preview-mobile .iphone-frame::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 8px;
+      transform: translateX(-50%);
+      width: 94px;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      z-index: 6;
+    }
+
+    #dv-configurator .device-preview-mobile .iphone-screen {
+      width: 100%;
+      height: 100%;
+      border-radius: 22px;
+      overflow: hidden;
+      background: #0f1118;
+      position: relative;
+    }
+
+    #dv-configurator .preview-chat-host {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    #dv-configurator .preview-chat {
+      width: 100%;
+      height: 100%;
+      background: #111217;
+      border-radius: inherit;
+      display: flex;
+      flex-direction: column;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #dv-configurator .preview-chat .chat-window {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: transparent;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #dv-configurator .preview-chat .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.03);
+      flex-shrink: 0;
+    }
+
+    #dv-configurator .preview-chat .chat-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    #dv-configurator .preview-chat .chat-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    #dv-configurator .preview-chat .chat-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    #dv-configurator .preview-chat .chat-info {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    #dv-configurator .preview-chat .chat-name {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #dv-configurator .preview-chat .chat-status {
+      font-size: 11px;
+      opacity: 0.68;
+      line-height: 1.2;
+    }
+
+    #dv-configurator .preview-chat .chat-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #dv-configurator .preview-chat .close-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #c6cedc;
+      font-size: 14px;
+      transition: all 120ms ease;
+    }
+
+    #dv-configurator .preview-chat .close-btn:hover {
+      background: rgba(255, 80, 80, 0.18);
+      border-color: rgba(255, 80, 80, 0.28);
+      color: #ff8e8e;
+      transform: translateY(-1px);
+    }
+
+    #dv-configurator .preview-chat .chat-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+      background: transparent;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #dv-configurator .preview-chat .message {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      width: 100%;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #dv-configurator .preview-chat .message.message-user {
+      justify-content: flex-end;
+      align-self: flex-end;
+    }
+
+    #dv-configurator .preview-chat .message.message-bot {
+      justify-content: flex-start;
+      align-self: flex-start;
+    }
+
+    #dv-configurator .preview-chat .message-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #dv-configurator .preview-chat .message-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    #dv-configurator .preview-chat .message-body {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      max-width: 75%;
+    }
+
+    #dv-configurator .preview-chat .message.message-user .message-body {
+      align-items: flex-end;
+    }
+
+    #dv-configurator .preview-chat .message-bubble {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.4;
+      max-width: 100%;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      color: #e7edf7;
+      opacity: 1;
+      visibility: visible;
+      border: 1px solid transparent;
+    }
+
+    #dv-configurator .preview-chat .message.message-bot .message-bubble {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 14px 14px 14px 4px;
+    }
+
+    #dv-configurator .preview-chat .message.message-user .message-bubble {
+      background: rgba(139, 92, 246, 0.18);
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      border-radius: 14px 14px 4px 14px;
+    }
+
+    #dv-configurator .preview-chat .message-time {
+      margin-top: 4px;
+      font-size: 11px;
+      opacity: 0.5;
+      line-height: 1;
+      color: #aab4c6;
+    }
+
+    #dv-configurator .preview-chat .chat-input {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.08);
+      flex-shrink: 0;
+    }
+
+    #dv-configurator .preview-chat .chat-input input {
+      flex: 1;
+      height: 40px;
+      border-radius: 20px;
+      padding: 0 14px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.05);
+      color: #e7edf7;
+      font-size: 14px;
+    }
+
+    #dv-configurator .preview-chat .chat-input input:focus {
+      outline: none;
+      border-color: rgba(139, 92, 246, 0.42);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.16);
+    }
+
+    #dv-configurator .preview-chat .send-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      border: none;
+      background: #7c3aed;
+      color: #fff;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 120ms ease;
+      flex-shrink: 0;
+    }
+
+    #dv-configurator .preview-chat .send-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+    }
+
+    #dv-configurator .preview-chat .chat-watermark {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      background: rgba(0, 0, 0, 0.08);
+      flex-shrink: 0;
+    }
+
+    #dv-configurator .preview-chat.preview-chat--mobile .chat-header {
+      padding-top: 18px;
+    }
+
+    #dv-configurator .preview-chat.preview-chat--mobile .chat-messages {
+      padding: 14px;
+    }
+
+    #dv-configurator .preview-chat.preview-chat--mobile .chat-input {
+      padding-bottom: 16px;
+    }
+
     #dv-configurator .bottom-actions {
       display: none !important;
     }
@@ -5514,35 +5991,36 @@
         <div class="work-column chat-live-preview">
           <div class="chat-scale">
             <!-- Chat (visible when not minimized) -->
-            <div class="work-chat" id="workChat">
-              <div class="chat-background-overlay" id="workChatOverlay"></div>
-              <div class="chat-header">
-                <div class="chat-brand">
-                  <div class="chat-avatar" id="workChatAvatar" data-i18n="appearance.preview.avatarFallback"></div>
-                  <div class="chat-info">
-                    <div class="chat-name" id="workChatName" data-i18n="appearance.preview.botName"></div>
-                    <div class="chat-status" data-i18n="appearance.preview.online"></div>
+            <div class="work-chat preview-chat" id="workChat">
+              <div class="chat-window">
+                <div class="chat-header">
+                  <div class="chat-brand">
+                    <div class="chat-avatar" id="workChatAvatar"></div>
+                    <div class="chat-info">
+                      <div class="chat-name" id="workChatName" data-i18n="appearance.preview.botName"></div>
+                      <div class="chat-status" data-i18n="appearance.preview.online"></div>
+                    </div>
+                  </div>
+                  <div class="chat-actions">
+                    <button class="close-btn" id="workChatCloseBtn" type="button">
+                      <i class="fas fa-times"></i>
+                    </button>
                   </div>
                 </div>
-                <div class="chat-actions">
-                  <button class="close-btn" id="workChatCloseBtn">
-                    <i class="fas fa-times"></i>
+                <div class="quick-replies-top" id="workQuickRepliesTop" style="display: none;"></div>
+                <div class="chat-messages" id="workChatMessages"></div>
+                <div class="quick-replies-bottom" id="workQuickRepliesBottom"></div>
+                <div class="chat-input">
+                  <input type="text" data-i18n-placeholder="appearance.preview.inputPlaceholder" placeholder="" id="workChatInput">
+                  <button class="send-btn" id="workSendBtn" type="button">
+                    <i class="fas fa-paper-plane"></i>
                   </button>
                 </div>
-              </div>
-              <div class="quick-replies-top" id="workQuickRepliesTop" style="display: none;"></div>
-              <div class="chat-messages" id="workChatMessages"></div>
-              <div class="quick-replies-bottom" id="workQuickRepliesBottom"></div>
-              <div class="chat-input">
-                <input type="text" data-i18n-placeholder="appearance.preview.inputPlaceholder" placeholder="" id="workChatInput">
-                <button class="send-btn" id="workSendBtn">
-                  <i class="fas fa-paper-plane"></i>
-                </button>
-              </div>
-              <div class="chat-watermark" id="workChatWatermark">
-                <span class="watermark-label">Powered by</span>
-                <img class="watermark-icon" src="/assets/icons/logo.svg" alt="" />
-                <span class="watermark-brand">DaVeri</span>
+                <div class="chat-watermark" id="workChatWatermark">
+                  <span class="watermark-label">Powered by</span>
+                  <img class="watermark-icon" src="/assets/icons/logo.svg" alt="" />
+                  <span class="watermark-brand">DaVeri</span>
+                </div>
               </div>
             </div>
             <!-- Minimized icon (LEFT side, hidden by default) -->
@@ -5564,52 +6042,25 @@
         <!-- Mobile iPhone Preview -->
         <div class="preview-section device-preview-mode device-preview-mobile">
           <div class="mobile-column mobile-preview">
-            <div class="phone-scale">
-              <div class="iphone-frame">
-                <div class="iphone-screen">
-                  <!-- Mobile chat -->
-                  <div class="mobile-chat-root" id="mobileChatRoot">
-                    <div class="mobile-header">
-                      <div class="mobile-header-brand">
-                        <div class="mobile-header-avatar"><i class="fas fa-robot"></i></div>
-                        <div class="mobile-header-info">
-                          <div class="mobile-header-name" id="mobileChatName" data-i18n="appearance.preview.botName"></div>
-                          <div class="mobile-header-status" data-i18n="appearance.preview.online"></div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="mobile-messages" id="mobileChatMessages"></div>
-                    <div class="mobile-quick-replies" id="mobileQuickReplies" style="display: none;"></div>
-                    <div class="mobile-input-bar">
-                      <input type="text" class="mobile-input" data-i18n-placeholder="appearance.preview.inputPlaceholder" placeholder="" id="mobileChatInput"
-                        disabled>
-                      <button class="mobile-send-button" id="mobileSendBtn"><i class="fas fa-paper-plane"></i></button>
-                    </div>
-                  </div>
-                  <!-- Minimized icon -->
-                  <div class="chat-icon small mobile-icon" id="mobileChatIcon" style="display: none;">
-                    <i class="fas fa-comment"></i>
-                  </div>
+            <div class="iphone-frame">
+              <div class="iphone-screen">
+                <div class="mobile-chat-root preview-chat-host" id="mobileChatRoot"></div>
+                <div class="chat-icon small mobile-icon" id="mobileChatIcon" style="display: none;">
+                  <i class="fas fa-comment"></i>
                 </div>
               </div>
-            </div><!-- /phone-scale -->
+            </div>
           </div><!-- /mobile-column -->
         </div><!-- /preview-section Mobile -->
 
         <!-- Desktop Monitor -->
         <div class="preview-section device-preview-mode device-preview-desktop">
-          <div class="monitor-wrapper desktop-preview">
-            <div class="monitor-frame" id="monitorFrame">
-              <div class="monitor-screen" id="monitorScreen">
-                <div class="monitor-viewport" id="monitorViewport">
-                  <div class="monitor-chat" id="monitorChat"></div>
-                  <div class="chat-icon monitor-icon" id="monitorChatIcon" style="display: none;">
-                    <i class="fas fa-comment"></i>
-                  </div>
-                </div>
-              </div>
-            </div><!-- /monitor-frame -->
-          </div><!-- /monitor-wrapper -->
+          <div class="desktop-preview" id="desktopPreview">
+            <div class="monitor-chat preview-chat-host" id="monitorChat"></div>
+            <div class="chat-icon monitor-icon" id="monitorChatIcon" style="display: none;">
+              <i class="fas fa-comment"></i>
+            </div>
+          </div><!-- /desktop-preview -->
         </div><!-- /preview-section Desktop -->
       </div>
     </div>
@@ -5719,7 +6170,36 @@
       const ACTIVE_BOT_KEY = "daveri_active_bot_id";
       const WATERMARK_BRAND = "DaVeri";
       const WATERMARK_ICON = "/assets/icons/logo.svg";
+      const DEFAULT_BOT_AVATAR = "/assets/logo.svg";
       const FIXED_CHAT_DIMENSIONS = Object.freeze({ width: 360, height: 520 });
+      const PREVIEW_DEMO_MESSAGES = Object.freeze([
+        { type: "bot", text: "Hello! How can I help you today?", time: "12:00" },
+        { type: "user", text: "Hi! I want to customize my chatbot.", time: "12:01" },
+        { type: "bot", text: "Great! You can change colors, layout, and behavior in this panel.", time: "12:02" }
+      ]);
+      const escapeHtml = (value) =>
+        String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      const cloneDemoMessages = () => PREVIEW_DEMO_MESSAGES.map((msg) => ({ ...msg }));
+      const getRenderableMessages = (messages) => {
+        if (!Array.isArray(messages)) return cloneDemoMessages();
+        const normalized = messages
+          .map((entry) => ({
+            type: entry?.type === "user" ? "user" : "bot",
+            text: String(entry?.text || "").trim(),
+            time: String(entry?.time || "").trim(),
+          }))
+          .filter((entry) => entry.text.length > 0);
+        return normalized.length ? normalized : cloneDemoMessages();
+      };
+      const resolveAvatarUrl = (snapshot) => {
+        const avatar = String(snapshot?.avatarImage || "").trim();
+        return avatar || DEFAULT_BOT_AVATAR;
+      };
       const resolveApiOrigin = () => {
         if (typeof window.DaVeriApiOrigin === "string" && window.DaVeriApiOrigin.trim()) {
           return window.DaVeriApiOrigin.trim().replace(/\/$/, "");
@@ -6015,11 +6495,8 @@
       // STANY
       let workState = deepClone(defaultWorkState);
       let deviceState = deepClone(defaultDeviceState);
-      // Inicjalizuj wiadomości startowe - max 2
-      workState.messages = [
-        { type: "bot", text: i18nText("i18n-appearance-welcome-bot"), time: "12:00" },
-        { type: "user", text: i18nText("i18n-appearance-welcome-user"), time: "12:01" }
-      ];
+      // Inicjalizuj wiadomości demo widoczne zawsze w preview.
+      workState.messages = cloneDemoMessages();
       const subscribers = new Set();
       let lockAccordion = false;
       let currentColorKey = null;
@@ -6192,7 +6669,7 @@
             });
             // Przywróć wiadomości jeśli są
             if (parsed.work.messages && Array.isArray(parsed.work.messages)) {
-              workState.messages = parsed.work.messages;
+              workState.messages = getRenderableMessages(parsed.work.messages);
             }
           }
           if (parsed.device) {
@@ -6696,21 +7173,16 @@
       function updateWorkChat(snapshot) {
         const workChat = document.getElementById('workChat');
         if (!workChat) return;
-        // STAŁE ROZMIARY dla głównego live preview
+
+        const chatWindow = workChat.querySelector('.chat-window');
         workChat.style.width = '340px';
         workChat.style.height = '520px';
-        // Zaokrąglenie okna
+
         if (snapshot?.windowRadius !== undefined) {
           workChat.style.borderRadius = `${snapshot.windowRadius}px`;
+          if (chatWindow) chatWindow.style.borderRadius = `${snapshot.windowRadius}px`;
         }
-        // Zaokrąglenie dymków
-        const messages = workChat.querySelectorAll('.message .message-content');
-        if (snapshot?.bubbleRadius !== undefined) {
-          messages.forEach(msg => {
-            msg.style.borderRadius = `${snapshot.bubbleRadius}px`;
-          });
-        }
-        // Czcionka
+
         if (snapshot?.fontFamily) {
           const fontFamilyMap = {
             'system': "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
@@ -6724,17 +7196,16 @@
           };
           workChat.style.fontFamily = fontFamilyMap[snapshot.fontFamily] || fontFamilyMap.system;
         }
-        // Rozmiar czcionki
+
         if (snapshot?.fontSize) {
           workChat.style.setProperty('--chat-font-size', `${snapshot.fontSize}px`);
         }
-        // Kolory
+
+        renderWorkChatMessages();
         applyColorsToChat(workChat, snapshot);
-        // Tło
         updateChatBackground(workChat, snapshot);
-        // Overlay tła
         updateChatOverlay(workChat, snapshot);
-        // Watermark - biały tekst bez dodatkowego tła
+
         const watermark = workChat.querySelector('.chat-watermark');
         if (watermark) {
           watermark.style.display = snapshot.watermarkEnabled ? 'flex' : 'none';
@@ -6743,158 +7214,193 @@
             brandElement.textContent = WATERMARK_BRAND;
           }
         }
-        // Avatar
+
         const avatar = workChat.querySelector('.chat-avatar');
         if (avatar) {
           avatar.style.display = snapshot.avatarEnabled ? 'flex' : 'none';
+          avatar.innerHTML = snapshot.avatarEnabled
+            ? `<img src="${escapeHtml(resolveAvatarUrl(snapshot))}" alt="">`
+            : '';
         }
-        // Animacje i wiadomości - NAPRAWA: renderowanie wiadomości
-        renderWorkChatMessages();
       }
+
       function applyColorsToChat(chatElement, snapshot) {
         if (!chatElement || !snapshot?.colors) return;
-        const textColor = snapshot.colors.botText || '#E2E8F0';
+        const colors = snapshot.colors || {};
+        const textColor = colors.botText || '#E2E8F0';
+        const bubbleRadius = Number(snapshot?.bubbleRadius ?? 14);
+        const chatWindow = chatElement.querySelector('.chat-window') || chatElement;
 
-        // Tło chatu - zawsze na całym oknie
-        chatElement.style.backgroundColor = snapshot.colors.chatBackground || '#0F0F14';
+        chatWindow.style.backgroundColor = colors.chatBackground || '#0F0F14';
+        chatWindow.style.color = textColor;
 
-        // Header - set color on parent so children inherit
         const header = chatElement.querySelector('.chat-header');
         if (header) {
-          header.style.backgroundColor = snapshot.colors.chatHeader;
+          header.style.backgroundColor = colors.chatHeader || '#1A1A20';
           header.style.color = textColor;
         }
 
-        // Messages area stays transparent so full chat background is visible
         const messagesArea = chatElement.querySelector('.chat-messages');
         if (messagesArea) {
           messagesArea.style.backgroundColor = 'transparent';
+          messagesArea.style.opacity = '1';
+          messagesArea.style.visibility = 'visible';
         }
 
-        // Input container + field
         const inputArea = chatElement.querySelector('.chat-input');
         if (inputArea) {
-          inputArea.style.backgroundColor = 'transparent';
+          inputArea.style.backgroundColor = 'rgba(0,0,0,0.08)';
           inputArea.style.borderTop = '1px solid rgba(255,255,255,0.08)';
         }
+
         const inputField = chatElement.querySelector('.chat-input input');
         if (inputField) {
           inputField.style.color = textColor;
-          inputField.style.backgroundColor = snapshot.colors.chatInput;
+          inputField.style.backgroundColor = colors.chatInput || '#1A1A20';
           inputField.style.borderColor = 'rgba(255,255,255,0.12)';
+          inputField.style.opacity = '1';
+          inputField.style.visibility = 'visible';
         }
 
         const sendBtn = chatElement.querySelector('.send-btn');
         if (sendBtn) {
-          sendBtn.style.backgroundColor = snapshot.colors.chatAccent;
+          sendBtn.style.backgroundColor = colors.chatAccent || '#7C3AED';
         }
-        
-        // Wiadomości bota
-        chatElement.querySelectorAll('.message.bot .message-content').forEach(msg => {
-          msg.style.backgroundColor = snapshot.colors.botBubble;
-          msg.style.borderColor = snapshot.colors.botBubble;
-          msg.style.color = snapshot.colors.botText;
+
+        chatElement.querySelectorAll('.message.message-bot .message-bubble').forEach((bubble) => {
+          bubble.style.backgroundColor = colors.botBubble || 'rgba(255,255,255,0.05)';
+          bubble.style.borderColor = 'rgba(255,255,255,0.08)';
+          bubble.style.color = colors.botText || '#E2E8F0';
+          bubble.style.borderRadius = `${bubbleRadius}px ${bubbleRadius}px ${bubbleRadius}px 4px`;
+          bubble.style.opacity = '1';
+          bubble.style.visibility = 'visible';
         });
-        // Wiadomości użytkownika
-        chatElement.querySelectorAll('.message.user .message-content').forEach(msg => {
-          msg.style.backgroundColor = snapshot.colors.userBubble;
-          msg.style.borderColor = snapshot.colors.userBubble;
-          msg.style.color = snapshot.colors.userText;
+
+        chatElement.querySelectorAll('.message.message-user .message-bubble').forEach((bubble) => {
+          bubble.style.backgroundColor = colors.userBubble || 'rgba(139,92,246,0.18)';
+          bubble.style.borderColor = colors.userBubble || '#7C3AED';
+          bubble.style.color = colors.userText || '#F8F9FB';
+          bubble.style.borderRadius = `${bubbleRadius}px ${bubbleRadius}px 4px ${bubbleRadius}px`;
+          bubble.style.opacity = '1';
+          bubble.style.visibility = 'visible';
         });
-        // Quick replies buttons with style options
+
+        const avatarUrl = resolveAvatarUrl(snapshot);
+        chatElement.querySelectorAll('.message-avatar img, .chat-avatar img').forEach((img) => {
+          img.setAttribute('src', avatarUrl);
+        });
+
         const qrStyle = snapshot.quickReplyStyle || 'filled';
         const qrRadius = snapshot.quickReplyRadius !== undefined ? snapshot.quickReplyRadius : 12;
-        chatElement.querySelectorAll('.quick-replies-top button, .quick-replies-bottom button').forEach(btn => {
+        chatElement.querySelectorAll('.quick-replies-top button, .quick-replies-bottom button').forEach((btn) => {
           btn.style.borderRadius = `${qrRadius}px`;
           if (qrStyle === 'filled') {
-            btn.style.backgroundColor = snapshot.colors.chatAccent;
+            btn.style.backgroundColor = colors.chatAccent || '#7C3AED';
             btn.style.border = 'none';
             btn.style.color = '#fff';
           } else if (qrStyle === 'outline') {
             btn.style.backgroundColor = 'transparent';
-            btn.style.border = `2px solid ${snapshot.colors.chatAccent}`;
-            btn.style.color = snapshot.colors.chatAccent;
+            btn.style.border = `2px solid ${colors.chatAccent || '#7C3AED'}`;
+            btn.style.color = colors.chatAccent || '#7C3AED';
           } else if (qrStyle === 'ghost') {
-            btn.style.backgroundColor = `${snapshot.colors.chatAccent}20`;
+            btn.style.backgroundColor = `${colors.chatAccent || '#7C3AED'}20`;
             btn.style.border = 'none';
-            btn.style.color = snapshot.colors.chatAccent;
+            btn.style.color = colors.chatAccent || '#7C3AED';
           }
         });
       }
+
       function updateChatBackground(chatElement, snapshot) {
         if (!chatElement) return;
+        const target = chatElement.querySelector('.chat-window') || chatElement;
         if (snapshot.backgroundType === 'preset' && snapshot.backgroundPreset) {
           const bgUrl = PRESET_BACKGROUNDS[snapshot.backgroundPreset];
           if (bgUrl) {
-            chatElement.style.backgroundImage = `url(${bgUrl})`;
-            chatElement.style.backgroundSize = 'cover';
-            chatElement.style.backgroundPosition = 'center';
+            target.style.backgroundImage = `url(${bgUrl})`;
+            target.style.backgroundSize = 'cover';
+            target.style.backgroundPosition = 'center';
           }
         } else if (snapshot.backgroundType === 'image' && snapshot.backgroundImage) {
-          chatElement.style.backgroundImage = `url(${snapshot.backgroundImage})`;
-          chatElement.style.backgroundSize = 'cover';
-          chatElement.style.backgroundPosition = 'center';
+          target.style.backgroundImage = `url(${snapshot.backgroundImage})`;
+          target.style.backgroundSize = 'cover';
+          target.style.backgroundPosition = 'center';
         } else {
-          chatElement.style.backgroundImage = 'none';
+          target.style.backgroundImage = 'none';
         }
       }
+
       function updateChatOverlay(chatElement, snapshot) {
-        const overlay = chatElement.querySelector('.chat-background-overlay');
-        if (overlay) {
-          overlay.style.backgroundColor = `rgba(0, 0, 0, ${(snapshot.backgroundOverlay || 0) / 100})`;
+        const chatWindow = chatElement?.querySelector('.chat-window');
+        if (chatWindow) {
+          const overlayAlpha = Math.max(0, Math.min(70, Number(snapshot?.backgroundOverlay || 0))) / 100;
+          chatWindow.style.boxShadow = overlayAlpha > 0
+            ? `inset 0 0 0 999px rgba(0, 0, 0, ${overlayAlpha})`
+            : 'none';
         }
       }
+
+      function createPreviewMessageElement(message, snapshot, options = {}) {
+        const type = message?.type === 'user' ? 'user' : 'bot';
+        const text = String(message?.text || '').trim();
+        const time = String(message?.time || '').trim();
+        const row = document.createElement('div');
+        row.className = `message message-${type}`;
+        row.style.opacity = '1';
+        row.style.visibility = 'visible';
+
+        if (options.animateLast && workState.animationEnabled) {
+          row.style.opacity = '0';
+          if (workState.animationPreset === 'fade') {
+            row.classList.add('fade-animated');
+          } else if (workState.animationPreset === 'slide') {
+            row.classList.add('slide-animated');
+          } else if (workState.animationPreset === 'pop') {
+            row.classList.add('pop-animated');
+          }
+        }
+
+        if (type === 'bot') {
+          const avatar = document.createElement('div');
+          avatar.className = 'message-avatar';
+          avatar.innerHTML = `<img src="${escapeHtml(resolveAvatarUrl(snapshot))}" alt="">`;
+          row.appendChild(avatar);
+        }
+
+        const body = document.createElement('div');
+        body.className = 'message-body';
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+        bubble.textContent = text;
+        bubble.style.opacity = '1';
+        bubble.style.visibility = 'visible';
+        body.appendChild(bubble);
+
+        if (time) {
+          const timeLabel = document.createElement('div');
+          timeLabel.className = 'message-time';
+          timeLabel.textContent = time;
+          body.appendChild(timeLabel);
+        }
+
+        row.appendChild(body);
+        return row;
+      }
+
       function renderWorkChatMessages() {
         const messagesContainer = document.getElementById('workChatMessages');
         if (!messagesContainer) return;
-        // NAPRAWA: czyszczenie i renderowanie wiadomości
         messagesContainer.innerHTML = '';
-        workState.messages.forEach((msg, index) => {
-          const messageDiv = document.createElement('div');
-          messageDiv.className = `message ${msg.type}`;
-          // NAPRAWA: zawsze ustawiaj opacity na 1 dla widoczności
-          messageDiv.style.opacity = '1';
-          messageDiv.style.transform = 'translateY(0)';
-          messageDiv.innerHTML = `
-<div class="message-content">
-${msg.text}
-</div>
-<div class="message-time">${msg.time}</div>
-`;
-          // Dodaj animację tylko do ostatniej nowej wiadomości
-          const isLastMessage = index === workState.messages.length - 1;
-          if (isLastMessage && workState.animationEnabled) {
-            // Reset opacity dla animacji
-            messageDiv.style.opacity = '0';
-            if (workState.animationPreset === 'fade') {
-              messageDiv.classList.add('fade-animated');
-            } else if (workState.animationPreset === 'slide') {
-              messageDiv.classList.add('slide-animated');
-            } else if (workState.animationPreset === 'pop') {
-              messageDiv.classList.add('pop-animated');
-            }
-          }
-          // Zastosuj kolory do wiadomości
-          const content = messageDiv.querySelector('.message-content');
-          if (content) {
-            if (msg.type === 'bot') {
-              content.style.backgroundColor = workState.colors.botBubble;
-              content.style.borderColor = workState.colors.botBubble;
-              content.style.color = workState.colors.botText;
-              content.style.borderRadius = `${workState.bubbleRadius}px`;
-            } else {
-              content.style.backgroundColor = workState.colors.userBubble;
-              content.style.borderColor = workState.colors.userBubble;
-              content.style.color = workState.colors.userText;
-              content.style.borderRadius = `${workState.bubbleRadius}px`;
-            }
-          }
-          messagesContainer.appendChild(messageDiv);
+        const renderable = getRenderableMessages(workState.messages);
+
+        renderable.forEach((msg, index) => {
+          const isLastMessage = index === renderable.length - 1;
+          const node = createPreviewMessageElement(msg, workState, { animateLast: isLastMessage });
+          messagesContainer.appendChild(node);
         });
-        // Scroll na dół
-        setTimeout(() => {
+
+        requestAnimationFrame(() => {
           messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }, 50);
+        });
       }
       /* ========== AKTUALIZACJA DEVICE CHAT ========== */
       function updateDeviceChatSize() {
@@ -6942,136 +7448,37 @@ ${msg.text}
         const monitorChat = document.getElementById('monitorChat');
         deviceSnapshot = deviceSnapshot || deviceState;
 
-        // Update mobile chat - synchronizacja z work chat
         if (mobileRoot) {
-          // Update bot name
-          const mobileChatName = mobileRoot.querySelector('#mobileChatName');
-          if (mobileChatName) {
-            mobileChatName.textContent = snapshot.botName || i18nText("i18n-appearance-default-bot-name");
-          }
-
-          // Update avatar
-          const mobileAvatar = mobileRoot.querySelector('.mobile-header-avatar');
-          if (mobileAvatar) {
-            if (snapshot.avatarImage) {
-              mobileAvatar.style.backgroundImage = `url(${snapshot.avatarImage})`;
-              mobileAvatar.style.backgroundSize = 'cover';
-              mobileAvatar.style.backgroundPosition = 'center';
-              mobileAvatar.innerHTML = '';
-            } else {
-              mobileAvatar.style.backgroundImage = 'none';
-              mobileAvatar.innerHTML = '<i class="fas fa-robot"></i>';
+          mobileRoot.innerHTML = generateMonitorChatHTML(snapshot, { mobile: true });
+          const mobileChat = mobileRoot.querySelector('.preview-chat');
+          if (mobileChat) {
+            applyColorsToChat(mobileChat, snapshot);
+            updateChatBackground(mobileChat, snapshot);
+            updateChatOverlay(mobileChat, snapshot);
+            applyPreviewTypography(mobileChat, snapshot);
+            const messagesContainer = mobileChat.querySelector('.chat-messages');
+            if (messagesContainer) {
+              messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
-          }
-
-          // Render messages in mobile format
-          const mobileMessagesContainer = mobileRoot.querySelector('#mobileChatMessages');
-          if (mobileMessagesContainer) {
-            const messages = snapshot.messages || [];
-            const colors = snapshot.colors || {};
-            const bubbleRadius = snapshot.bubbleRadius || 16;
-            mobileMessagesContainer.innerHTML = messages.map(msg => {
-              const isBotMsg = msg.type === 'bot';
-              const bgColor = isBotMsg ? (colors.botBubble || '#1E293B') : (colors.userBubble || '#7C3AED');
-              const textColor = isBotMsg ? (colors.botText || '#E2E8F0') : (colors.userText || '#F8F9FB');
-              return `
-                <div class="mobile-message ${msg.type}">
-                    <div class="mobile-message-content" style="background-color: ${bgColor}; color: ${textColor}; border-radius: ${bubbleRadius}px;">${msg.text}</div>
-                </div>
-              `;
-            }).join('');
-            // Scroll to bottom
-            mobileMessagesContainer.scrollTop = mobileMessagesContainer.scrollHeight;
-          }
-
-          // Render quick replies
-          const mobileQuickReplies = mobileRoot.querySelector('#mobileQuickReplies');
-          if (mobileQuickReplies) {
-            const quickReplies = snapshot.quickReplies?.messages || [];
-            if (quickReplies.length > 0 && !snapshot.quickReplies?.top) {
-              mobileQuickReplies.innerHTML = quickReplies.map(text => `<button>${text}</button>`).join('');
-              mobileQuickReplies.style.display = 'flex';
-            } else {
-              mobileQuickReplies.style.display = 'none';
-            }
-          }
-
-          // Apply mobile colors and styles (same as work chat)
-          applyMobileChatColors(mobileRoot, snapshot);
-          
-          // Apply bubble radius
-          mobileRoot.querySelectorAll('.mobile-message-content').forEach(msg => {
-            msg.style.borderRadius = `${snapshot.bubbleRadius || 16}px`;
-          });
-          
-          // Apply font family to mobile chat
-          if (snapshot?.fontFamily) {
-            const fontFamilyMap = {
-              'system': "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-              'inter': "'Inter', system-ui, sans-serif",
-              'roboto': "'Roboto', 'Segoe UI', sans-serif",
-              'open-sans': "'Open Sans', sans-serif",
-              'montserrat': "'Montserrat', sans-serif",
-              'poppins': "'Poppins', sans-serif",
-              'sf-pro': "'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif",
-              'geist': "'Geist', 'Segoe UI', system-ui, sans-serif"
-            };
-            mobileRoot.style.fontFamily = fontFamilyMap[snapshot.fontFamily] || fontFamilyMap.system;
-          }
-          
-          // Apply font size
-          if (snapshot?.fontSize) {
-            mobileRoot.style.setProperty('--chat-font-size', `${snapshot.fontSize}px`);
           }
         }
 
-        // Generate HTML for monitor chat (REAL PIXEL DIMENSIONS)
         if (monitorChat) {
-          const monitorHTML = generateMonitorChatHTML(snapshot);
-          monitorChat.innerHTML = monitorHTML;
-          
-          // Apply colors to monitor chat
-          applyColorsToChat(monitorChat, snapshot);
-          
-          // Apply background
-          updateChatBackground(monitorChat, snapshot);
-          
-          // Apply bubble radius
-          monitorChat.querySelectorAll('.message-content').forEach(msg => {
-            msg.style.borderRadius = `${snapshot.bubbleRadius || 14}px`;
-          });
-          
-          // Apply font family to monitor chat
-          if (snapshot?.fontFamily) {
-            const fontFamilyMap = {
-              'system': "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-              'inter': "'Inter', system-ui, sans-serif",
-              'roboto': "'Roboto', 'Segoe UI', sans-serif",
-              'open-sans': "'Open Sans', sans-serif",
-              'montserrat': "'Montserrat', sans-serif",
-              'poppins': "'Poppins', sans-serif",
-              'sf-pro': "'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif",
-              'geist': "'Geist', 'Segoe UI', system-ui, sans-serif"
-            };
-            monitorChat.style.fontFamily = fontFamilyMap[snapshot.fontFamily] || fontFamilyMap.system;
+          monitorChat.innerHTML = generateMonitorChatHTML(snapshot, { mobile: false });
+          const desktopChat = monitorChat.querySelector('.preview-chat');
+          if (desktopChat) {
+            applyColorsToChat(desktopChat, snapshot);
+            updateChatBackground(desktopChat, snapshot);
+            updateChatOverlay(desktopChat, snapshot);
+            applyPreviewTypography(desktopChat, snapshot);
+            const messagesContainer = desktopChat.querySelector('.chat-messages');
+            if (messagesContainer) {
+              messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
           }
-          
-          // Apply font size
-          if (snapshot?.fontSize) {
-            monitorChat.style.setProperty('--chat-font-size', `${snapshot.fontSize}px`);
-          }
-          
-          // Apply position to monitor chat
+
           applyMonitorChatPosition(monitorChat, deviceSnapshot);
-          
-          // Apply dimensions to monitor chat
           applyMonitorChatDimensions(monitorChat, deviceSnapshot);
-          
-          // Scroll to bottom
-          const messagesContainer = monitorChat.querySelector('.chat-messages');
-          if (messagesContainer) {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-          }
         }
       }
       
