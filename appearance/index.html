@@ -5132,23 +5132,6 @@
       z-index: 9;
     }
 
-    #dv-configurator #monitorChat::after {
-      content: attr(data-size);
-      position: absolute;
-      right: 6px;
-      top: 6px;
-      padding: 2px 6px;
-      border-radius: 999px;
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      color: #eaf1ff;
-      background: rgba(17, 24, 39, 0.86);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      z-index: 20;
-      pointer-events: none;
-    }
-
     #dv-configurator .preview-chat .chat-window {
       display: flex;
       flex-direction: column;
@@ -5225,7 +5208,7 @@
     }
 
     #dv-configurator .phone-frame {
-      width: clamp(196px, 14.5vw, 236px);
+      width: clamp(188px, 13.8vw, 226px);
       aspect-ratio: 9 / 19.5;
       height: auto;
       max-height: calc(100vh - 300px);
@@ -5250,6 +5233,104 @@
       display: flex;
       flex-direction: column;
       background: #0d1118;
+      position: relative;
+      z-index: 2;
+    }
+
+    #dv-configurator .phone-screen {
+      position: relative;
+    }
+
+    #dv-configurator .phone-webpage {
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      z-index: 1;
+      padding: 8px;
+      background:
+        radial-gradient(70% 85% at 82% 24%, rgba(124, 58, 237, 0.25), rgba(124, 58, 237, 0) 66%),
+        linear-gradient(180deg, #0b1320 0%, #0b0f18 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    #dv-configurator .phone-webpage-topbar {
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 6px;
+      padding: 0 8px;
+    }
+
+    #dv-configurator .phone-webpage-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+    }
+
+    #dv-configurator .phone-webpage-url {
+      font-size: 8px;
+      font-weight: 600;
+      color: rgba(226, 232, 240, 0.74);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #dv-configurator .phone-webpage-lock {
+      font-size: 8px;
+      color: rgba(226, 232, 240, 0.54);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #dv-configurator .phone-webpage-hero {
+      height: 74px;
+      border-radius: 10px;
+      background:
+        linear-gradient(145deg, rgba(59, 130, 246, 0.36), rgba(124, 58, 237, 0.52)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    #dv-configurator .phone-webpage-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    #dv-configurator .phone-webpage-card {
+      height: 44px;
+      border-radius: 9px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    #dv-configurator .phone-webpage-line {
+      height: 8px;
+      width: 100%;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    #dv-configurator .phone-webpage-line.short {
+      width: 72%;
+    }
+
+    #dv-configurator .phone-webpage-button {
+      margin-top: auto;
+      height: 26px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(124, 58, 237, 0.9), rgba(236, 72, 153, 0.8));
+      border: 1px solid rgba(255, 255, 255, 0.18);
     }
 
     #dv-configurator .preview-mobile .preview-chat--mobile,
@@ -6203,6 +6284,21 @@
                     <div class="phone-frame">
                       <div class="phone-bezel">
                         <div class="phone-screen">
+                          <div class="phone-webpage" id="mobilePhoneWebpage" aria-hidden="true">
+                            <div class="phone-webpage-topbar">
+                              <span class="phone-webpage-dot"></span>
+                              <span class="phone-webpage-url">daveri.io</span>
+                              <span class="phone-webpage-lock"><i class="fas fa-lock"></i></span>
+                            </div>
+                            <div class="phone-webpage-hero"></div>
+                            <div class="phone-webpage-row">
+                              <div class="phone-webpage-card"></div>
+                              <div class="phone-webpage-card"></div>
+                            </div>
+                            <div class="phone-webpage-line"></div>
+                            <div class="phone-webpage-line short"></div>
+                            <div class="phone-webpage-button"></div>
+                          </div>
                           <div class="mobile-chat-root preview-chat-host" id="mobileChatRoot"></div>
                         </div>
                       </div>
@@ -7704,9 +7800,8 @@
       function applyMonitorChatPosition(monitorChat, deviceSnapshot) {
         if (!monitorChat) return;
         const position = (deviceSnapshot && deviceSnapshot.position) || deviceState.position || 'bottom-right';
-        const monitorScale = 1.5;
-        const widgetWidth = Math.max(220, Math.round((Number(deviceSnapshot?.width) || FIXED_CHAT_DIMENSIONS.width) * monitorScale));
-        const widgetHeight = Math.max(320, Math.round((Number(deviceSnapshot?.height) || FIXED_CHAT_DIMENSIONS.height) * monitorScale));
+        const widgetWidth = Math.max(220, Number(deviceSnapshot?.width) || FIXED_CHAT_DIMENSIONS.width);
+        const widgetHeight = Math.max(320, Number(deviceSnapshot?.height) || FIXED_CHAT_DIMENSIONS.height);
         const edgeX = Math.max(16, Number(deviceSnapshot?.offsetX ?? deviceSnapshot?.x ?? 32));
         const edgeY = Math.max(16, Number(deviceSnapshot?.offsetY ?? deviceSnapshot?.y ?? 32));
         const launcherVisible = !!workState?.iconMode;
@@ -7782,15 +7877,11 @@
       // Apply dimensions to monitor chat based on device state
       function applyMonitorChatDimensions(monitorChat, deviceSnapshot) {
         if (!monitorChat) return;
-        // Scale up chat window inside monitor so it's readable while still reflecting slider dimensions.
-        const rawWidth = Math.max(220, Number(deviceSnapshot?.width) || FIXED_CHAT_DIMENSIONS.width);
-        const rawHeight = Math.max(320, Number(deviceSnapshot?.height) || FIXED_CHAT_DIMENSIONS.height);
-        const monitorScale = 1.5;
-        const width = Math.max(220, Math.round(rawWidth * monitorScale));
-        const height = Math.max(320, Math.round(rawHeight * monitorScale));
+        // 1:1 with desktop stage coords; viewport scaling handles fitting to preview block.
+        const width = Math.max(220, Number(deviceSnapshot?.width) || FIXED_CHAT_DIMENSIONS.width);
+        const height = Math.max(320, Number(deviceSnapshot?.height) || FIXED_CHAT_DIMENSIONS.height);
         monitorChat.style.width = `${width}px`;
         monitorChat.style.height = `${height}px`;
-        monitorChat.setAttribute('data-size', `${rawWidth}x${rawHeight}`);
       }
 
       function applyMobileChatColors(mobileRoot, snapshot) {
@@ -8573,8 +8664,8 @@ ${i18nText("i18n-appearance-scale-fit")}
 
         if (iconMode) {
           // === MINIMIZED STATE ===
-          // Work chat: keep open preview and show launcher simultaneously
-          if (workChat) workChat.style.display = 'flex';
+          // Work chat: hide chat, show launcher
+          if (workChat) workChat.style.display = 'none';
           if (workChatIcon) {
             styleIcon(workChatIcon, 48);
             workChatIcon.style.display = 'flex';
@@ -8587,8 +8678,8 @@ ${i18nText("i18n-appearance-scale-fit")}
             mobileChatIcon.style.display = 'flex';
             mobileChatIcon.onclick = () => setWorkOption('iconMode', false);
           }
-          // Desktop monitor: keep chat visible and add launcher preview
-          if (monitorChat) monitorChat.style.display = 'flex';
+          // Desktop monitor: hide mini-chat and show launcher preview
+          if (monitorChat) monitorChat.style.display = 'none';
           if (monitorChatIcon) {
             styleIcon(monitorChatIcon, size);
             monitorChatIcon.style.display = 'flex';
