@@ -5124,6 +5124,9 @@
 
     #dv-configurator #monitorChat {
       position: absolute;
+      right: 32px;
+      bottom: 32px;
+      display: flex;
       border-radius: 14px;
       overflow: hidden;
       background: rgba(6, 10, 16, 0.76);
@@ -5239,6 +5242,7 @@
 
     #dv-configurator .phone-screen {
       position: relative;
+      padding-top: 30px;
     }
 
     #dv-configurator .phone-webpage {
@@ -5246,7 +5250,7 @@
       inset: 0;
       border-radius: 20px;
       z-index: 1;
-      padding: 8px;
+      padding: 30px 8px 8px;
       background:
         radial-gradient(70% 85% at 82% 24%, rgba(124, 58, 237, 0.25), rgba(124, 58, 237, 0) 66%),
         linear-gradient(180deg, #0b1320 0%, #0b0f18 100%);
@@ -5265,6 +5269,13 @@
       align-items: center;
       gap: 6px;
       padding: 0 8px;
+    }
+
+    #dv-configurator .phone-screen #mobileChatIcon {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      z-index: 15;
     }
 
     #dv-configurator .phone-webpage-dot {
@@ -6263,7 +6274,7 @@
                     </div>
                     <div class="chat-icon small" id="workChatIcon"
                       style="display: none; position: absolute; left: 32px; bottom: 32px;">
-                      <img src="assets/icons/logo.svg" alt="Chat launcher" />
+                      <img src="/assets/icons/logo.svg" alt="Chat launcher" />
                     </div>
                   </div>
                 </div>
@@ -6300,11 +6311,11 @@
                             <div class="phone-webpage-button"></div>
                           </div>
                           <div class="mobile-chat-root preview-chat-host" id="mobileChatRoot"></div>
+                          <div class="chat-icon small mobile-icon" id="mobileChatIcon" style="display: none;">
+                            <img src="/assets/icons/logo.svg" alt="Chat launcher" />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div class="chat-icon small mobile-icon" id="mobileChatIcon" style="display: none;">
-                      <img src="assets/icons/logo.svg" alt="Chat launcher" />
                     </div>
                   </div>
                 </div>
@@ -6316,7 +6327,7 @@
                           <div class="monitor-wallpaper" id="monitorWallpaper"></div>
                           <div class="monitor-chat preview-chat-host" id="monitorChat"></div>
                           <div class="chat-icon monitor-icon" id="monitorChatIcon" style="display: none;">
-                            <img src="assets/icons/logo.svg" alt="Chat launcher" />
+                            <img src="/assets/icons/logo.svg" alt="Chat launcher" />
                           </div>
                         </div>
                       </div>
@@ -6434,7 +6445,7 @@
       const DEFAULT_BOT_AVATAR = "/assets/icons/logo.svg";
       const FIXED_CHAT_DIMENSIONS = Object.freeze({ width: 360, height: 520 });
       const DESKTOP_STAGE_SIZE = Object.freeze({ width: 1920, height: 1080 });
-      const DEFAULT_LAUNCHER_ICON = "assets/icons/logo.svg";
+      const DEFAULT_LAUNCHER_ICON = "/assets/icons/logo.svg";
       const getDefaultStarterReplies = () => {
         const first = (i18nText("i18n-appearance-quick-default-1") || "Cennik / Pricing").trim();
         const second = (i18nText("i18n-appearance-quick-default-2") || "Kontakt / Contact").trim();
@@ -7510,7 +7521,7 @@
         if (avatar) {
           avatar.style.display = snapshot.avatarEnabled ? 'flex' : 'none';
           avatar.innerHTML = snapshot.avatarEnabled
-            ? `<img src="${escapeHtml(resolveAvatarUrl(snapshot))}" alt="">`
+            ? `<img src="${escapeHtml(resolveAvatarUrl(snapshot))}" alt="" onerror="this.onerror=null;this.src='${escapeHtml(DEFAULT_BOT_AVATAR)}';">`
             : '';
         }
       }
@@ -7579,6 +7590,10 @@
         const avatarUrl = resolveAvatarUrl(snapshot);
         chatElement.querySelectorAll('.message-avatar img, .chat-avatar img').forEach((img) => {
           img.setAttribute('src', avatarUrl);
+          img.onerror = function onAvatarErr() {
+            this.onerror = null;
+            this.src = DEFAULT_BOT_AVATAR;
+          };
         });
 
         const qrStyle = snapshot.quickReplyStyle || 'filled';
@@ -7694,7 +7709,7 @@
         if (type === 'bot') {
           const avatar = document.createElement('div');
           avatar.className = 'message-avatar';
-          avatar.innerHTML = `<img src="${escapeHtml(resolveAvatarUrl(snapshot))}" alt="">`;
+          avatar.innerHTML = `<img src="${escapeHtml(resolveAvatarUrl(snapshot))}" alt="" onerror="this.onerror=null;this.src='${escapeHtml(DEFAULT_BOT_AVATAR)}';">`;
           row.appendChild(avatar);
         }
 
@@ -7793,13 +7808,18 @@
 
           applyMonitorChatPosition(monitorChat, deviceSnapshot);
           applyMonitorChatDimensions(monitorChat, deviceSnapshot);
+          monitorChat.style.display = workState?.iconMode ? 'none' : 'flex';
+          monitorChat.style.visibility = 'visible';
+          monitorChat.style.opacity = '1';
         }
       }
       
       // Apply position to monitor chat (mirroring device position)
       function applyMonitorChatPosition(monitorChat, deviceSnapshot) {
         if (!monitorChat) return;
-        const position = (deviceSnapshot && deviceSnapshot.position) || deviceState.position || 'bottom-right';
+        const rawPosition = (deviceSnapshot && deviceSnapshot.position) || deviceState.position || 'bottom-right';
+        const allowedPositions = new Set(['bottom-left', 'bottom-right', 'top-left', 'top-right', 'custom']);
+        const position = allowedPositions.has(rawPosition) ? rawPosition : 'bottom-right';
         const widgetWidth = Math.max(220, Number(deviceSnapshot?.width) || FIXED_CHAT_DIMENSIONS.width);
         const widgetHeight = Math.max(320, Number(deviceSnapshot?.height) || FIXED_CHAT_DIMENSIONS.height);
         const edgeX = Math.max(16, Number(deviceSnapshot?.offsetX ?? deviceSnapshot?.x ?? 32));
@@ -7840,6 +7860,10 @@
             if (normalizedLeft !== null) monitorChat.style.left = `${normalizedLeft}px`;
             if (normalizedTop !== null) monitorChat.style.top = `${normalizedTop}px`;
             break;
+          default:
+            monitorChat.style.right = `${edgeX}px`;
+            monitorChat.style.bottom = `${edgeY + chatLift}px`;
+            break;
         }
         
         // Also update minimized icon position in monitor
@@ -7869,6 +7893,10 @@
             case 'custom':
               if (normalizedLeft !== null) monitorIcon.style.left = `${normalizedLeft}px`;
               if (normalizedTop !== null) monitorIcon.style.top = `${normalizedTop}px`;
+              break;
+            default:
+              monitorIcon.style.right = `${edgeX}px`;
+              monitorIcon.style.bottom = `${edgeY}px`;
               break;
           }
         }
@@ -8359,14 +8387,14 @@ ${i18nText("i18n-appearance-scale-fit")}
         ].filter(Boolean);
         targets.forEach((avatar) => {
           avatar.style.backgroundImage = 'none';
-          avatar.innerHTML = `<img src="${src}" alt="">`;
+          avatar.innerHTML = `<img src="${src}" alt="" onerror="this.onerror=null;this.src='${escapeHtml(DEFAULT_BOT_AVATAR)}';">`;
         });
       }
       function resetAvatarToDefault() {
         const workAvatar = document.querySelector('#workChat .chat-avatar');
         if (workAvatar) {
           workAvatar.style.backgroundImage = 'none';
-          workAvatar.innerHTML = `<img src="${escapeHtml(DEFAULT_BOT_AVATAR)}" alt="">`;
+          workAvatar.innerHTML = `<img src="${escapeHtml(DEFAULT_BOT_AVATAR)}" alt="" onerror="this.onerror=null;this.src='${escapeHtml(DEFAULT_BOT_AVATAR)}';">`;
         }
         const deviceTargets = [
           document.querySelector('#monitorChat .chat-avatar'),
@@ -8374,7 +8402,7 @@ ${i18nText("i18n-appearance-scale-fit")}
         ].filter(Boolean);
         deviceTargets.forEach((avatar) => {
           avatar.style.backgroundImage = 'none';
-          avatar.innerHTML = `<img src="${escapeHtml(DEFAULT_BOT_AVATAR)}" alt="">`;
+          avatar.innerHTML = `<img src="${escapeHtml(DEFAULT_BOT_AVATAR)}" alt="" onerror="this.onerror=null;this.src='${escapeHtml(DEFAULT_BOT_AVATAR)}';">`;
         });
       }
       function updateBotName(name) {
