@@ -3480,6 +3480,7 @@
 
     #dv-configurator .appearance-layout {
       display: grid;
+      grid-template-columns: minmax(250px, 0.78fr) minmax(340px, 0.98fr) minmax(460px, 1.24fr);
       grid-template-rows: auto auto minmax(0, 1fr);
       gap: 14px 20px;
       align-items: stretch;
@@ -4212,45 +4213,71 @@
 
     #dv-configurator .device-toggle {
       display: flex;
-      gap: 2px;
+      gap: 0;
       margin: 0 0 14px;
       align-items: center;
       justify-content: flex-start;
-      padding: 3px;
+      padding: 4px;
       border-radius: 999px;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      background: #151821;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-      width: fit-content;
+      background: linear-gradient(180deg, #1b1f2a 0%, #131722 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 8px 22px rgba(0, 0, 0, 0.34);
+      width: 232px;
+      position: relative;
+      isolation: isolate;
+    }
+
+    #dv-configurator .device-toggle .device-toggle-indicator {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: calc((100% - 8px) / 2);
+      height: calc(100% - 8px);
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(245, 249, 255, 0.98), rgba(220, 230, 244, 0.92));
+      box-shadow:
+        0 8px 18px rgba(10, 16, 30, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      transform: translateX(0);
+      transition: transform 220ms cubic-bezier(.2,.8,.2,1);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #dv-configurator[data-device-preview="mobile"] .device-toggle .device-toggle-indicator {
+      transform: translateX(100%);
     }
 
     #dv-configurator .device-toggle .device-button {
-      height: 30px;
-      padding: 0 14px;
-      flex: 0 0 auto;
+      height: 32px;
+      padding: 0 16px;
+      flex: 1 1 50%;
       border-radius: 999px;
       border: none;
       background: transparent;
-      color: var(--dv-text2);
+      color: #b5bfd3;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 120ms ease;
+      transition: color 180ms ease, opacity 180ms ease;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      position: relative;
+      z-index: 1;
     }
 
     #dv-configurator .device-toggle .device-button.active {
-      background: rgba(255, 255, 255, 0.14);
-      color: #fff;
-      box-shadow:
-        0 1px 2px rgba(0, 0, 0, 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.32);
+      background: transparent;
+      color: #111827;
+      text-shadow: none;
     }
 
     #dv-configurator .device-toggle .device-button:hover {
-      background: rgba(255, 255, 255, 0.07);
+      background: transparent;
+      color: #d3dcef;
     }
 
     #dv-configurator .device-preview-stage {
@@ -4318,28 +4345,90 @@
     }
 
     #dv-configurator .phone-frame {
-      width: 360px;
-      height: 640px;
+      width: clamp(232px, 18vw, 282px);
+      aspect-ratio: 9 / 19.5;
+      height: auto;
       margin: 0 auto;
-      border-radius: 28px;
-      background: #0b0f19;
-      border: 2px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.03), 0 30px 80px rgba(0, 0, 0, 0.6);
+      border-radius: 40px;
+      background: linear-gradient(165deg, #2c323f 0%, #171c26 38%, #0f131c 100%);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow:
+        0 0 0 2px rgba(255, 255, 255, 0.06),
+        0 22px 56px rgba(0, 0, 0, 0.58);
       overflow: hidden;
       position: relative;
       max-width: 100%;
+      padding: 6px;
+    }
+
+    #dv-configurator .phone-frame::before,
+    #dv-configurator .phone-frame::after {
+      content: "";
+      position: absolute;
+      right: -2px;
+      width: 3px;
+      border-radius: 3px 0 0 3px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.34), rgba(255,255,255,0.08));
+      pointer-events: none;
+    }
+
+    #dv-configurator .phone-frame::before {
+      top: 96px;
+      height: 56px;
+    }
+
+    #dv-configurator .phone-frame::after {
+      top: 166px;
+      height: 36px;
+    }
+
+    #dv-configurator .phone-bezel {
+      width: 100%;
+      height: 100%;
+      border-radius: 34px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: linear-gradient(180deg, #0f131d 0%, #090c12 100%);
+      padding: 7px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #dv-configurator .phone-screen {
+      width: 100%;
+      height: 100%;
+      border-radius: 28px;
+      background: #05070b;
+      overflow: hidden;
+      position: relative;
+      padding: 20px 8px 10px;
+    }
+
+    #dv-configurator .phone-screen::before {
+      content: "";
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 86px;
+      height: 22px;
+      border-radius: 12px;
+      background: #010205;
+      box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+      z-index: 5;
+      pointer-events: none;
     }
 
     #dv-configurator .phone-frame #mobileChatRoot {
       width: 100%;
       height: 100%;
-      border-radius: inherit;
+      border-radius: 20px;
       overflow: hidden;
+      background: #0d1118;
     }
 
     #dv-configurator .device-preview-desktop .desktop-preview {
       width: 100%;
-      max-width: 680px;
+      max-width: 760px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -4983,7 +5072,7 @@
     }
 
     #dv-configurator #monitorFrame {
-      width: min(100%, 410px);
+      width: min(100%, 470px);
       aspect-ratio: 16 / 9;
       border-radius: 12px;
       border: 1px solid rgba(255, 255, 255, 0.12);
@@ -5110,27 +5199,31 @@
     }
 
     #dv-configurator .phone-frame {
-      width: clamp(260px, 22vw, 340px);
-      aspect-ratio: 9 / 16;
+      width: clamp(232px, 18vw, 282px);
+      aspect-ratio: 9 / 19.5;
       height: auto;
       max-height: calc(100vh - 240px);
       margin: 0 auto;
-      border-radius: 30px;
-      border: 2px solid rgba(255, 255, 255, 0.14);
-      box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.03), 0 34px 86px rgba(0, 0, 0, 0.62);
-      background: #0b0f19;
+      border-radius: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow:
+        0 0 0 2px rgba(255, 255, 255, 0.06),
+        0 24px 58px rgba(0, 0, 0, 0.62);
+      background: linear-gradient(165deg, #2c323f 0%, #171c26 38%, #0f131c 100%);
       overflow: hidden;
       position: relative;
       display: flex;
+      padding: 6px;
     }
 
     #dv-configurator .phone-frame #mobileChatRoot {
       width: 100%;
       height: 100%;
-      border-radius: inherit;
+      border-radius: 20px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      background: #0d1118;
     }
 
     #dv-configurator .preview-mobile .preview-chat--mobile,
@@ -5213,7 +5306,7 @@
 
     @media (max-width: 1200px) {
       #dv-configurator .appearance-layout {
-        grid-template-columns: clamp(260px, 28vw, 340px) minmax(0, 1fr);
+        grid-template-columns: clamp(230px, 24vw, 300px) minmax(0, 1fr);
         grid-template-rows: auto auto minmax(0, 1fr);
       }
 
@@ -6035,6 +6128,7 @@
           <div class="device-preview-column">
             <div class="preview-device-column">
               <div class="device-toggle" id="appearanceDeviceToggle">
+                <span class="device-toggle-indicator" aria-hidden="true"></span>
                 <button type="button" class="device-btn device-button device-toggle-btn active" data-device="desktop">Desktop</button>
                 <button type="button" class="device-btn device-button device-toggle-btn" data-device="mobile">Mobile</button>
                 <div id="monitorModeSwitch" hidden aria-hidden="true"></div>
@@ -6043,7 +6137,11 @@
                 <div class="preview-section device-preview-mode device-preview-mobile preview-mobile">
                   <div class="mobile-preview">
                     <div class="phone-frame">
-                      <div class="mobile-chat-root preview-chat-host" id="mobileChatRoot"></div>
+                      <div class="phone-bezel">
+                        <div class="phone-screen">
+                          <div class="mobile-chat-root preview-chat-host" id="mobileChatRoot"></div>
+                        </div>
+                      </div>
                     </div>
                     <div class="chat-icon small mobile-icon" id="mobileChatIcon" style="display: none;">
                       <img src="assets/icons/logo.svg" alt="Chat launcher" />
@@ -6173,7 +6271,7 @@
       const ACTIVE_BOT_KEY = "daveri_active_bot_id";
       const WATERMARK_BRAND = "DaVeri";
       const WATERMARK_ICON = "/assets/icons/logo.svg";
-      const DEFAULT_BOT_AVATAR = "/assets/logo.svg";
+      const DEFAULT_BOT_AVATAR = "/assets/icons/logo.svg";
       const FIXED_CHAT_DIMENSIONS = Object.freeze({ width: 360, height: 520 });
       const DESKTOP_STAGE_SIZE = Object.freeze({ width: 1920, height: 1080 });
       const DEFAULT_LAUNCHER_ICON = "assets/icons/logo.svg";
@@ -7010,7 +7108,7 @@
         });
 
         connectors.forEach((connector, index) => {
-          connector.classList.toggle('completed', index <= activeIndex);
+          connector.classList.toggle('completed', index < activeIndex);
         });
 
         const visibleSections = [];
