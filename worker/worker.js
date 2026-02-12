@@ -1333,6 +1333,18 @@ const buildCreditStatusPayload = (planId, monthlyLimit, dailyCap, state) => {
   };
 };
 
+const buildCreditFallbackStatus = (planId = null) => ({
+  plan_id: planId || null,
+  monthly_limit: 0,
+  monthly_balance: 0,
+  daily_cap: 0,
+  daily_balance: 0,
+  remaining: 0,
+  capacity: 0,
+  next_daily_reset: null,
+  next_monthly_reset: null,
+});
+
 const getCreditStatusRecord = async (env, userId, options = {}) => {
   const fallbackPlanId =
     typeof options?.fallbackPlanId === "string" && options.fallbackPlanId.trim()
@@ -1515,9 +1527,15 @@ const handleCreditsStatus = async (request, env, cors, auth) => {
     );
   } catch (error) {
     return jsonResponse(
-      { error: "credits_status_failed", details: error?.message || null },
-      502,
-      cors
+      {
+        status: buildCreditFallbackStatus(auth.user?.plan_id || null),
+        degraded: true,
+        error: "credits_status_fallback",
+        details: error?.message || null,
+      },
+      200,
+      cors,
+      buildSessionHeadersIfNeeded(auth, request)
     );
   }
 };
@@ -1548,9 +1566,16 @@ const handleCreditsConsume = async (request, env, cors, auth) => {
     );
   } catch (error) {
     return jsonResponse(
-      { error: "credits_consume_failed", details: error?.message || null },
-      502,
-      cors
+      {
+        allowed: false,
+        status: buildCreditFallbackStatus(auth.user?.plan_id || null),
+        degraded: true,
+        error: "credits_consume_fallback",
+        details: error?.message || null,
+      },
+      200,
+      cors,
+      buildSessionHeadersIfNeeded(auth, request)
     );
   }
 };
@@ -1634,9 +1659,15 @@ const handleEntitlementsMap = async (request, env, cors, auth) => {
     );
   } catch (error) {
     return jsonResponse(
-      { error: "entitlements_fetch_failed", details: error?.message || null },
-      502,
-      cors
+      {
+        entitlements_map: {},
+        degraded: true,
+        error: "entitlements_fallback",
+        details: error?.message || null,
+      },
+      200,
+      cors,
+      buildSessionHeadersIfNeeded(auth, request)
     );
   }
 };
