@@ -11,6 +11,14 @@ import {
 
 const ACCOUNT_UPDATED_EVENT = "daveri:account-state-updated";
 
+if (typeof window !== "undefined") {
+  window.DaVeriAccountState = window.DaVeriAccountState || {
+    credits: null,
+    entitlements_map: {},
+    ready: false,
+  };
+}
+
 const accountState = {
   ready: false,
   user_id: null,
@@ -20,6 +28,18 @@ const accountState = {
 };
 
 let ensurePromise = null;
+
+const syncGlobalAccountState = () => {
+  if (typeof window === "undefined") return;
+  window.DaVeriAccountState = window.DaVeriAccountState || {
+    credits: null,
+    entitlements_map: {},
+    ready: false,
+  };
+  window.DaVeriAccountState.credits = accountState.credits ? { ...accountState.credits } : null;
+  window.DaVeriAccountState.entitlements_map = { ...(accountState.entitlements_map || {}) };
+  window.DaVeriAccountState.ready = accountState.ready === true;
+};
 
 const cloneState = () => ({
   ready: accountState.ready,
@@ -41,6 +61,7 @@ const emitState = () => {
 const setState = (patch) => {
   Object.assign(accountState, patch || {});
   accountState.loaded_at = new Date().toISOString();
+  syncGlobalAccountState();
   emitState();
 };
 
@@ -110,19 +131,24 @@ export const ensureAccountState = async () => {
       return cloneState();
     }
 
-    let credits = null;
+    let creditsStatus = null;
     let entitlementsMap = {};
 
     try {
-      [credits, entitlementsMap] = await Promise.all([
+      [creditsStatus, entitlementsMap] = await Promise.all([
         getCreditStatus().catch(() => null),
         getEntitlementsMap().catch(() => ({})),
       ]);
     } finally {
+      if (typeof window !== "undefined") {
+        window.DaVeriAccountState.credits = creditsStatus;
+        window.DaVeriAccountState.entitlements_map = entitlementsMap || {};
+        window.DaVeriAccountState.ready = true;
+      }
       setState({
         ready: true,
         user_id: resolveUserId(),
-        credits: credits || null,
+        credits: creditsStatus || null,
         entitlements_map: entitlementsMap || {},
       });
     }
