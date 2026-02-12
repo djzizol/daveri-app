@@ -172,7 +172,7 @@ export const applyPlanUpgrade = async (newPlanId = "premium", userId = null) => 
       raw = await callRpcRecord("apply_plan_change", {
         p_user_id: resolvedUserId,
         p_new_plan_id: planId,
-        p_change_type: "upgrade",
+        p_mode: "upgrade",
       });
       status = await getCreditStatus(resolvedUserId);
     } catch (error) {

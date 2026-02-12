@@ -206,18 +206,48 @@ const clampInt = (value, fallback, min, max) => {
 };
 
 let cachedDefaultPlanId;
+const PLAN_SELECT = "id,name,price_monthly,is_active,is_custom,sort_order";
+
+const toNumberOrNull = (value) => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+};
 
 const getDefaultPlanId = async (env) => {
   if (cachedDefaultPlanId !== undefined) return cachedDefaultPlanId;
 
-  const params = new URLSearchParams({
-    select: "id,price",
-    order: "price.asc",
+  const freeParams = new URLSearchParams({
+    select: "id",
+    id: "eq.free",
+    is_active: "eq.true",
     limit: "1",
   });
-  const result = await supabaseRequest(env, `/rest/v1/plans?${params.toString()}`);
-  if (result.ok && Array.isArray(result.data) && result.data[0]?.id) {
-    cachedDefaultPlanId = result.data[0].id;
+  const freeResult = await supabaseRequest(env, `/rest/v1/plans?${freeParams.toString()}`);
+  if (freeResult.ok && Array.isArray(freeResult.data) && freeResult.data[0]?.id) {
+    cachedDefaultPlanId = freeResult.data[0].id;
+    return cachedDefaultPlanId;
+  }
+
+  const activeParams = new URLSearchParams({
+    select: "id",
+    is_active: "eq.true",
+    order: "sort_order.asc,id.asc",
+    limit: "1",
+  });
+  const activeResult = await supabaseRequest(env, `/rest/v1/plans?${activeParams.toString()}`);
+  if (activeResult.ok && Array.isArray(activeResult.data) && activeResult.data[0]?.id) {
+    cachedDefaultPlanId = activeResult.data[0].id;
+    return cachedDefaultPlanId;
+  }
+
+  const anyParams = new URLSearchParams({
+    select: "id",
+    order: "sort_order.asc,id.asc",
+    limit: "1",
+  });
+  const anyResult = await supabaseRequest(env, `/rest/v1/plans?${anyParams.toString()}`);
+  if (anyResult.ok && Array.isArray(anyResult.data) && anyResult.data[0]?.id) {
+    cachedDefaultPlanId = anyResult.data[0].id;
     return cachedDefaultPlanId;
   }
 
@@ -299,8 +329,7 @@ const getOrCreateUser = async (env, session) => {
 const fetchPlanById = async (env, planId) => {
   if (!planId) return null;
   const params = new URLSearchParams({
-    select:
-      "id,price,bots_limit,files_limit,messages_limit,avatar_allowed,branding_allowed,embed_allowed",
+    select: PLAN_SELECT,
     id: `eq.${planId}`,
     limit: "1",
   });
@@ -309,36 +338,17 @@ const fetchPlanById = async (env, planId) => {
   return result.data[0];
 };
 
-const buildPlanSummary = (user, plan) => {
-  const used = Number(user?.messages_used ?? 0);
-  const safeUsed = Number.isFinite(used) ? Math.max(0, used) : 0;
-  const limit = Number(plan?.messages_limit ?? NaN);
-  const hasLimit = Number.isFinite(limit) && limit >= 0;
-
-  const creditsLimit = hasLimit ? limit : null;
-  const creditsRemaining = hasLimit ? Math.max(0, limit - safeUsed) : null;
-  const usedPercent = hasLimit && limit > 0 ? Math.min(100, Math.round((safeUsed / limit) * 100)) : null;
-  const remainingPercent =
-    hasLimit && limit > 0 ? Math.max(0, 100 - (usedPercent || 0)) : null;
-
-  return {
-    id: user?.plan_id || plan?.id || null,
-    status: user?.plan_status || null,
-    trial_ends_at: user?.trial_ends_at || null,
-    price: plan?.price ?? null,
-    bots_limit: plan?.bots_limit ?? null,
-    files_limit: plan?.files_limit ?? null,
-    messages_limit: plan?.messages_limit ?? null,
-    avatar_allowed: plan?.avatar_allowed ?? null,
-    branding_allowed: plan?.branding_allowed ?? null,
-    embed_allowed: plan?.embed_allowed ?? null,
-    credits_used: safeUsed,
-    credits_limit: creditsLimit,
-    credits_remaining: creditsRemaining,
-    credits_percent_used: usedPercent,
-    credits_percent_remaining: remainingPercent,
-  };
-};
+const buildPlanSummary = (user, plan) => ({
+  id: user?.plan_id || plan?.id || null,
+  status: user?.plan_status || null,
+  trial_ends_at: user?.trial_ends_at || null,
+  name: typeof plan?.name === "string" ? plan.name : null,
+  price_monthly: toNumberOrNull(plan?.price_monthly),
+  price: toNumberOrNull(plan?.price_monthly),
+  is_active: typeof plan?.is_active === "boolean" ? plan.is_active : null,
+  is_custom: typeof plan?.is_custom === "boolean" ? plan.is_custom : null,
+  sort_order: toNumberOrNull(plan?.sort_order),
+});
 
 const buildPublicUser = (session, user) => ({
   id: user.id,
@@ -471,6 +481,67 @@ const getOwnedBotIds = async (env, user) => {
   return bots.map((bot) => bot.id).filter(Boolean);
 };
 
+const BOT_LIMIT_FEATURE_KEYS = ["bots_limit", "bots", "max_bots", "bots_quota"];
+const FILE_LIMIT_FEATURE_KEYS = ["files_limit", "files", "max_files", "files_quota"];
+
+const readQuotaPolicy = (entitlementRows, featureKeys) => {
+  for (const key of featureKeys) {
+    const row = findEntitlementRow(entitlementRows, key);
+    if (!row) continue;
+    const limitNumeric = Number(row.limit_value);
+    return {
+      configured: true,
+      enabled: row.enabled === true,
+      limit: Number.isFinite(limitNumeric) ? Math.max(0, Math.floor(limitNumeric)) : null,
+    };
+  }
+  return {
+    configured: false,
+    enabled: true,
+    limit: null,
+  };
+};
+
+const canCreateBotForUser = async (env, user) => {
+  if (!user?.id) return false;
+  const entitlementRows = await fetchEffectiveEntitlementRows(env, user.id, BOT_LIMIT_FEATURE_KEYS);
+  const policy = readQuotaPolicy(entitlementRows, BOT_LIMIT_FEATURE_KEYS);
+  if (policy.configured && policy.enabled !== true) return false;
+  if (policy.limit === null) return true;
+
+  const bots = await listOwnedBots(env, user, {
+    select: "id",
+  });
+  return bots.length < policy.limit;
+};
+
+const canUploadFilesForUser = async (env, user) => {
+  if (!user?.id) return false;
+  const entitlementRows = await fetchEffectiveEntitlementRows(env, user.id, FILE_LIMIT_FEATURE_KEYS);
+  const policy = readQuotaPolicy(entitlementRows, FILE_LIMIT_FEATURE_KEYS);
+  if (policy.configured && policy.enabled !== true) return false;
+  if (policy.limit === null) return true;
+
+  const botIds = await getOwnedBotIds(env, user);
+  if (!botIds.length) return true;
+
+  const countParams = new URLSearchParams({
+    select: "id",
+    bot_id: `in.(${botIds.join(",")})`,
+  });
+  const countResult = await supabaseRequest(env, `/rest/v1/bot_files?${countParams.toString()}`, {
+    headers: {
+      Prefer: "count=exact",
+      Range: "0-0",
+    },
+  });
+  if (!countResult.ok) return true;
+
+  const currentCount = parseCountFromContentRange(countResult.response);
+  if (currentCount === null) return true;
+  return currentCount < policy.limit;
+};
+
 const getMessageCountForConversations = async (env, conversationIds, sinceIso = null) => {
   if (!Array.isArray(conversationIds) || !conversationIds.length) return 0;
 
@@ -557,12 +628,8 @@ const handleBotsCreate = async (request, env, cors, auth) => {
     return jsonResponse({ error: "Bot name is required" }, 400, cors);
   }
 
-  const limitResult = await supabaseRequest(env, "/rest/v1/rpc/check_bots_limit", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ u_id: auth.user.id }),
-  });
-  if (limitResult.ok && limitResult.data === false) {
+  const canCreateBot = await canCreateBotForUser(env, auth.user);
+  if (!canCreateBot) {
     return jsonResponse({ error: "Bots limit reached for your plan" }, 403, cors);
   }
 
@@ -727,12 +794,8 @@ const handleFilesCreate = async (request, env, cors, auth) => {
     return jsonResponse({ error: "Forbidden bot access" }, 403, cors);
   }
 
-  const limitResult = await supabaseRequest(env, "/rest/v1/rpc/check_files_limit", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ u_id: auth.user.id }),
-  });
-  if (limitResult.ok && limitResult.data === false) {
+  const canUploadFiles = await canUploadFilesForUser(env, auth.user);
+  if (!canUploadFiles) {
     return jsonResponse({ error: "Files limit reached for your plan" }, 403, cors);
   }
 
@@ -1013,50 +1076,400 @@ const handleMessagesGet = async (request, env, cors, auth, url) => {
   );
 };
 
-const normalizeRpcResponseRecord = (payload) => {
-  if (Array.isArray(payload)) {
-    return payload.length ? payload[0] : null;
-  }
-  if (payload === null || payload === undefined) return null;
-  return payload;
+const BILLING_FEATURE_MONTHLY_CREDITS = "monthly_credits";
+const BILLING_FEATURE_DAILY_CREDITS_CAP = "daily_credits_cap";
+const CREDIT_STATE_SELECT =
+  "user_id,monthly_balance,daily_balance,next_daily_reset,next_monthly_reset,updated_at";
+
+const toIntOrNull = (value) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return null;
+  return Math.max(0, Math.floor(numeric));
 };
 
-const callBillingRpc = async (env, rpcName, args) => {
-  const result = await supabaseRequest(env, `/rest/v1/rpc/${rpcName}`, {
+const toDateOrNull = (value) => {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const nextUtcDayIso = (value = new Date()) => {
+  const source = value instanceof Date && !Number.isNaN(value.getTime()) ? value : new Date();
+  const next = new Date(Date.UTC(source.getUTCFullYear(), source.getUTCMonth(), source.getUTCDate() + 1));
+  return next.toISOString();
+};
+
+const addMonthIso = (value = new Date()) => {
+  const source = value instanceof Date && !Number.isNaN(value.getTime()) ? new Date(value.getTime()) : new Date();
+  source.setUTCMonth(source.getUTCMonth() + 1);
+  return source.toISOString();
+};
+
+const fetchUserPlanId = async (env, userId) => {
+  if (!userId) return null;
+  const params = new URLSearchParams({
+    select: "plan_id",
+    id: `eq.${userId}`,
+    limit: "1",
+  });
+  const result = await supabaseRequest(env, `/rest/v1/users?${params.toString()}`);
+  if (!result.ok || !Array.isArray(result.data) || !result.data[0]) return null;
+  const value = result.data[0]?.plan_id;
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+};
+
+const fetchEffectivePlanId = async (env, userId, fallbackPlanId = null) => {
+  if (!userId) return fallbackPlanId;
+  const params = new URLSearchParams({
+    select: "plan_id",
+    user_id: `eq.${userId}`,
+    limit: "1",
+  });
+  const result = await supabaseRequest(env, `/rest/v1/v_effective_plan?${params.toString()}`);
+  if (result.ok && Array.isArray(result.data) && result.data[0]?.plan_id) {
+    return result.data[0].plan_id;
+  }
+  return (await fetchUserPlanId(env, userId)) || fallbackPlanId;
+};
+
+const sanitizeInValues = (values) =>
+  values
+    .map((value) => (typeof value === "string" ? value.trim() : ""))
+    .filter(Boolean)
+    .map((value) => value.replace(/[(),]/g, ""));
+
+const fetchEffectiveEntitlementRows = async (env, userId, featureKeys = null) => {
+  if (!userId) return [];
+  const params = new URLSearchParams({
+    select: "plan_id,feature_key,enabled,limit_value,meta",
+    user_id: `eq.${userId}`,
+  });
+  if (Array.isArray(featureKeys) && featureKeys.length) {
+    const values = sanitizeInValues(featureKeys);
+    if (values.length) {
+      params.set("feature_key", `in.(${values.join(",")})`);
+    }
+  }
+
+  const result = await supabaseRequest(env, `/rest/v1/v_effective_entitlements?${params.toString()}`);
+  if (!result.ok || !Array.isArray(result.data)) return [];
+  return result.data;
+};
+
+const findEntitlementRow = (rows, featureKey) =>
+  Array.isArray(rows)
+    ? rows.find(
+        (row) =>
+          typeof row?.feature_key === "string" &&
+          row.feature_key.trim().toLowerCase() === String(featureKey || "").trim().toLowerCase()
+      ) || null
+    : null;
+
+const entitlementLimit = (rows, featureKey) => {
+  const row = findEntitlementRow(rows, featureKey);
+  if (!row) return null;
+  return toIntOrNull(row.limit_value);
+};
+
+const fetchCreditStateRow = async (env, userId) => {
+  if (!userId) return null;
+  const params = new URLSearchParams({
+    select: CREDIT_STATE_SELECT,
+    user_id: `eq.${userId}`,
+    limit: "1",
+  });
+  const result = await supabaseRequest(env, `/rest/v1/user_credit_state?${params.toString()}`);
+  if (!result.ok || !Array.isArray(result.data) || !result.data[0]) return null;
+  return result.data[0];
+};
+
+const patchCreditStateRow = async (env, userId, patch) => {
+  const params = new URLSearchParams({
+    select: CREDIT_STATE_SELECT,
+    user_id: `eq.${userId}`,
+  });
+  const result = await supabaseRequest(env, `/rest/v1/user_credit_state?${params.toString()}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify(patch || {}),
+  });
+  if (!result.ok || !Array.isArray(result.data) || !result.data[0]) {
+    throw new Error(`credit_state_patch_failed:${result.status}`);
+  }
+  return result.data[0];
+};
+
+const ensureCreditStateRow = async (env, userId, monthlyLimit, dailyCap) => {
+  let state = await fetchCreditStateRow(env, userId);
+  if (state) return state;
+
+  const now = new Date();
+  const payload = {
+    user_id: userId,
+    monthly_balance: monthlyLimit ?? 0,
+    daily_balance: dailyCap ?? 0,
+    next_monthly_reset: addMonthIso(now),
+    next_daily_reset: nextUtcDayIso(now),
+    updated_at: now.toISOString(),
+  };
+
+  const insertParams = new URLSearchParams({
+    on_conflict: "user_id",
+  });
+  await supabaseRequest(env, `/rest/v1/user_credit_state?${insertParams.toString()}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Prefer: "resolution=ignore-duplicates,return=minimal",
     },
-    body: JSON.stringify(args || {}),
+    body: JSON.stringify(payload),
   });
 
+  state = await fetchCreditStateRow(env, userId);
+  if (state) return state;
+  throw new Error("credit_state_missing");
+};
+
+const maybeResetCreditState = async (env, userId, state, monthlyLimit, dailyCap) => {
+  if (!state) return state;
+  const now = new Date();
+  const updates = {};
+
+  const nextDailyReset = toDateOrNull(state.next_daily_reset);
+  if (dailyCap !== null && (!nextDailyReset || nextDailyReset <= now)) {
+    updates.daily_balance = dailyCap;
+    updates.next_daily_reset = nextUtcDayIso(now);
+  }
+
+  const nextMonthlyReset = toDateOrNull(state.next_monthly_reset);
+  if (monthlyLimit !== null && (!nextMonthlyReset || nextMonthlyReset <= now)) {
+    updates.monthly_balance = monthlyLimit;
+    updates.next_monthly_reset = addMonthIso(nextMonthlyReset && nextMonthlyReset <= now ? nextMonthlyReset : now);
+  }
+
+  if (!Object.keys(updates).length) return state;
+  updates.updated_at = now.toISOString();
+  return patchCreditStateRow(env, userId, updates);
+};
+
+const buildCreditStatusPayload = (planId, monthlyLimit, dailyCap, state) => {
+  const monthlyBalance = toIntOrNull(state?.monthly_balance) ?? 0;
+  const dailyBalance = toIntOrNull(state?.daily_balance) ?? 0;
+  const remaining = monthlyBalance + dailyBalance;
+  const capacity =
+    monthlyLimit === null || dailyCap === null
+      ? null
+      : Math.max(0, Math.floor(Number(monthlyLimit) + Number(dailyCap)));
+
   return {
-    ok: result.ok,
-    status: result.status,
-    data: normalizeRpcResponseRecord(result.data),
-    raw: result.data,
+    plan_id: planId || null,
+    monthly_limit: monthlyLimit,
+    monthly_balance: monthlyBalance,
+    daily_cap: dailyCap,
+    daily_balance: dailyBalance,
+    remaining,
+    capacity,
+    next_daily_reset:
+      typeof state?.next_daily_reset === "string" && state.next_daily_reset.trim()
+        ? state.next_daily_reset
+        : null,
+    next_monthly_reset:
+      typeof state?.next_monthly_reset === "string" && state.next_monthly_reset.trim()
+        ? state.next_monthly_reset
+        : null,
   };
 };
 
-const handleCreditsStatus = async (request, env, cors, auth) => {
-  const rpc = await callBillingRpc(env, "get_credit_status", {
-    p_user_id: auth.user.id,
+const getCreditStatusRecord = async (env, userId, options = {}) => {
+  const fallbackPlanId =
+    typeof options?.fallbackPlanId === "string" && options.fallbackPlanId.trim()
+      ? options.fallbackPlanId.trim()
+      : null;
+  const shouldApplyResets = options?.applyResets === true;
+
+  const planId = await fetchEffectivePlanId(env, userId, fallbackPlanId);
+  const entitlementRows = await fetchEffectiveEntitlementRows(env, userId, [
+    BILLING_FEATURE_MONTHLY_CREDITS,
+    BILLING_FEATURE_DAILY_CREDITS_CAP,
+  ]);
+  let monthlyLimit = entitlementLimit(entitlementRows, BILLING_FEATURE_MONTHLY_CREDITS);
+  let dailyCap = entitlementLimit(entitlementRows, BILLING_FEATURE_DAILY_CREDITS_CAP);
+  const normalizedPlanId = typeof planId === "string" ? planId.trim().toLowerCase() : "";
+  if (monthlyLimit === null && normalizedPlanId && normalizedPlanId !== "individual") {
+    monthlyLimit = 0;
+  }
+  if (dailyCap === null && monthlyLimit !== null) {
+    dailyCap = 0;
+  }
+
+  let state = await ensureCreditStateRow(env, userId, monthlyLimit, dailyCap);
+  if (shouldApplyResets) {
+    state = await maybeResetCreditState(env, userId, state, monthlyLimit, dailyCap);
+  }
+
+  return buildCreditStatusPayload(planId, monthlyLimit, dailyCap, state);
+};
+
+const consumeCreditBalance = async (env, userId, amount, options = {}) => {
+  const safeAmount = Math.max(1, Math.floor(Number(amount) || 1));
+  const status = await getCreditStatusRecord(env, userId, {
+    fallbackPlanId: options?.fallbackPlanId || null,
+    applyResets: true,
   });
 
-  if (!rpc.ok) {
+  if (status.monthly_limit === null) {
+    return {
+      allowed: true,
+      status,
+    };
+  }
+
+  const remaining = toIntOrNull(status.remaining) ?? 0;
+  if (remaining < safeAmount) {
+    return {
+      allowed: false,
+      status,
+    };
+  }
+
+  const currentDaily = toIntOrNull(status.daily_balance) ?? 0;
+  const currentMonthly = toIntOrNull(status.monthly_balance) ?? 0;
+  const consumeDaily = Math.min(currentDaily, safeAmount);
+  const consumeMonthly = safeAmount - consumeDaily;
+
+  await patchCreditStateRow(env, userId, {
+    daily_balance: Math.max(0, currentDaily - consumeDaily),
+    monthly_balance: Math.max(0, currentMonthly - consumeMonthly),
+    updated_at: new Date().toISOString(),
+  });
+
+  const refreshed = await getCreditStatusRecord(env, userId, {
+    fallbackPlanId: status.plan_id,
+    applyResets: false,
+  });
+
+  return {
+    allowed: true,
+    status: refreshed,
+  };
+};
+
+const applyPlanChangeRecord = async (env, userId, newPlanId, mode = "upgrade") => {
+  const normalizedPlanId = typeof newPlanId === "string" && newPlanId.trim() ? newPlanId.trim() : null;
+  if (!normalizedPlanId) {
+    return { ok: false, error: "invalid_plan_id", status: 400 };
+  }
+
+  const targetPlan = await fetchPlanById(env, normalizedPlanId);
+  if (!targetPlan) {
+    return { ok: false, error: "plan_not_found", status: 404 };
+  }
+
+  const updateParams = new URLSearchParams({
+    id: `eq.${userId}`,
+  });
+  const updateResult = await supabaseRequest(env, `/rest/v1/users?${updateParams.toString()}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify({
+      plan_id: normalizedPlanId,
+    }),
+  });
+
+  if (!updateResult.ok) {
+    return {
+      ok: false,
+      error: "plan_update_failed",
+      status: updateResult.status || 502,
+      details: updateResult.data || null,
+    };
+  }
+
+  const normalizedMode = typeof mode === "string" && mode.trim() ? mode.trim().toLowerCase() : "upgrade";
+  if (normalizedMode === "upgrade") {
+    const upgradedStatus = await getCreditStatusRecord(env, userId, {
+      fallbackPlanId: normalizedPlanId,
+      applyResets: false,
+    });
+
+    const monthlyLimit = toIntOrNull(upgradedStatus.monthly_limit);
+    const dailyCap = toIntOrNull(upgradedStatus.daily_cap);
+    const now = new Date();
+    const patch = {
+      next_monthly_reset: addMonthIso(now),
+      next_daily_reset: nextUtcDayIso(now),
+      updated_at: now.toISOString(),
+    };
+    if (monthlyLimit !== null) patch.monthly_balance = monthlyLimit;
+    if (dailyCap !== null) patch.daily_balance = dailyCap;
+    await patchCreditStateRow(env, userId, patch);
+  }
+
+  const status = await getCreditStatusRecord(env, userId, {
+    fallbackPlanId: normalizedPlanId,
+    applyResets: false,
+  });
+  return {
+    ok: true,
+    status,
+    result: {
+      plan_id: normalizedPlanId,
+      mode: normalizedMode,
+    },
+  };
+};
+
+const getEntitlementsMapRecord = async (env, userId) => {
+  const rows = await fetchEffectiveEntitlementRows(env, userId);
+  const map = {};
+  rows.forEach((row) => {
+    const featureKey = typeof row?.feature_key === "string" ? row.feature_key.trim() : "";
+    if (!featureKey) return;
+    const limit = toIntOrNull(row.limit_value);
+    const meta = isObject(row?.meta) ? row.meta : {};
+    const requiredPlan =
+      typeof meta?.required_plan === "string" && meta.required_plan.trim()
+        ? meta.required_plan.trim()
+        : typeof row?.plan_id === "string" && row.plan_id.trim()
+          ? row.plan_id.trim()
+          : null;
+
+    map[featureKey] = {
+      enabled: row?.enabled === true,
+      limit,
+      limit_value: limit,
+      required_plan: requiredPlan,
+      meta,
+    };
+  });
+  return map;
+};
+
+const handleCreditsStatus = async (request, env, cors, auth) => {
+  try {
+    const status = await getCreditStatusRecord(env, auth.user.id, {
+      fallbackPlanId: auth.user?.plan_id || null,
+      applyResets: false,
+    });
     return jsonResponse(
-      { error: "credits_status_failed", details: rpc.raw || null },
-      rpc.status || 502,
+      { status: status || null },
+      200,
+      cors,
+      buildSessionHeadersIfNeeded(auth, request)
+    );
+  } catch (error) {
+    return jsonResponse(
+      { error: "credits_status_failed", details: error?.message || null },
+      502,
       cors
     );
   }
-
-  return jsonResponse(
-    { status: rpc.data || null },
-    200,
-    cors,
-    buildSessionHeadersIfNeeded(auth, request)
-  );
 };
 
 const handleCreditsConsume = async (request, env, cors, auth) => {
@@ -1068,33 +1481,28 @@ const handleCreditsConsume = async (request, env, cors, auth) => {
   }
 
   const amount = Math.max(1, Math.floor(Number(body?.amount || 1)));
-  const rpc = await callBillingRpc(env, "consume_message_credit", {
-    p_user_id: auth.user.id,
-    p_amount: amount,
-  });
-
-  if (!rpc.ok) {
+  try {
+    const result = await consumeCreditBalance(env, auth.user.id, amount, {
+      fallbackPlanId: auth.user?.plan_id || null,
+    });
+    const status = isObject(result?.status) ? result.status : null;
     return jsonResponse(
-      { error: "credits_consume_failed", details: rpc.raw || null },
-      rpc.status || 502,
+      {
+        ...(status || {}),
+        allowed: result?.allowed === true,
+        status,
+      },
+      200,
+      cors,
+      buildSessionHeadersIfNeeded(auth, request)
+    );
+  } catch (error) {
+    return jsonResponse(
+      { error: "credits_consume_failed", details: error?.message || null },
+      502,
       cors
     );
   }
-
-  const record = rpc.data;
-  const payload = isObject(record) ? record : {};
-  const allowed = isObject(record) ? record.allowed === true : record === true;
-
-  return jsonResponse(
-    {
-      ...payload,
-      allowed,
-      status: isObject(record) ? record : null,
-    },
-    200,
-    cors,
-    buildSessionHeadersIfNeeded(auth, request)
-  );
 };
 
 const handleCreditsUpgrade = async (request, env, cors, auth) => {
@@ -1107,37 +1515,43 @@ const handleCreditsUpgrade = async (request, env, cors, auth) => {
 
   const newPlanId =
     typeof body?.new_plan_id === "string" && body.new_plan_id.trim() ? body.new_plan_id.trim() : "premium";
-  const changeType =
-    typeof body?.change_type === "string" && body.change_type.trim() ? body.change_type.trim() : "upgrade";
+  const changeTypeCandidate =
+    typeof body?.change_type === "string" && body.change_type.trim()
+      ? body.change_type.trim()
+      : typeof body?.mode === "string" && body.mode.trim()
+        ? body.mode.trim()
+        : "upgrade";
 
-  const upgradeRpc = await callBillingRpc(env, "apply_plan_change", {
-    p_user_id: auth.user.id,
-    p_new_plan_id: newPlanId,
-    p_change_type: changeType,
-  });
+  try {
+    const updateResult = await applyPlanChangeRecord(env, auth.user.id, newPlanId, changeTypeCandidate);
+    if (!updateResult.ok) {
+      return jsonResponse(
+        {
+          error: "plan_upgrade_failed",
+          details: updateResult.details || updateResult.error || null,
+        },
+        updateResult.status || 502,
+        cors
+      );
+    }
 
-  if (!upgradeRpc.ok) {
     return jsonResponse(
-      { error: "plan_upgrade_failed", details: upgradeRpc.raw || null },
-      upgradeRpc.status || 502,
+      {
+        ok: true,
+        result: updateResult.result || null,
+        status: updateResult.status || null,
+      },
+      200,
+      cors,
+      buildSessionHeadersIfNeeded(auth, request)
+    );
+  } catch (error) {
+    return jsonResponse(
+      { error: "plan_upgrade_failed", details: error?.message || null },
+      502,
       cors
     );
   }
-
-  const statusRpc = await callBillingRpc(env, "get_credit_status", {
-    p_user_id: auth.user.id,
-  });
-
-  return jsonResponse(
-    {
-      ok: true,
-      result: upgradeRpc.data || null,
-      status: statusRpc.ok ? statusRpc.data || null : null,
-    },
-    200,
-    cors,
-    buildSessionHeadersIfNeeded(auth, request)
-  );
 };
 
 const normalizeEntitlementsMap = (payload) => {
@@ -1158,26 +1572,23 @@ const normalizeEntitlementsMap = (payload) => {
 };
 
 const handleEntitlementsMap = async (request, env, cors, auth) => {
-  const rpc = await callBillingRpc(env, "get_entitlements_map", {
-    p_user_id: auth.user.id,
-  });
-
-  if (!rpc.ok) {
+  try {
+    const map = await getEntitlementsMapRecord(env, auth.user.id);
     return jsonResponse(
-      { error: "entitlements_fetch_failed", details: rpc.raw || null },
-      rpc.status || 502,
+      {
+        entitlements_map: normalizeEntitlementsMap(map),
+      },
+      200,
+      cors,
+      buildSessionHeadersIfNeeded(auth, request)
+    );
+  } catch (error) {
+    return jsonResponse(
+      { error: "entitlements_fetch_failed", details: error?.message || null },
+      502,
       cors
     );
   }
-
-  return jsonResponse(
-    {
-      entitlements_map: normalizeEntitlementsMap(rpc.data),
-    },
-    200,
-    cors,
-    buildSessionHeadersIfNeeded(auth, request)
-  );
 };
 
 const parseMaybeJsonString = (value) => {
