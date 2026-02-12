@@ -1219,7 +1219,7 @@ const ensureCreditStateRow = async (env, userId, monthlyLimit, dailyCap) => {
   const insertParams = new URLSearchParams({
     on_conflict: "user_id",
   });
-  await supabaseRequest(env, `/rest/v1/user_credit_state?${insertParams.toString()}`, {
+  const insertResult = await supabaseRequest(env, `/rest/v1/user_credit_state?${insertParams.toString()}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -1228,9 +1228,59 @@ const ensureCreditStateRow = async (env, userId, monthlyLimit, dailyCap) => {
     body: JSON.stringify(payload),
   });
 
+  if (!insertResult.ok) {
+    const initResult = await supabaseRequest(env, "/rest/v1/rpc/init_user_credits", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        p_user_id: userId,
+      }),
+    });
+    if (!initResult.ok) {
+      throw new Error(
+        `credit_state_init_failed:insert=${insertResult.status},rpc=${initResult.status}`
+      );
+    }
+  }
+
   state = await fetchCreditStateRow(env, userId);
   if (state) return state;
-  throw new Error("credit_state_missing");
+
+  const repairPatch = {
+    monthly_balance: monthlyLimit ?? 0,
+    daily_balance: dailyCap ?? 0,
+    next_monthly_reset: addMonthIso(now),
+    next_daily_reset: nextUtcDayIso(now),
+    updated_at: now.toISOString(),
+  };
+
+  const retryInsertResult = await supabaseRequest(env, `/rest/v1/user_credit_state?${insertParams.toString()}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Prefer: "resolution=ignore-duplicates,return=minimal",
+    },
+    body: JSON.stringify({
+      user_id: userId,
+      ...repairPatch,
+    }),
+  });
+  if (!retryInsertResult.ok) {
+    throw new Error(`credit_state_missing:retry_insert=${retryInsertResult.status}`);
+  }
+
+  state = await fetchCreditStateRow(env, userId);
+  if (state) return state;
+  return {
+    user_id: userId,
+    monthly_balance: monthlyLimit ?? 0,
+    daily_balance: dailyCap ?? 0,
+    next_daily_reset: nextUtcDayIso(now),
+    next_monthly_reset: addMonthIso(now),
+    updated_at: now.toISOString(),
+  };
 };
 
 const maybeResetCreditState = async (env, userId, state, monthlyLimit, dailyCap) => {
