@@ -371,7 +371,7 @@
   data-position="bottom-right"
                   async&gt;&lt;/script&gt;</code>
               </div>
-              <p class="install-note">Kod generuje się automatycznie dla wybranego bota i działa z konfiguracją zapisaną w aplikacji.</p>
+              <p class="install-note">Kod generuje się automatycznie dla wybranego bota, a pozycja widgetu jest pobierana z konfiguracji zapisanej w zakładce Wygląd.</p>
             </div>
           </div>
 
@@ -379,22 +379,6 @@
           <div class="install-step-card">
             <div class="step-header">
               <div class="step-number-icon">2</div>
-              <div class="step-content">
-                <div class="step-title" data-i18n="install.steps.position.title"></div>
-                <div class="step-desc" data-i18n="install.steps.position.desc"></div>
-              </div>
-            </div>
-            <div class="step-body">
-              <div class="code-block">
-                <code data-i18n-html="install.steps.position.code"></code>
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 3 -->
-          <div class="install-step-card">
-            <div class="step-header">
-              <div class="step-number-icon">3</div>
               <div class="step-content">
                 <div class="step-title" data-i18n="install.steps.test.title"></div>
                 <div class="step-desc" data-i18n="install.steps.test.desc"></div>
@@ -459,6 +443,7 @@
     const statusTitle = document.getElementById("statusTitle");
     const statusDesc = document.getElementById("statusDesc");
     const ACTIVE_BOT_KEY = "daveri_active_bot_id";
+    const botsById = new Map();
 
     const setStatus = (kind, title, description) => {
       if (statusIcon) {
@@ -473,6 +458,54 @@
       const raw = String(value || "").trim();
       if (!raw) return "";
       return raw.replace(/\/+$/, "");
+    };
+
+    const parseJsonSafe = (value, fallback = null) => {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return fallback;
+      }
+    };
+
+    const normalizePosition = (value) => {
+      const raw = String(value || "").trim().toLowerCase();
+      if (raw === "left" || raw === "bottom-left") return "bottom-left";
+      if (raw === "right" || raw === "bottom-right") return "bottom-right";
+      if (raw === "top-left") return "top-left";
+      if (raw === "top-right") return "top-right";
+      return "bottom-right";
+    };
+
+    const getBotConfigObject = (bot) => {
+      const config = bot?.config;
+      if (config && typeof config === "object" && !Array.isArray(config)) {
+        return config;
+      }
+      if (typeof config === "string" && config.trim()) {
+        const parsed = parseJsonSafe(config, null);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+      return {};
+    };
+
+    const resolveBotPosition = (bot) => {
+      const config = getBotConfigObject(bot);
+      const fromReadyConfig = config?.ready_config?.device?.position;
+      const fromAppearanceConfig = config?.appearance?.device?.position;
+      const fromWidgetConfig = config?.widget?.position;
+      const fromConfigRoot = config?.position;
+      const fromBotAppearance = bot?.appearance?.device?.position;
+      return normalizePosition(
+        fromReadyConfig ||
+          fromAppearanceConfig ||
+          fromWidgetConfig ||
+          fromConfigRoot ||
+          fromBotAppearance ||
+          "bottom-right"
+      );
     };
 
     const getStoredBotId = () => {
@@ -495,12 +528,14 @@
       const apiBase = normalizeUrl(apiBaseInput?.value) || "https://<MOJA-DOMENA-API>";
       const siteDomain = normalizeUrl(siteDomainInput?.value) || "https://twojadomena.pl";
       const widgetScriptUrl = `${normalizeUrl(window.location.origin)}/widget.js`;
+      const selectedBot = botsById.get(botId);
+      const position = resolveBotPosition(selectedBot);
 
       installCode.textContent = `<script src="${widgetScriptUrl}"
   data-bot-id="${botId}"
   data-api-base="${apiBase}"
   data-site-domain="${siteDomain}"
-  data-position="bottom-right"
+  data-position="${position}"
   async><\/script>`;
     };
 
@@ -529,6 +564,12 @@
             : Array.isArray(payload?.data)
               ? payload.data
               : [];
+
+        botsById.clear();
+        bots.forEach((bot) => {
+          const botId = String(bot?.id || "").trim();
+          if (botId) botsById.set(botId, bot);
+        });
 
         if (!bots.length) {
           botSelect.innerHTML = '<option value="">Brak botów</option>';
