@@ -386,6 +386,12 @@ const updateTooltipRow = (element, label, value) => {
   element.textContent = `${label}: ${value}`;
 };
 
+const toNonNegativeOrNull = (value) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return null;
+  return Math.max(0, numeric);
+};
+
 const applyPlanData = (root, status) => {
   const planNameEl = root.querySelector("#sidebar-plan-name");
   const planPillEl = root.querySelector("#sidebar-plan-pill");
@@ -420,19 +426,23 @@ const applyPlanData = (root, status) => {
   }
 
   const planId = typeof status.plan_id === "string" && status.plan_id.trim() ? status.plan_id.trim() : "plan";
-  const monthlyLimit = Number(status.monthly_limit);
-  const monthlyBalance = Number(status.monthly_balance);
-  const dailyCap = Number(status.daily_cap);
-  const dailyBalance = Number(status.daily_balance);
-  const remaining = Number(status.remaining);
-  const capacity = Number(status.capacity);
+  const safeMonthlyLimit = toNonNegativeOrNull(status.monthly_limit);
+  const safeMonthlyBalance = toNonNegativeOrNull(status.monthly_balance);
+  const safeDailyCap = toNonNegativeOrNull(status.daily_cap);
+  const safeDailyBalance = toNonNegativeOrNull(status.daily_balance);
 
-  const safeMonthlyLimit = Number.isFinite(monthlyLimit) ? Math.max(0, monthlyLimit) : null;
-  const safeMonthlyBalance = Number.isFinite(monthlyBalance) ? Math.max(0, monthlyBalance) : null;
-  const safeDailyCap = Number.isFinite(dailyCap) ? Math.max(0, dailyCap) : null;
-  const safeDailyBalance = Number.isFinite(dailyBalance) ? Math.max(0, dailyBalance) : null;
-  const safeRemaining = Number.isFinite(remaining) ? Math.max(0, remaining) : 0;
-  const safeCapacity = Number.isFinite(capacity) ? Math.max(0, capacity) : 0;
+  const fallbackRemainingFromBalances =
+    (safeMonthlyBalance !== null ? safeMonthlyBalance : 0) +
+    (safeDailyBalance !== null ? safeDailyBalance : 0);
+  const safeRemaining = toNonNegativeOrNull(status.remaining) ?? fallbackRemainingFromBalances;
+
+  const capacityFromStatus = toNonNegativeOrNull(status.capacity);
+  const capacityFromLimits =
+    safeMonthlyLimit !== null || safeDailyCap !== null
+      ? (safeMonthlyLimit !== null ? safeMonthlyLimit : 0) + (safeDailyCap !== null ? safeDailyCap : 0)
+      : null;
+  const capacityFallback = safeRemaining > 0 ? safeRemaining : 0;
+  const safeCapacity = Math.max(capacityFromStatus ?? 0, capacityFromLimits ?? 0, capacityFallback);
   const remainingPercent =
     safeCapacity > 0 ? Math.max(0, Math.min(100, Math.round((safeRemaining / safeCapacity) * 100))) : 0;
 
