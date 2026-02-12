@@ -1,9 +1,9 @@
 import { mountSidebarIcons } from "../components/brand/SidebarIcon.js";
 import { getApiUrl } from "./api.js";
-import { getCreditStatus, subscribeCreditUpdates } from "./credits.js";
 import {
   ensureAccountState,
   getAccountState,
+  refreshCredits,
   subscribeAccountState,
 } from "./account-state.js";
 
@@ -460,8 +460,10 @@ const applyPlanData = (root, status) => {
 const loadCreditStatus = async (root) => {
   try {
     await ensureAccountState();
-    const fromStore = getAccountState()?.credits || null;
-    const status = fromStore || (await getCreditStatus());
+    let status = getAccountState()?.credits || null;
+    if (!status) {
+      status = await refreshCredits();
+    }
     applyPlanData(root, status);
   } catch (error) {
     console.error("[Sidebar] credit status load failed", error);
@@ -471,9 +473,6 @@ const loadCreditStatus = async (root) => {
 const bindCreditStatusEvents = (root) => {
   if (root.__daveriCreditsBound) return;
   root.__daveriCreditsBound = true;
-  subscribeCreditUpdates((status) => {
-    applyPlanData(root, status);
-  });
   subscribeAccountState((state) => {
     applyPlanData(root, state?.credits || null);
   });

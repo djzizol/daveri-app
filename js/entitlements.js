@@ -1,51 +1,25 @@
-import { getApiUrl } from "./api.js";
+import { callRpcRecord, getCurrentUserId } from "./supabaseClient.js";
 
-const ENTITLEMENTS_ENDPOINT = getApiUrl("/api/entitlements");
 const ENTITLEMENTS_UPDATED_EVENT = "daveri:entitlements-updated";
 
 const isObject = (value) => value && typeof value === "object" && !Array.isArray(value);
 
-const requestJson = async (url, options = {}) => {
-  const method = (options.method || "GET").toUpperCase();
-  const headers = {
-    Accept: "application/json",
-    ...(options.headers || {}),
-  };
-  if (method !== "GET" && method !== "HEAD" && !headers["Content-Type"]) {
-    headers["Content-Type"] = "application/json";
-  }
-
-  const response = await fetch(url, {
-    credentials: "include",
-    ...options,
-    method,
-    headers,
-  });
-
-  let payload = null;
-  try {
-    payload = await response.json();
-  } catch {
-    payload = null;
-  }
-
-  if (!response.ok) {
-    const message =
-      (isObject(payload) && (payload.error || payload.details)) ||
-      `Request failed: ${response.status}`;
-    const error = new Error(String(message));
-    error.status = response.status;
-    error.payload = payload;
+const ensureUserId = (userId = null) => {
+  const resolved = (typeof userId === "string" && userId.trim() && userId.trim()) || getCurrentUserId();
+  if (!resolved) {
+    const error = new Error("Missing user id for entitlements RPC");
+    error.code = "missing_user_id";
+    console.error("[RPC:entitlements] missing user id", { code: error.code, message: error.message });
     throw error;
   }
-
-  return payload;
+  return resolved;
 };
 
 const normalizeEntitlementsMap = (payload) => {
   const source =
     (isObject(payload?.entitlements_map) && payload.entitlements_map) ||
     (isObject(payload?.entitlements) && payload.entitlements) ||
+    (isObject(payload?.map) && payload.map) ||
     (isObject(payload) && payload) ||
     {};
 
@@ -83,9 +57,12 @@ const emitEntitlementsMap = (entitlementsMap) => {
   );
 };
 
-export const getEntitlementsMap = async () => {
-  const payload = await requestJson(ENTITLEMENTS_ENDPOINT, { method: "GET" });
-  const entitlementsMap = normalizeEntitlementsMap(payload);
+export const getEntitlementsMap = async (userId = null) => {
+  const resolvedUserId = ensureUserId(userId);
+  const record = await callRpcRecord("get_entitlements_map", {
+    p_user_id: resolvedUserId,
+  });
+  const entitlementsMap = normalizeEntitlementsMap(record);
   emitEntitlementsMap(entitlementsMap);
   return entitlementsMap;
 };

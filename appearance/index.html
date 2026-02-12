@@ -6592,7 +6592,6 @@
         return origin ? `${origin}${normalized}` : normalized;
       };
       const API_BOTS = getApiUrl("/api/bots");
-      const API_ENTITLEMENTS = getApiUrl("/api/entitlements");
       const API_CREDITS_UPGRADE = getApiUrl("/api/credits/upgrade");
       const DAVEREI_AI_MODE_PLAN = Object.freeze({
         setup: "basic",
@@ -6956,8 +6955,7 @@
               entitlements_map: await window.DaVeriAccount.refreshEntitlements(),
             });
           } else {
-            const payload = await fetchJson(API_ENTITLEMENTS, { method: "GET" });
-            entitlementsMap = normalizeEntitlementsPayload(payload);
+            entitlementsMap = {};
           }
         } catch (error) {
           console.error("[Appearance] entitlements load failed:", error);

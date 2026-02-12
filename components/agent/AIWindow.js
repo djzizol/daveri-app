@@ -113,6 +113,7 @@ const createAIWindowNode = () => {
 
   let paywallVisible = false;
   let upgrading = false;
+  let sendingMessage = false;
 
   const paywall = document.createElement("div");
   paywall.className = "ai-paywall";
@@ -149,8 +150,14 @@ const createAIWindowNode = () => {
       }
     },
     onSend: async (content) => {
+      if (sendingMessage) return { accepted: false };
+      sendingMessage = true;
+
       const text = String(content || "").trim();
-      if (!text) return { accepted: false };
+      if (!text) {
+        sendingMessage = false;
+        return { accepted: false };
+      }
 
       const botId = getActiveBotId();
       if (!botId) {
@@ -158,54 +165,59 @@ const createAIWindowNode = () => {
           role: "assistant",
           content: "Select an active bot first to start chatting.",
         });
+        sendingMessage = false;
         return { accepted: false };
       }
-
-      let consumeResult = null;
-      try {
-        consumeResult = await consumeMessageCredit(1);
-      } catch (error) {
-        console.error("[AIWindow] consume_message_credit failed", error);
-        agentDockStore.addMessage({
-          role: "assistant",
-          content: "Could not validate your credits right now. Try again in a moment.",
-        });
-        return { accepted: false };
-      }
-
-      if (consumeResult?.allowed !== true) {
-        setPaywallVisible(true);
-        agentDockStore.addMessage({
-          role: "assistant",
-          content: "Wykorzystales wszystkie kredyty. Kliknij Upgrade plan, aby kontynuowac.",
-        });
-        return { accepted: false };
-      }
-
-      setPaywallVisible(false);
-      agentDockStore.addMessage({ role: "user", content: text });
 
       try {
-        const answer = await askAssistant(botId, text);
-        agentDockStore.addMessage({
-          role: "assistant",
-          content: answer || "I could not generate a response right now.",
-        });
-      } catch (error) {
-        console.error("[AIWindow] ask failed", error);
-        agentDockStore.addMessage({
-          role: "assistant",
-          content: "The assistant is temporarily unavailable. Your message was received.",
-        });
-      } finally {
+        let consumeResult = null;
         try {
-          await refreshCredits();
+          consumeResult = await consumeMessageCredit(1);
         } catch (error) {
-          console.warn("[AIWindow] credit refresh failed", error);
+          console.error("[AIWindow] consume_message_credit failed", error);
+          agentDockStore.addMessage({
+            role: "assistant",
+            content: "Could not validate your credits right now. Try again in a moment.",
+          });
+          return { accepted: false };
         }
-      }
 
-      return { accepted: true };
+        if (consumeResult?.allowed !== true) {
+          setPaywallVisible(true);
+          agentDockStore.addMessage({
+            role: "assistant",
+            content: "Wykorzystales wszystkie kredyty. Kliknij Upgrade plan, aby kontynuowac.",
+          });
+          return { accepted: false };
+        }
+
+        setPaywallVisible(false);
+        agentDockStore.addMessage({ role: "user", content: text });
+
+        try {
+          const answer = await askAssistant(botId, text);
+          agentDockStore.addMessage({
+            role: "assistant",
+            content: answer || "I could not generate a response right now.",
+          });
+        } catch (error) {
+          console.error("[AIWindow] ask failed", error);
+          agentDockStore.addMessage({
+            role: "assistant",
+            content: "The assistant is temporarily unavailable. Your message was received.",
+          });
+        } finally {
+          try {
+            await refreshCredits();
+          } catch (error) {
+            console.warn("[AIWindow] credit refresh failed", error);
+          }
+        }
+
+        return { accepted: true };
+      } finally {
+        sendingMessage = false;
+      }
     },
   });
 

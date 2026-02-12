@@ -1,17 +1,23 @@
-import { getApiUrl } from "./api.js";
+import { callRpcRecord, getCurrentUserId } from "./supabaseClient.js";
 
-const CREDITS_STATUS_ENDPOINT = getApiUrl("/api/credits/status");
-const CREDITS_CONSUME_ENDPOINT = getApiUrl("/api/credits/consume");
-const CREDITS_UPGRADE_ENDPOINT = getApiUrl("/api/credits/upgrade");
 const CREDITS_UPDATED_EVENT = "daveri:credits-updated";
 
 const isObject = (value) => value && typeof value === "object" && !Array.isArray(value);
-const getCurrentUserId = () =>
-  (typeof window !== "undefined" && (window?.DaVeriAuth?.user?.id || null)) || null;
 
 const toNumberOrNull = (value) => {
   const numeric = Number(value);
   return Number.isFinite(numeric) ? numeric : null;
+};
+
+const ensureUserId = (userId = null) => {
+  const resolved = (typeof userId === "string" && userId.trim() && userId.trim()) || getCurrentUserId();
+  if (!resolved) {
+    const error = new Error("Missing user id for credits RPC");
+    error.code = "missing_user_id";
+    console.error("[RPC:credits] missing user id", { code: error.code, message: error.message });
+    throw error;
+  }
+  return resolved;
 };
 
 const normalizeCreditStatus = (payload) => {
@@ -31,93 +37,55 @@ const normalizeCreditStatus = (payload) => {
   };
 };
 
-const requestJson = async (url, options = {}) => {
-  const method = (options.method || "GET").toUpperCase();
-  const headers = {
-    Accept: "application/json",
-    ...(options.headers || {}),
-  };
-  if (method !== "GET" && method !== "HEAD" && !headers["Content-Type"]) {
-    headers["Content-Type"] = "application/json";
-  }
-
-  const response = await fetch(url, {
-    credentials: "include",
-    ...options,
-    method,
-    headers,
-  });
-
-  let payload = null;
-  try {
-    payload = await response.json();
-  } catch {
-    payload = null;
-  }
-
-  if (!response.ok) {
-    const message =
-      (isObject(payload) && (payload.error || payload.details)) ||
-      `Request failed: ${response.status}`;
-    const error = new Error(String(message));
-    error.status = response.status;
-    error.payload = payload;
-    throw error;
-  }
-
-  return payload;
-};
-
 const emitCreditStatus = (status) => {
   if (!status || typeof window === "undefined") return;
   window.dispatchEvent(new CustomEvent(CREDITS_UPDATED_EVENT, { detail: { status } }));
 };
 
-export const getCreditStatus = async () => {
-  const payload = await requestJson(CREDITS_STATUS_ENDPOINT, { method: "GET" });
-  const status = normalizeCreditStatus(payload?.status || payload);
+export const getCreditStatus = async (userId = null) => {
+  const resolvedUserId = ensureUserId(userId);
+  const record = await callRpcRecord("get_credit_status", {
+    p_user_id: resolvedUserId,
+  });
+  const status = normalizeCreditStatus(record);
   if (status) emitCreditStatus(status);
   return status;
 };
 
-export const consumeMessageCredit = async (amount = 1) => {
+export const consumeMessageCredit = async (amount = 1, userId = null) => {
+  const resolvedUserId = ensureUserId(userId);
   const safeAmount = Math.max(1, Math.floor(Number(amount) || 1));
-  const payload = await requestJson(CREDITS_CONSUME_ENDPOINT, {
-    method: "POST",
-    body: JSON.stringify({
-      amount: safeAmount,
-      user_id: getCurrentUserId(),
-    }),
+
+  const record = await callRpcRecord("consume_message_credit", {
+    p_user_id: resolvedUserId,
+    p_amount: safeAmount,
   });
 
-  const status = normalizeCreditStatus(payload?.status || payload);
+  const status = normalizeCreditStatus(record);
   if (status) emitCreditStatus(status);
 
-  const allowed = payload?.allowed === true;
+  const allowed = isObject(record) ? record.allowed === true : record === true;
   return {
     allowed,
     status,
-    raw: payload,
+    raw: record,
   };
 };
 
-export const applyPlanUpgrade = async (newPlanId = "premium") => {
+export const applyPlanUpgrade = async (newPlanId = "premium", userId = null) => {
+  const resolvedUserId = ensureUserId(userId);
   const planId = typeof newPlanId === "string" && newPlanId.trim() ? newPlanId.trim() : "premium";
-  const payload = await requestJson(CREDITS_UPGRADE_ENDPOINT, {
-    method: "POST",
-    body: JSON.stringify({
-      new_plan_id: planId,
-      change_type: "upgrade",
-      user_id: getCurrentUserId(),
-    }),
+
+  const result = await callRpcRecord("apply_plan_change", {
+    p_user_id: resolvedUserId,
+    p_new_plan_id: planId,
+    p_change_type: "upgrade",
   });
 
-  const status = normalizeCreditStatus(payload?.status || payload);
-  if (status) emitCreditStatus(status);
-
+  const status = await getCreditStatus(resolvedUserId);
   return {
     status,
-    raw: payload,
+    raw: result,
   };
 };
 
