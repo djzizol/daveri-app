@@ -193,6 +193,50 @@
       z-index: 1;
     }
 
+    .install-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .install-control {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+    .install-control label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--dv-text2);
+      text-transform: uppercase;
+    }
+    .install-control input,
+    .install-control select {
+      height: 36px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(0,0,0,.28);
+      color: var(--text-primary);
+      padding: 0 10px;
+      font-size: 13px;
+      font-weight: 600;
+      outline: none;
+      min-width: 0;
+    }
+    .install-control input:focus,
+    .install-control select:focus {
+      border-color: rgba(139,92,246,.55);
+      box-shadow: 0 0 0 1px rgba(139,92,246,.35);
+    }
+    .install-note {
+      margin: 8px 0 0;
+      font-size: 12px;
+      color: var(--dv-muted);
+      line-height: 1.5;
+    }
+
     .code-block {
       background: rgba(0,0,0,0.35);
       border-radius: 10px;
@@ -267,6 +311,12 @@
     .status-info { position: relative; z-index: 1; }
     .status-title { font-size: 14px; font-weight: 700; color: var(--dv-text); }
     .status-desc { font-size: 12px; color: var(--dv-muted); margin-top: 2px; }
+
+    @media (max-width: 700px) {
+      .install-controls {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -296,13 +346,32 @@
               </div>
             </div>
             <div class="step-body">
+              <div class="install-controls">
+                <div class="install-control" style="grid-column: 1 / -1;">
+                  <label for="installBotSelect">Bot</label>
+                  <select id="installBotSelect">
+                    <option value="">Wczytywanie botów...</option>
+                  </select>
+                </div>
+                <div class="install-control">
+                  <label for="installApiBase">API Base</label>
+                  <input id="installApiBase" type="text" value="https://api.daveri.io" />
+                </div>
+                <div class="install-control">
+                  <label for="installSiteDomain">Twoja domena</label>
+                  <input id="installSiteDomain" type="text" placeholder="https://twojadomena.pl" />
+                </div>
+              </div>
               <div class="code-block">
                 <button class="copy-button" onclick="copyCode(this)" data-i18n="install.actions.copy"></button>
-                <code id="installCode">&lt;script src="https://daveri.app/widget.js"
+                <code id="installCode">&lt;script src="https://daveri.io/widget.js"
   data-bot-id="TWOJ_BOT_ID"
+  data-api-base="https://&lt;MOJA-DOMENA-API&gt;"
+  data-site-domain="https://twojadomena.pl"
   data-position="bottom-right"
-  async&gt;&lt;/script&gt;</code>
+                  async&gt;&lt;/script&gt;</code>
               </div>
+              <p class="install-note">Kod generuje się automatycznie dla wybranego bota i działa z konfiguracją zapisaną w aplikacji.</p>
             </div>
           </div>
 
@@ -377,6 +446,138 @@
         setTimeout(() => btn.textContent = copyLabel, 2000);
       });
     }
+  </script>
+
+  <script type="module">
+    import { getApiUrl } from "../js/api.js";
+
+    const botSelect = document.getElementById("installBotSelect");
+    const apiBaseInput = document.getElementById("installApiBase");
+    const siteDomainInput = document.getElementById("installSiteDomain");
+    const installCode = document.getElementById("installCode");
+    const statusIcon = document.getElementById("statusIcon");
+    const statusTitle = document.getElementById("statusTitle");
+    const statusDesc = document.getElementById("statusDesc");
+    const ACTIVE_BOT_KEY = "daveri_active_bot_id";
+
+    const setStatus = (kind, title, description) => {
+      if (statusIcon) {
+        statusIcon.classList.remove("ok", "warn");
+        statusIcon.classList.add(kind === "ok" ? "ok" : "warn");
+      }
+      if (statusTitle) statusTitle.textContent = title;
+      if (statusDesc) statusDesc.textContent = description;
+    };
+
+    const normalizeUrl = (value) => {
+      const raw = String(value || "").trim();
+      if (!raw) return "";
+      return raw.replace(/\/+$/, "");
+    };
+
+    const getStoredBotId = () => {
+      const raw = window.localStorage.getItem(ACTIVE_BOT_KEY);
+      return raw && raw.trim() ? raw.trim() : "";
+    };
+
+    const setStoredBotId = (botId) => {
+      const value = String(botId || "").trim();
+      if (!value) {
+        window.localStorage.removeItem(ACTIVE_BOT_KEY);
+        return;
+      }
+      window.localStorage.setItem(ACTIVE_BOT_KEY, value);
+    };
+
+    const updateSnippet = () => {
+      if (!installCode) return;
+      const botId = String(botSelect?.value || "TWOJ_BOT_ID").trim() || "TWOJ_BOT_ID";
+      const apiBase = normalizeUrl(apiBaseInput?.value) || "https://<MOJA-DOMENA-API>";
+      const siteDomain = normalizeUrl(siteDomainInput?.value) || "https://twojadomena.pl";
+      const widgetScriptUrl = `${normalizeUrl(window.location.origin)}/widget.js`;
+
+      installCode.textContent = `<script src="${widgetScriptUrl}"
+  data-bot-id="${botId}"
+  data-api-base="${apiBase}"
+  data-site-domain="${siteDomain}"
+  data-position="bottom-right"
+  async></script>`;
+    };
+
+    const loadBots = async () => {
+      if (!botSelect) return;
+      botSelect.disabled = true;
+      botSelect.innerHTML = '<option value="">Wczytywanie botów...</option>';
+
+      try {
+        const response = await fetch(getApiUrl("/api/bots"), {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        let payload = null;
+        try {
+          payload = await response.json();
+        } catch {
+          payload = null;
+        }
+        const bots = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.bots)
+            ? payload.bots
+            : Array.isArray(payload?.data)
+              ? payload.data
+              : [];
+
+        if (!bots.length) {
+          botSelect.innerHTML = '<option value="">Brak botów</option>';
+          botSelect.disabled = true;
+          setStatus("warn", "Brak botów", "Utwórz najpierw bota w sekcji Boty.");
+          updateSnippet();
+          return;
+        }
+
+        const preferredId = getStoredBotId();
+        botSelect.innerHTML = "";
+        bots.forEach((bot, index) => {
+          const option = document.createElement("option");
+          option.value = String(bot?.id || "");
+          option.textContent = String(bot?.name || bot?.title || `Bot ${index + 1}`);
+          botSelect.appendChild(option);
+        });
+
+        const hasPreferred = bots.some((bot) => String(bot?.id) === String(preferredId));
+        const selected = hasPreferred ? preferredId : String(bots[0]?.id || "");
+        botSelect.value = selected;
+        botSelect.disabled = false;
+        setStoredBotId(selected);
+
+        setStatus("ok", "Widget gotowy", "Wybierz bota i skopiuj kod osadzenia.");
+        updateSnippet();
+      } catch (error) {
+        botSelect.innerHTML = '<option value="">Błąd ładowania botów</option>';
+        botSelect.disabled = true;
+        setStatus("warn", "Błąd połączenia", "Nie udało się pobrać listy botów. Sprawdź logowanie i API.");
+        updateSnippet();
+      }
+    };
+
+    if (apiBaseInput && !apiBaseInput.value.trim()) {
+      apiBaseInput.value = "https://api.daveri.io";
+    }
+
+    [botSelect, apiBaseInput, siteDomainInput].forEach((el) => {
+      if (!el) return;
+      el.addEventListener("input", updateSnippet);
+      el.addEventListener("change", () => {
+        if (el === botSelect) setStoredBotId(botSelect.value || "");
+        updateSnippet();
+      });
+    });
+
+    updateSnippet();
+    loadBots();
   </script>
 
   <script type="module" src="../js/language.js"></script>

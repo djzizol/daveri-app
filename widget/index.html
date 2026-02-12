@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DaVeri Widget Host</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #0b1020;
+      color: #e2e8f0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+    .card {
+      width: min(720px, 100%);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      background: rgba(15,23,42,.45);
+      padding: 20px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 20px;
+    }
+    p {
+      margin: 0 0 8px;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    code {
+      display: block;
+      margin-top: 12px;
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      color: #cbd5e1;
+      background: rgba(2,6,23,.6);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 10px;
+      padding: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>DaVeri Widget Host</h1>
+    <p>Ta strona służy do testu hostowanego widgetu.</p>
+    <p>Przekaż parametry w URL: <code>?bot_id=...&api_base=https://api.domena.pl</code></p>
+    <code id="snippet"></code>
+  </div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const botId = params.get("bot_id") || "";
+    const apiBase = params.get("api_base") || "https://<MOJA-DOMENA-API>";
+    const script = document.createElement("script");
+    script.src = "/widget.js";
+    if (botId) script.setAttribute("data-bot-id", botId);
+    script.setAttribute("data-api-base", apiBase);
+    script.setAttribute("data-position", "bottom-right");
+    document.body.appendChild(script);
+
+    const snippet = document.getElementById("snippet");
+    if (snippet) {
+      snippet.textContent = `<script src="${window.location.origin}/widget.js"
+  data-bot-id="${botId || "TWOJ_BOT_ID"}"
+  data-api-base="${apiBase}"
+  data-position="bottom-right"
+  async></script>`;
+    }
+  </script>
+</body>
+</html>

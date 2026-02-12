@@ -108,6 +108,12 @@ const buildCorsHeaders = (request) => {
   };
 };
 
+const buildPublicV1CorsHeaders = () => ({
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+});
+
 const getCookieDomain = (hostname) => {
   const host = (hostname || "").toLowerCase();
   if (!host) return "daveri.io";
@@ -130,15 +136,15 @@ const buildSessionCookie = (session, requestUrl, maxAge = SESSION_MAX_AGE_SECOND
 
 const buildExpiredSessionCookie = (requestUrl) => buildSessionCookie({}, requestUrl, 0);
 
-const supabaseHeaders = (env, extraHeaders = {}) => ({
-  apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-  Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+const supabaseHeadersWithKey = (apiKey, extraHeaders = {}) => ({
+  apikey: apiKey,
+  Authorization: `Bearer ${apiKey}`,
   ...extraHeaders,
 });
 
-const supabaseRequest = async (env, path, options = {}) => {
+const supabaseRequestWithKey = async (env, apiKey, path, options = {}) => {
   const url = `${env.SUPABASE_URL}${path}`;
-  const headers = supabaseHeaders(env, options.headers || {});
+  const headers = supabaseHeadersWithKey(apiKey, options.headers || {});
   const response = await fetch(url, { ...options, headers });
 
   let data = null;
@@ -155,6 +161,32 @@ const supabaseRequest = async (env, path, options = {}) => {
     data,
     response,
   };
+};
+
+const getSupabasePublicKey = (env) => env.SUPABASE_ANON_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
+
+const supabaseRequest = async (env, path, options = {}) =>
+  supabaseRequestWithKey(env, env.SUPABASE_SERVICE_ROLE_KEY, path, options);
+
+const supabasePublicRequest = async (env, path, options = {}) => {
+  const anonKey = env.SUPABASE_ANON_KEY;
+  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+  const apiKey = anonKey || serviceKey;
+  if (!apiKey) {
+    throw new Error("Missing SUPABASE_ANON_KEY/SUPABASE_SERVICE_ROLE_KEY in worker env");
+  }
+
+  const firstAttempt = await supabaseRequestWithKey(env, apiKey, path, options);
+  if (
+    anonKey &&
+    serviceKey &&
+    anonKey !== serviceKey &&
+    !firstAttempt.ok &&
+    (firstAttempt.status === 401 || firstAttempt.status === 403)
+  ) {
+    return supabaseRequestWithKey(env, serviceKey, path, options);
+  }
+  return firstAttempt;
 };
 
 const parseCountFromContentRange = (response) => {
@@ -981,6 +1013,167 @@ const handleMessagesGet = async (request, env, cors, auth, url) => {
   );
 };
 
+const parseMaybeJsonString = (value) => {
+  if (typeof value !== "string") return { value, raw: null, parsed: false };
+  const parsed = parseJsonSafe(value, null);
+  if (parsed === null) {
+    return { value, raw: value, parsed: false };
+  }
+  return { value: parsed, raw: null, parsed: true };
+};
+
+const pickAskAnswer = (payload) => {
+  if (typeof payload === "string") return payload;
+  if (!isObject(payload)) return "";
+
+  const candidates = [payload.answer, payload.output, payload.reply, payload.message];
+  for (const candidate of candidates) {
+    if (typeof candidate === "string") return candidate;
+    if (candidate !== null && candidate !== undefined && typeof candidate !== "object") {
+      return String(candidate);
+    }
+  }
+
+  if (Array.isArray(payload.responses) && payload.responses.length) {
+    const first = payload.responses[0];
+    if (typeof first === "string") return first;
+    if (isObject(first) && typeof first.text === "string") return first.text;
+  }
+
+  return "";
+};
+
+const pickConversationId = (payload) => {
+  if (!isObject(payload)) return null;
+  const candidate =
+    payload.conversation_id ?? payload.conversationId ?? payload.session_id ?? payload.sessionId ?? null;
+  if (typeof candidate === "string" && candidate.trim()) return candidate.trim();
+  return null;
+};
+
+const handleV1BotConfig = async (env, cors, botId) => {
+  const safeBotId = typeof botId === "string" ? botId.trim() : "";
+  if (!safeBotId) {
+    return jsonResponse({ error: "missing_bot_id" }, 400, cors);
+  }
+
+  const params = new URLSearchParams({
+    select: "id,config",
+    id: `eq.${safeBotId}`,
+    limit: "1",
+  });
+  const result = await supabasePublicRequest(env, `/rest/v1/bots?${params.toString()}`);
+  if (!result.ok) {
+    return jsonResponse(
+      { error: "config_fetch_failed", details: result.data || null },
+      result.status || 502,
+      cors
+    );
+  }
+
+  const bot = Array.isArray(result.data) ? result.data[0] : null;
+  if (!bot) {
+    return jsonResponse({ error: "bot_not_found" }, 404, cors);
+  }
+
+  const parsedConfig = parseMaybeJsonString(bot.config ?? null);
+  const payload = {
+    bot_id: String(bot.id || safeBotId),
+    config: parsedConfig.value ?? null,
+  };
+
+  if (parsedConfig.raw !== null) {
+    payload.config_raw = parsedConfig.raw;
+  }
+
+  return jsonResponse(payload, 200, cors);
+};
+
+const handleV1Ask = async (request, env, cors) => {
+  let body;
+  try {
+    body = await readJsonBody(request);
+  } catch {
+    return jsonResponse({ error: "invalid_json" }, 400, cors);
+  }
+
+  const botId = typeof body?.bot_id === "string" ? body.bot_id.trim() : "";
+  const message = typeof body?.message === "string" ? body.message.trim() : "";
+  if (!botId || !message) {
+    return jsonResponse({ error: "invalid_payload", details: "bot_id and message are required" }, 400, cors);
+  }
+
+  const visitorId =
+    typeof body?.visitor_id === "string" && body.visitor_id.trim() ? body.visitor_id.trim() : "guest";
+  const conversationId =
+    typeof body?.conversation_id === "string" && body.conversation_id.trim()
+      ? body.conversation_id.trim()
+      : null;
+  const history = Array.isArray(body?.history) ? body.history : [];
+
+  const anonKey = env.SUPABASE_ANON_KEY;
+  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+  const apiKey = anonKey || serviceKey;
+  if (!apiKey) {
+    return jsonResponse({ error: "ask_failed", details: "Missing SUPABASE key in worker env" }, 502, cors);
+  }
+
+  const forwardPayload = {
+    bot_id: botId,
+    visitor_id: visitorId,
+    conversation_id: conversationId,
+    message,
+    history,
+  };
+
+  const askRequest = async (key) =>
+    fetch(`${env.SUPABASE_URL}/functions/v1/ask-bot`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify(forwardPayload),
+    });
+
+  let response = await askRequest(apiKey);
+  if (
+    anonKey &&
+    serviceKey &&
+    anonKey !== serviceKey &&
+    !response.ok &&
+    (response.status === 401 || response.status === 403)
+  ) {
+    response = await askRequest(serviceKey);
+  }
+
+  const rawText = await response.text();
+  const parsed = parseJsonSafe(rawText, null);
+
+  if (!response.ok) {
+    const details =
+      typeof parsed === "string"
+        ? parsed
+        : isObject(parsed) || Array.isArray(parsed)
+          ? JSON.stringify(parsed)
+          : rawText || `HTTP ${response.status}`;
+    return jsonResponse({ error: "ask_failed", details }, 502, cors);
+  }
+
+  const answer = pickAskAnswer(parsed || rawText);
+  const nextConversationId = pickConversationId(parsed);
+
+  return jsonResponse(
+    {
+      answer: typeof answer === "string" ? answer : String(answer || ""),
+      conversation_id: nextConversationId,
+    },
+    200,
+    cors
+  );
+};
+
 const buildGoogleRedirectUri = (env) => env.GOOGLE_REDIRECT_URI || `${DEFAULT_API_ORIGIN}/auth/callback`;
 
 const buildAuthSuccessRedirect = (env) =>
@@ -1089,13 +1282,38 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const cors = buildCorsHeaders(request);
+    const publicV1Cors = buildPublicV1CorsHeaders();
     const { pathname } = url;
+
+    if (request.method === "OPTIONS" && pathname.startsWith("/v1/")) {
+      return new Response(null, { status: 204, headers: publicV1Cors });
+    }
 
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: cors });
     }
 
     try {
+      if (pathname.startsWith("/v1/")) {
+        if (pathname === "/v1/ask") {
+          if (request.method === "POST") {
+            return handleV1Ask(request, env, publicV1Cors);
+          }
+          return jsonResponse({ error: "method_not_allowed" }, 405, publicV1Cors);
+        }
+
+        const parts = pathname.split("/").filter(Boolean);
+        if (parts.length === 4 && parts[0] === "v1" && parts[1] === "bots" && parts[3] === "config") {
+          if (request.method === "GET") {
+            const botId = decodeURIComponent(parts[2] || "");
+            return handleV1BotConfig(env, publicV1Cors, botId);
+          }
+          return jsonResponse({ error: "method_not_allowed" }, 405, publicV1Cors);
+        }
+
+        return jsonResponse({ error: "not_found" }, 404, publicV1Cors);
+      }
+
       if (pathname === "/health") {
         return textResponse("OK", 200, cors);
       }
