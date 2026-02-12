@@ -21,18 +21,18 @@ const PAYWALL_REASON_CREDITS = "credits";
 const PAYWALL_REASON_AI_LOCKED = "ai_locked";
 const PAYWALL_REASON_AUTH = "auth";
 const AI_LOCK_MESSAGE = "Odblokuj dostep do funkcji DaVeri AI przechodzac na wyzszy plan.";
+const CREDITS_LOCK_MESSAGE = "Wyczerpales limit wiadomosci/kredytow. Poczekaj na reset lub zwieksz limit.";
 const AUTH_REQUIRED_MESSAGE = "Nie mozna potwierdzic sesji. Odswiez strone i zaloguj sie ponownie.";
 
 const PAYWALL_COPY = {
   [PAYWALL_REASON_CREDITS]: {
-    title: "DaVeri AI jest zablokowane",
-    description: AI_LOCK_MESSAGE,
+    title: "Limit kredytow wyczerpany",
+    description: CREDITS_LOCK_MESSAGE,
     benefits: [
-      "Odblokujesz funkcje DaVeri AI.",
-      "Uzyskasz wiecej mozliwosci automatyzacji.",
-      "Skorzystasz z pelnego potencjalu asystenta.",
+      "Poczekaj na dzienny reset.",
+      "Sprawdz limity w zakladce Credits.",
     ],
-    assistant: AI_LOCK_MESSAGE,
+    assistant: CREDITS_LOCK_MESSAGE,
   },
   [PAYWALL_REASON_AI_LOCKED]: {
     title: "DaVeri AI jest zablokowane",
@@ -203,7 +203,7 @@ const createAIWindowNode = () => {
   const messages = createAIMessages();
 
   let paywallVisible = false;
-  let paywallReason = PAYWALL_REASON_CREDITS;
+  let paywallReason = PAYWALL_REASON_AI_LOCKED;
   let upgrading = false;
   let sendingMessage = false;
 
@@ -233,7 +233,7 @@ const createAIWindowNode = () => {
   const paywallBenefits = paywall.querySelector(".ai-paywall-benefits");
 
   const setPaywallContent = (reason) => {
-    const key = Object.prototype.hasOwnProperty.call(PAYWALL_COPY, reason) ? reason : PAYWALL_REASON_CREDITS;
+    const key = Object.prototype.hasOwnProperty.call(PAYWALL_COPY, reason) ? reason : PAYWALL_REASON_AI_LOCKED;
     const copy = PAYWALL_COPY[key];
     paywallReason = key;
     paywall.dataset.reason = key;
@@ -249,7 +249,7 @@ const createAIWindowNode = () => {
     }
     if (paywallUpgradeBtn) {
       paywallUpgradeBtn.textContent = "Przejdz na wyzszy plan";
-      paywallUpgradeBtn.hidden = key === PAYWALL_REASON_AUTH;
+      paywallUpgradeBtn.hidden = key === PAYWALL_REASON_AUTH || key === PAYWALL_REASON_CREDITS;
     }
   };
 
@@ -352,10 +352,10 @@ const createAIWindowNode = () => {
             (paidPlan && !hasCapacity);
 
           if (!canProceed) {
-            setPaywallVisible(true, PAYWALL_REASON_AI_LOCKED);
+            setPaywallVisible(true, PAYWALL_REASON_CREDITS);
             agentDockStore.addMessage({
               role: "assistant",
-              content: PAYWALL_COPY[PAYWALL_REASON_AI_LOCKED].assistant,
+              content: PAYWALL_COPY[PAYWALL_REASON_CREDITS].assistant,
             });
             return { accepted: false };
           }
