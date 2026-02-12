@@ -1125,6 +1125,8 @@ const BILLING_FEATURE_MONTHLY_CREDITS = "monthly_credits";
 const BILLING_FEATURE_DAILY_CREDITS_CAP = "daily_credits_cap";
 const CREDIT_STATE_SELECT =
   "user_id,monthly_balance,daily_balance,next_daily_reset,next_monthly_reset,updated_at";
+const normalizePlanIdValue = (value) =>
+  typeof value === "string" && value.trim() ? value.trim().toLowerCase() : "";
 
 const toIntOrNull = (value) => {
   const numeric = Number(value);
@@ -1163,18 +1165,39 @@ const fetchUserPlanId = async (env, userId) => {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 };
 
-const fetchEffectivePlanId = async (env, userId, fallbackPlanId = null) => {
+const fetchEffectivePlanId = async (env, userId, fallbackPlanId = null, options = {}) => {
   if (!userId) return fallbackPlanId;
+  const preferredPlanId =
+    typeof options?.preferredPlanId === "string" && options.preferredPlanId.trim()
+      ? options.preferredPlanId.trim()
+      : null;
+  const normalizedPreferredPlanId = normalizePlanIdValue(preferredPlanId);
+
   const params = new URLSearchParams({
     select: "plan_id",
     user_id: `eq.${userId}`,
     limit: "1",
   });
   const result = await supabaseRequest(env, `/rest/v1/v_effective_plan?${params.toString()}`);
-  if (result.ok && Array.isArray(result.data) && result.data[0]?.plan_id) {
-    return result.data[0].plan_id;
+  const effectivePlanId =
+    result.ok && Array.isArray(result.data) && result.data[0]?.plan_id ? result.data[0].plan_id : null;
+  const normalizedEffectivePlanId = normalizePlanIdValue(effectivePlanId);
+
+  if (normalizedPreferredPlanId && normalizedPreferredPlanId !== normalizedEffectivePlanId) {
+    const preferredPlan = await fetchPlanById(env, preferredPlanId);
+    if (preferredPlan?.id) return preferredPlan.id;
   }
-  return (await fetchUserPlanId(env, userId)) || fallbackPlanId;
+
+  if (effectivePlanId) return effectivePlanId;
+
+  const userPlanId = await fetchUserPlanId(env, userId);
+  const normalizedUserPlanId = normalizePlanIdValue(userPlanId);
+  if (normalizedPreferredPlanId && normalizedPreferredPlanId !== normalizedUserPlanId) {
+    const preferredPlan = await fetchPlanById(env, preferredPlanId);
+    if (preferredPlan?.id) return preferredPlan.id;
+  }
+
+  return userPlanId || fallbackPlanId;
 };
 
 const sanitizeInValues = (values) =>
@@ -1183,8 +1206,38 @@ const sanitizeInValues = (values) =>
     .filter(Boolean)
     .map((value) => value.replace(/[(),]/g, ""));
 
-const fetchEffectiveEntitlementRows = async (env, userId, featureKeys = null) => {
+const fetchPlanEntitlementRows = async (env, planId, featureKeys = null) => {
+  const normalizedPlanId = typeof planId === "string" && planId.trim() ? planId.trim() : null;
+  if (!normalizedPlanId) return [];
+  const params = new URLSearchParams({
+    select: "plan_id,feature_key,enabled,limit_value,meta",
+    plan_id: `eq.${normalizedPlanId}`,
+  });
+  if (Array.isArray(featureKeys) && featureKeys.length) {
+    const values = sanitizeInValues(featureKeys);
+    if (values.length) {
+      params.set("feature_key", `in.(${values.join(",")})`);
+    }
+  }
+  const result = await supabaseRequest(env, `/rest/v1/plan_entitlements?${params.toString()}`);
+  if (!result.ok || !Array.isArray(result.data)) return [];
+  return result.data.map((row) => ({
+    ...row,
+    plan_id: normalizedPlanId,
+  }));
+};
+
+const fetchEffectiveEntitlementRows = async (env, userId, featureKeys = null, options = {}) => {
   if (!userId) return [];
+  const preferredPlanId =
+    typeof options?.preferredPlanId === "string" && options.preferredPlanId.trim()
+      ? options.preferredPlanId.trim()
+      : null;
+  if (preferredPlanId) {
+    const preferredRows = await fetchPlanEntitlementRows(env, preferredPlanId, featureKeys);
+    if (preferredRows.length) return preferredRows;
+  }
+
   const params = new URLSearchParams({
     select: "plan_id,feature_key,enabled,limit_value,meta",
     user_id: `eq.${userId}`,
@@ -1199,22 +1252,12 @@ const fetchEffectiveEntitlementRows = async (env, userId, featureKeys = null) =>
   const result = await supabaseRequest(env, `/rest/v1/v_effective_entitlements?${params.toString()}`);
   if (result.ok && Array.isArray(result.data)) return result.data;
 
-  const effectivePlanId = await fetchEffectivePlanId(env, userId, null);
+  const effectivePlanId = await fetchEffectivePlanId(env, userId, null, {
+    preferredPlanId,
+  });
   if (!effectivePlanId) return [];
 
-  const fallbackParams = new URLSearchParams({
-    select: "plan_id,feature_key,enabled,limit_value,meta",
-    plan_id: `eq.${effectivePlanId}`,
-  });
-  if (Array.isArray(featureKeys) && featureKeys.length) {
-    const values = sanitizeInValues(featureKeys);
-    if (values.length) {
-      fallbackParams.set("feature_key", `in.(${values.join(",")})`);
-    }
-  }
-  const fallback = await supabaseRequest(env, `/rest/v1/plan_entitlements?${fallbackParams.toString()}`);
-  if (!fallback.ok || !Array.isArray(fallback.data)) return [];
-  return fallback.data;
+  return fetchPlanEntitlementRows(env, effectivePlanId, featureKeys);
 };
 
 const findEntitlementRow = (rows, featureKey) =>
@@ -1470,13 +1513,29 @@ const getCreditStatusRecord = async (env, userId, options = {}) => {
     typeof options?.fallbackPlanId === "string" && options.fallbackPlanId.trim()
       ? options.fallbackPlanId.trim()
       : null;
+  const preferredPlanId =
+    typeof options?.preferredPlanId === "string" && options.preferredPlanId.trim()
+      ? options.preferredPlanId.trim()
+      : fallbackPlanId;
   const shouldApplyResets = options?.applyResets === true;
 
-  const planId = await fetchEffectivePlanId(env, userId, fallbackPlanId);
+  let planId = await fetchEffectivePlanId(env, userId, fallbackPlanId, {
+    preferredPlanId,
+  });
+  if (
+    preferredPlanId &&
+    normalizePlanIdValue(preferredPlanId) &&
+    normalizePlanIdValue(preferredPlanId) !== normalizePlanIdValue(planId)
+  ) {
+    planId = preferredPlanId;
+  }
+
   const entitlementRows = await fetchEffectiveEntitlementRows(env, userId, [
     BILLING_FEATURE_MONTHLY_CREDITS,
     BILLING_FEATURE_DAILY_CREDITS_CAP,
-  ]);
+  ], {
+    preferredPlanId: planId || preferredPlanId || null,
+  });
   let { monthlyLimit, dailyCap } = resolveCreditLimits(entitlementRows);
   const normalizedPlanId = typeof planId === "string" ? planId.trim().toLowerCase() : "";
   if (monthlyLimit === null && normalizedPlanId && normalizedPlanId !== "individual") {
@@ -1498,6 +1557,7 @@ const consumeCreditBalance = async (env, userId, amount, options = {}) => {
   const safeAmount = Math.max(1, Math.floor(Number(amount) || 1));
   const status = await getCreditStatusRecord(env, userId, {
     fallbackPlanId: options?.fallbackPlanId || null,
+    preferredPlanId: options?.preferredPlanId || options?.fallbackPlanId || null,
     applyResets: true,
   });
 
@@ -1534,6 +1594,7 @@ const consumeCreditBalance = async (env, userId, amount, options = {}) => {
 
     const refreshed = await getCreditStatusRecord(env, userId, {
       fallbackPlanId: status.plan_id,
+      preferredPlanId: status.plan_id,
       applyResets: false,
     });
 
@@ -1593,6 +1654,7 @@ const applyPlanChangeRecord = async (env, userId, newPlanId, mode = "upgrade") =
   if (normalizedMode === "upgrade") {
     const upgradedStatus = await getCreditStatusRecord(env, userId, {
       fallbackPlanId: normalizedPlanId,
+      preferredPlanId: normalizedPlanId,
       applyResets: false,
     });
 
@@ -1611,6 +1673,7 @@ const applyPlanChangeRecord = async (env, userId, newPlanId, mode = "upgrade") =
 
   const status = await getCreditStatusRecord(env, userId, {
     fallbackPlanId: normalizedPlanId,
+    preferredPlanId: normalizedPlanId,
     applyResets: false,
   });
   return {
@@ -1623,8 +1686,14 @@ const applyPlanChangeRecord = async (env, userId, newPlanId, mode = "upgrade") =
   };
 };
 
-const getEntitlementsMapRecord = async (env, userId) => {
-  const rows = await fetchEffectiveEntitlementRows(env, userId);
+const getEntitlementsMapRecord = async (env, userId, options = {}) => {
+  const preferredPlanId =
+    typeof options?.preferredPlanId === "string" && options.preferredPlanId.trim()
+      ? options.preferredPlanId.trim()
+      : null;
+  const rows = await fetchEffectiveEntitlementRows(env, userId, null, {
+    preferredPlanId,
+  });
   const map = {};
   rows.forEach((row) => {
     const featureKey = typeof row?.feature_key === "string" ? row.feature_key.trim() : "";
@@ -1653,6 +1722,7 @@ const handleCreditsStatus = async (request, env, cors, auth) => {
   try {
     const status = await getCreditStatusRecord(env, auth.user.id, {
       fallbackPlanId: auth.user?.plan_id || null,
+      preferredPlanId: auth.user?.plan_id || null,
       applyResets: false,
     });
     return jsonResponse(
@@ -1688,6 +1758,7 @@ const handleCreditsConsume = async (request, env, cors, auth) => {
   try {
     const result = await consumeCreditBalance(env, auth.user.id, amount, {
       fallbackPlanId: auth.user?.plan_id || null,
+      preferredPlanId: auth.user?.plan_id || null,
     });
     const status = isObject(result?.status) ? result.status : null;
     return jsonResponse(
@@ -1784,7 +1855,9 @@ const normalizeEntitlementsMap = (payload) => {
 
 const handleEntitlementsMap = async (request, env, cors, auth) => {
   try {
-    const map = await getEntitlementsMapRecord(env, auth.user.id);
+    const map = await getEntitlementsMapRecord(env, auth.user.id, {
+      preferredPlanId: auth.user?.plan_id || null,
+    });
     return jsonResponse(
       {
         entitlements_map: normalizeEntitlementsMap(map),

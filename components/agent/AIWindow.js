@@ -98,6 +98,8 @@ const normalizePlanId = (value) => {
   return value.trim().toLowerCase();
 };
 
+const getAuthPlanId = () => normalizePlanId(window?.DaVeriAuth?.user?.plan_id || "");
+
 const isPaidPlanId = (planId) => {
   const normalized = normalizePlanId(planId);
   return normalized ? AI_ACCESS_FALLBACK_ALLOWED_PLANS.has(normalized) : false;
@@ -123,9 +125,14 @@ const getAiFeatureAccess = async () => {
     } catch {}
   }
 
-  const planId = normalizePlanId(state?.credits?.plan_id || "");
+  const planId = normalizePlanId(state?.credits?.plan_id || "") || getAuthPlanId();
   if (aiFeature?.enabled === true) return { allowed: true, planId };
-  if (aiFeature?.enabled === false) return { allowed: false, reason: PAYWALL_REASON_AI_LOCKED, planId };
+  if (aiFeature?.enabled === false) {
+    if (isPaidPlanId(planId)) {
+      return { allowed: true, planId };
+    }
+    return { allowed: false, reason: PAYWALL_REASON_AI_LOCKED, planId };
+  }
 
   const mode = String(aiMode?.meta?.mode || "").trim().toLowerCase();
   if (mode && mode !== "none") return { allowed: true, planId };

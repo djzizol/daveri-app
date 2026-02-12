@@ -392,6 +392,11 @@ const toNonNegativeOrNull = (value) => {
   return Math.max(0, numeric);
 };
 
+const getAuthPlanId = () => {
+  const value = window?.DaVeriAuth?.user?.plan_id;
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+};
+
 const applyPlanData = (root, status) => {
   const planNameEl = root.querySelector("#sidebar-plan-name");
   const planPillEl = root.querySelector("#sidebar-plan-pill");
@@ -425,7 +430,9 @@ const applyPlanData = (root, status) => {
     return;
   }
 
-  const planId = typeof status.plan_id === "string" && status.plan_id.trim() ? status.plan_id.trim() : "plan";
+  const planIdFromStatus =
+    typeof status.plan_id === "string" && status.plan_id.trim() ? status.plan_id.trim() : null;
+  const planId = getAuthPlanId() || planIdFromStatus || "plan";
   const safeMonthlyLimit = toNonNegativeOrNull(status.monthly_limit);
   const safeMonthlyBalance = toNonNegativeOrNull(status.monthly_balance);
   const safeDailyCap = toNonNegativeOrNull(status.daily_cap);
