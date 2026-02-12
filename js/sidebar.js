@@ -466,7 +466,10 @@ const loadCreditStatus = async (root) => {
     }
     applyPlanData(root, status);
   } catch (error) {
-    console.error("[Sidebar] credit status load failed", error);
+    console.error("[Sidebar] credit status load failed", {
+      code: error?.code || null,
+      message: error?.message || "unknown_error",
+    });
     applyPlanData(root, null);
   }
 };

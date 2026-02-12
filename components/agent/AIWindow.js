@@ -174,7 +174,10 @@ const createAIWindowNode = () => {
         try {
           consumeResult = await consumeMessageCredit(1);
         } catch (error) {
-          console.error("[AIWindow] consume_message_credit failed", error);
+          console.error("[AIWindow] consume_message_credit failed", {
+            code: error?.code || null,
+            message: error?.message || "unknown_error",
+          });
           agentDockStore.addMessage({
             role: "assistant",
             content: "Could not validate your credits right now. Try again in a moment.",

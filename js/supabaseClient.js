@@ -67,3 +67,13 @@ export const callRpc = async (rpcName, args = {}) => {
 };
 
 export const callRpcRecord = async (rpcName, args = {}) => normalizeRpcRecord(await callRpc(rpcName, args));
+
+export const hasSupabaseAccessToken = async () => {
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) return false;
+    return Boolean(data?.session?.access_token);
+  } catch {
+    return false;
+  }
+};

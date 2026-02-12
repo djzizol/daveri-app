@@ -1,6 +1,8 @@
-import { callRpcRecord, getCurrentUserId } from "./supabaseClient.js";
+import { getApiUrl } from "./api.js";
+import { callRpcRecord, getCurrentUserId, hasSupabaseAccessToken } from "./supabaseClient.js";
 
 const ENTITLEMENTS_UPDATED_EVENT = "daveri:entitlements-updated";
+const ENTITLEMENTS_ENDPOINT = getApiUrl("/api/entitlements");
 
 const isObject = (value) => value && typeof value === "object" && !Array.isArray(value);
 
@@ -48,6 +50,53 @@ const normalizeEntitlementsMap = (payload) => {
   return normalized;
 };
 
+const isRpcAuthError = (error) => {
+  const code = String(error?.code || "").toUpperCase();
+  const message = String(error?.message || "").toUpperCase();
+  return code === "P0001" || message.includes("NOT_AUTHENTICATED") || message.includes("JWT");
+};
+
+const requestWorkerJson = async (url, options = {}) => {
+  const method = String(options.method || "GET").toUpperCase();
+  const headers = {
+    Accept: "application/json",
+    ...(options.headers || {}),
+  };
+  if (method !== "GET" && method !== "HEAD" && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const response = await fetch(url, {
+    credentials: "include",
+    ...options,
+    method,
+    headers,
+  });
+
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    const error = new Error(
+      (isObject(payload) && (payload.error || payload.details)) || `Request failed: ${response.status}`
+    );
+    error.status = response.status;
+    error.payload = payload;
+    console.error("[Worker:entitlements]", {
+      status: response.status,
+      message: error.message,
+      payload,
+    });
+    throw error;
+  }
+
+  return payload;
+};
+
 const emitEntitlementsMap = (entitlementsMap) => {
   if (typeof window === "undefined") return;
   window.dispatchEvent(
@@ -59,10 +108,25 @@ const emitEntitlementsMap = (entitlementsMap) => {
 
 export const getEntitlementsMap = async (userId = null) => {
   const resolvedUserId = ensureUserId(userId);
-  const record = await callRpcRecord("get_entitlements_map", {
-    p_user_id: resolvedUserId,
-  });
-  const entitlementsMap = normalizeEntitlementsMap(record);
+  let entitlementsMap = null;
+  const hasToken = await hasSupabaseAccessToken();
+
+  if (hasToken) {
+    try {
+      const record = await callRpcRecord("get_entitlements_map", {
+        p_user_id: resolvedUserId,
+      });
+      entitlementsMap = normalizeEntitlementsMap(record);
+    } catch (error) {
+      if (!isRpcAuthError(error)) throw error;
+    }
+  }
+
+  if (!entitlementsMap) {
+    const payload = await requestWorkerJson(ENTITLEMENTS_ENDPOINT, { method: "GET" });
+    entitlementsMap = normalizeEntitlementsMap(payload?.entitlements_map || payload);
+  }
+
   emitEntitlementsMap(entitlementsMap);
   return entitlementsMap;
 };
