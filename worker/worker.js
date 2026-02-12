@@ -165,6 +165,22 @@ const supabaseRequestWithKey = async (env, apiKey, path, options = {}) => {
 
 const getSupabasePublicKey = (env) => env.SUPABASE_ANON_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
 
+const getServiceRoleKeyIssue = (env) => {
+  const serviceKey = typeof env?.SUPABASE_SERVICE_ROLE_KEY === "string" ? env.SUPABASE_SERVICE_ROLE_KEY.trim() : "";
+  const anonKey = typeof env?.SUPABASE_ANON_KEY === "string" ? env.SUPABASE_ANON_KEY.trim() : "";
+
+  if (!serviceKey) {
+    return "SUPABASE_SERVICE_ROLE_KEY is missing";
+  }
+  if (serviceKey === anonKey && anonKey) {
+    return "SUPABASE_SERVICE_ROLE_KEY matches SUPABASE_ANON_KEY";
+  }
+  if (serviceKey.startsWith("sb_publishable_")) {
+    return "SUPABASE_SERVICE_ROLE_KEY is a publishable key";
+  }
+  return null;
+};
+
 const supabaseRequest = async (env, path, options = {}) =>
   supabaseRequestWithKey(env, env.SUPABASE_SERVICE_ROLE_KEY, path, options);
 
@@ -279,7 +295,18 @@ const fetchUserByEmail = async (env, email) => {
   return result.data[0];
 };
 
-const createUserRecord = async (env, email) => {
+const createUserRecord = async (env, email, diagnostics = null) => {
+  const serviceKeyIssue = getServiceRoleKeyIssue(env);
+  if (serviceKeyIssue) {
+    if (diagnostics) {
+      diagnostics.create_user_error = {
+        code: "service_role_key_invalid",
+        message: serviceKeyIssue,
+      };
+    }
+    return null;
+  }
+
   const defaultPlanId = await getDefaultPlanId(env);
   const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -303,12 +330,30 @@ const createUserRecord = async (env, email) => {
     body: JSON.stringify(payload),
   });
 
-  if (!result.ok) return null;
-  if (!Array.isArray(result.data) || result.data.length === 0) return null;
+  if (!result.ok) {
+    if (diagnostics) {
+      diagnostics.create_user_error = {
+        code: "users_insert_failed",
+        status: result.status,
+        details: result.data || null,
+      };
+    }
+    return null;
+  }
+  if (!Array.isArray(result.data) || result.data.length === 0) {
+    if (diagnostics) {
+      diagnostics.create_user_error = {
+        code: "users_insert_empty_response",
+        status: result.status,
+        details: result.data || null,
+      };
+    }
+    return null;
+  }
   return result.data[0];
 };
 
-const getOrCreateUser = async (env, session) => {
+const getOrCreateUser = async (env, session, diagnostics = null) => {
   if (!session?.email) return null;
 
   let user = null;
@@ -320,7 +365,7 @@ const getOrCreateUser = async (env, session) => {
   }
   if (user) return user;
 
-  user = await createUserRecord(env, session.email);
+  user = await createUserRecord(env, session.email, diagnostics);
   if (user) return user;
 
   return await fetchUserByEmail(env, session.email);
@@ -1152,8 +1197,24 @@ const fetchEffectiveEntitlementRows = async (env, userId, featureKeys = null) =>
   }
 
   const result = await supabaseRequest(env, `/rest/v1/v_effective_entitlements?${params.toString()}`);
-  if (!result.ok || !Array.isArray(result.data)) return [];
-  return result.data;
+  if (result.ok && Array.isArray(result.data)) return result.data;
+
+  const effectivePlanId = await fetchEffectivePlanId(env, userId, null);
+  if (!effectivePlanId) return [];
+
+  const fallbackParams = new URLSearchParams({
+    select: "plan_id,feature_key,enabled,limit_value,meta",
+    plan_id: `eq.${effectivePlanId}`,
+  });
+  if (Array.isArray(featureKeys) && featureKeys.length) {
+    const values = sanitizeInValues(featureKeys);
+    if (values.length) {
+      fallbackParams.set("feature_key", `in.(${values.join(",")})`);
+    }
+  }
+  const fallback = await supabaseRequest(env, `/rest/v1/plan_entitlements?${fallbackParams.toString()}`);
+  if (!fallback.ok || !Array.isArray(fallback.data)) return [];
+  return fallback.data;
 };
 
 const findEntitlementRow = (rows, featureKey) =>
@@ -1268,6 +1329,7 @@ const ensureCreditStateRow = async (env, userId, monthlyLimit, dailyCap) => {
   });
 
   if (!insertResult.ok) {
+    let initFailedStatus = null;
     const initResult = await supabaseRequest(env, "/rest/v1/rpc/init_user_credits", {
       method: "POST",
       headers: {
@@ -1278,9 +1340,17 @@ const ensureCreditStateRow = async (env, userId, monthlyLimit, dailyCap) => {
       }),
     });
     if (!initResult.ok) {
-      throw new Error(
-        `credit_state_init_failed:insert=${insertResult.status},rpc=${initResult.status}`
-      );
+      initFailedStatus = initResult.status || null;
+      if (
+        insertResult.status !== 401 &&
+        insertResult.status !== 403 &&
+        initFailedStatus !== 401 &&
+        initFailedStatus !== 403
+      ) {
+        throw new Error(
+          `credit_state_init_failed:insert=${insertResult.status},rpc=${initFailedStatus}`
+        );
+      }
     }
   }
 
@@ -1307,6 +1377,17 @@ const ensureCreditStateRow = async (env, userId, monthlyLimit, dailyCap) => {
     }),
   });
   if (!retryInsertResult.ok) {
+    if (retryInsertResult.status === 401 || retryInsertResult.status === 403) {
+      return {
+        user_id: userId,
+        monthly_balance: monthlyLimit ?? 0,
+        daily_balance: dailyCap ?? 0,
+        next_daily_reset: nextUtcDayIso(now),
+        next_monthly_reset: addMonthIso(now),
+        updated_at: now.toISOString(),
+        synthetic: true,
+      };
+    }
     throw new Error(`credit_state_missing:retry_insert=${retryInsertResult.status}`);
   }
 
@@ -1440,21 +1521,38 @@ const consumeCreditBalance = async (env, userId, amount, options = {}) => {
   const consumeDaily = Math.min(currentDaily, safeAmount);
   const consumeMonthly = safeAmount - consumeDaily;
 
-  await patchCreditStateRow(env, userId, {
-    daily_balance: Math.max(0, currentDaily - consumeDaily),
-    monthly_balance: Math.max(0, currentMonthly - consumeMonthly),
-    updated_at: new Date().toISOString(),
-  });
+  const nextDaily = Math.max(0, currentDaily - consumeDaily);
+  const nextMonthly = Math.max(0, currentMonthly - consumeMonthly);
+  const nextRemaining = nextDaily + nextMonthly;
 
-  const refreshed = await getCreditStatusRecord(env, userId, {
-    fallbackPlanId: status.plan_id,
-    applyResets: false,
-  });
+  try {
+    await patchCreditStateRow(env, userId, {
+      daily_balance: nextDaily,
+      monthly_balance: nextMonthly,
+      updated_at: new Date().toISOString(),
+    });
 
-  return {
-    allowed: true,
-    status: refreshed,
-  };
+    const refreshed = await getCreditStatusRecord(env, userId, {
+      fallbackPlanId: status.plan_id,
+      applyResets: false,
+    });
+
+    return {
+      allowed: true,
+      status: refreshed,
+    };
+  } catch {
+    return {
+      allowed: true,
+      status: {
+        ...status,
+        daily_balance: nextDaily,
+        monthly_balance: nextMonthly,
+        remaining: nextRemaining,
+      },
+      degraded: true,
+    };
+  }
 };
 
 const applyPlanChangeRecord = async (env, userId, newPlanId, mode = "upgrade") => {
@@ -1931,12 +2029,21 @@ const handleGoogleCallback = async (request, env, cors, url) => {
     return jsonResponse({ error: "Google profile fetch failed", details: profile }, 500, cors);
   }
 
+  const diagnostics = {};
   const user = await getOrCreateUser(env, {
     email: profile.email,
     id: null,
-  });
+  }, diagnostics);
   if (!user) {
-    return jsonResponse({ error: "Failed to create user profile" }, 500, cors);
+    return jsonResponse(
+      {
+        error: "Failed to create user profile",
+        details: diagnostics.create_user_error || null,
+        hint: getServiceRoleKeyIssue(env),
+      },
+      500,
+      cors
+    );
   }
 
   const session = {
