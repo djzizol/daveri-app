@@ -1171,6 +1171,45 @@ const entitlementLimit = (rows, featureKey) => {
   return toIntOrNull(row.limit_value);
 };
 
+const entitlementLimitByMatcher = (rows, matcher) => {
+  if (!Array.isArray(rows) || typeof matcher !== "function") return null;
+  for (const row of rows) {
+    const key = typeof row?.feature_key === "string" ? row.feature_key.trim().toLowerCase() : "";
+    if (!key || !matcher(key, row)) continue;
+    const limit = toIntOrNull(row.limit_value);
+    if (limit !== null) return limit;
+  }
+  return null;
+};
+
+const resolveCreditLimits = (entitlementRows) => {
+  let monthlyLimit = entitlementLimit(entitlementRows, BILLING_FEATURE_MONTHLY_CREDITS);
+  let dailyCap = entitlementLimit(entitlementRows, BILLING_FEATURE_DAILY_CREDITS_CAP);
+
+  if (monthlyLimit === null) {
+    monthlyLimit = entitlementLimitByMatcher(
+      entitlementRows,
+      (key) => key.includes("month") && key.includes("credit")
+    );
+  }
+  if (dailyCap === null) {
+    dailyCap = entitlementLimitByMatcher(
+      entitlementRows,
+      (key) =>
+        key.includes("day") &&
+        (key.includes("credit") || key.includes("cap") || key.includes("quota"))
+    );
+  }
+  if (monthlyLimit === null) {
+    monthlyLimit = entitlementLimitByMatcher(
+      entitlementRows,
+      (key) => key === "credits" || key === "credits_limit" || key === "message_credits"
+    );
+  }
+
+  return { monthlyLimit, dailyCap };
+};
+
 const fetchCreditStateRow = async (env, userId) => {
   if (!userId) return null;
   const params = new URLSearchParams({
@@ -1357,8 +1396,7 @@ const getCreditStatusRecord = async (env, userId, options = {}) => {
     BILLING_FEATURE_MONTHLY_CREDITS,
     BILLING_FEATURE_DAILY_CREDITS_CAP,
   ]);
-  let monthlyLimit = entitlementLimit(entitlementRows, BILLING_FEATURE_MONTHLY_CREDITS);
-  let dailyCap = entitlementLimit(entitlementRows, BILLING_FEATURE_DAILY_CREDITS_CAP);
+  let { monthlyLimit, dailyCap } = resolveCreditLimits(entitlementRows);
   const normalizedPlanId = typeof planId === "string" ? planId.trim().toLowerCase() : "";
   if (monthlyLimit === null && normalizedPlanId && normalizedPlanId !== "individual") {
     monthlyLimit = 0;
