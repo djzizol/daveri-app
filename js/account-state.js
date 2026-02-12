@@ -162,8 +162,8 @@ export const ensureAccountState = async () => {
   return ensurePromise;
 };
 
-export const consumeMessageCredit = async (amount = 1) => {
-  const result = await consumeCreditsMessage(amount);
+export const consumeMessageCredit = async (amount = 1, userId = null) => {
+  const result = await consumeCreditsMessage(amount, userId);
   if (result?.status) {
     setState({
       credits: result.status,

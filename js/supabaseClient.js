@@ -77,3 +77,8 @@ export const hasSupabaseAccessToken = async () => {
     return false;
   }
 };
+
+if (typeof window !== "undefined") {
+  window.DaVeriSupabase = window.DaVeriSupabase || {};
+  window.DaVeriSupabase.getCurrentUserId = getCurrentUserId;
+}

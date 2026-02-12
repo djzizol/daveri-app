@@ -289,7 +289,8 @@ const createAIWindowNode = () => {
 
         let consumeResult = null;
         try {
-          consumeResult = await consumeMessageCredit(1);
+          const userId = window.DaVeriAuth?.user?.id || null;
+          consumeResult = await consumeMessageCredit(1, userId);
         } catch (error) {
           console.error("[AIWindow] consume_message_credit failed", {
             code: error?.code || null,
