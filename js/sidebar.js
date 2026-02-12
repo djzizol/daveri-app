@@ -1,4 +1,11 @@
 import { mountSidebarIcons } from "../components/brand/SidebarIcon.js";
+import { getApiUrl } from "./api.js";
+import { getCreditStatus, subscribeCreditUpdates } from "./credits.js";
+import {
+  ensureAccountState,
+  getAccountState,
+  subscribeAccountState,
+} from "./account-state.js";
 
 const DEFAULT_ROUTES = {
   panel: "/dashboard",
@@ -357,70 +364,131 @@ const drawPlanProgress = (root, remainingPercent) => {
 };
 
 
-const applyPlanData = (root, plan) => {
+const formatResetTime = (value) => {
+  if (!value || typeof value !== "string") return "--";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "--";
+  return date.toLocaleString();
+};
+
+const formatPlanName = (planId) => {
+  if (!planId || typeof planId !== "string") return "Plan";
+  return planId
+    .trim()
+    .split("_")
+    .filter(Boolean)
+    .map((segment) => `${segment.charAt(0).toUpperCase()}${segment.slice(1)}`)
+    .join(" ");
+};
+
+const updateTooltipRow = (element, label, value) => {
+  if (!element) return;
+  element.textContent = `${label}: ${value}`;
+};
+
+const applyPlanData = (root, status) => {
   const planNameEl = root.querySelector("#sidebar-plan-name");
   const planPillEl = root.querySelector("#sidebar-plan-pill");
   const planPercentEl = root.querySelector("#sidebar-plan-percent");
+  const planLiquidSubEl = root.querySelector(".plan-liquid-sub");
   const creditsMainEl = root.querySelector("#sidebar-plan-credits-main");
   const creditsSubEl = root.querySelector("#sidebar-plan-credits-sub");
+  const monthlyEl = root.querySelector("#sidebar-plan-tooltip-monthly");
+  const dailyEl = root.querySelector("#sidebar-plan-tooltip-daily");
+  const dailyResetEl = root.querySelector("#sidebar-plan-tooltip-daily-reset");
+  const monthlyResetEl = root.querySelector("#sidebar-plan-tooltip-monthly-reset");
 
   if (!planNameEl || !planPillEl || !planPercentEl || !creditsMainEl || !creditsSubEl) {
     return;
   }
 
-  if (!plan || typeof plan !== "object") {
+  if (!status || typeof status !== "object") {
     planNameEl.textContent = "Plan";
-    planPillEl.textContent = "PLAN";
-    planPercentEl.textContent = "0%";
-    creditsMainEl.textContent = "Plan data unavailable";
-    creditsSubEl.textContent = "Unable to load credits.";
+    planPillEl.textContent = "CREDITS";
+    planPercentEl.textContent = "0";
+    if (planLiquidSubEl) {
+      planLiquidSubEl.textContent = "REMAINING";
+    }
+    creditsMainEl.textContent = "Credits unavailable";
+    creditsSubEl.textContent = "Unable to load credit status.";
+    updateTooltipRow(monthlyEl, "Monthly", "-- / --");
+    updateTooltipRow(dailyEl, "Daily", "-- / --");
+    updateTooltipRow(dailyResetEl, "Reset daily", "--");
+    updateTooltipRow(monthlyResetEl, "Reset monthly", "--");
     drawPlanProgress(root, 0);
     return;
   }
 
-  const planId = typeof plan.id === "string" && plan.id.trim() ? plan.id.trim() : "standard";
-  const normalizedPlanName = `${planId.charAt(0).toUpperCase()}${planId.slice(1)}`;
-  const status = typeof plan.status === "string" && plan.status.trim() ? plan.status.trim() : "active";
-  const limit = Number(plan.credits_limit);
-  const used = Number(plan.credits_used);
-  const hasLimit = Number.isFinite(limit) && limit >= 0;
-  const safeUsed = Number.isFinite(used) ? Math.max(0, used) : 0;
-  const safeRemaining = hasLimit
-    ? Math.max(0, Number.isFinite(Number(plan.credits_remaining)) ? Number(plan.credits_remaining) : limit - safeUsed)
-    : null;
-  const remainingPercent = Number.isFinite(Number(plan.credits_percent_remaining))
-    ? Math.max(0, Math.min(100, Number(plan.credits_percent_remaining)))
-    : hasLimit && limit > 0
-      ? Math.max(0, Math.min(100, Math.round((safeRemaining / limit) * 100)))
-      : 0;
+  const planId = typeof status.plan_id === "string" && status.plan_id.trim() ? status.plan_id.trim() : "plan";
+  const monthlyLimit = Number(status.monthly_limit);
+  const monthlyBalance = Number(status.monthly_balance);
+  const dailyCap = Number(status.daily_cap);
+  const dailyBalance = Number(status.daily_balance);
+  const remaining = Number(status.remaining);
+  const capacity = Number(status.capacity);
 
-  planNameEl.textContent = normalizedPlanName;
-  planPillEl.textContent = status.toUpperCase();
-  planPercentEl.textContent = `${remainingPercent}%`;
+  const safeMonthlyLimit = Number.isFinite(monthlyLimit) ? Math.max(0, monthlyLimit) : null;
+  const safeMonthlyBalance = Number.isFinite(monthlyBalance) ? Math.max(0, monthlyBalance) : null;
+  const safeDailyCap = Number.isFinite(dailyCap) ? Math.max(0, dailyCap) : null;
+  const safeDailyBalance = Number.isFinite(dailyBalance) ? Math.max(0, dailyBalance) : null;
+  const safeRemaining = Number.isFinite(remaining) ? Math.max(0, remaining) : 0;
+  const safeCapacity = Number.isFinite(capacity) ? Math.max(0, capacity) : 0;
+  const remainingPercent =
+    safeCapacity > 0 ? Math.max(0, Math.min(100, Math.round((safeRemaining / safeCapacity) * 100))) : 0;
 
-  if (hasLimit) {
-    creditsMainEl.textContent = `${formatNumber(safeRemaining)} credits left`;
-    creditsSubEl.textContent = `${formatNumber(safeUsed)} used from ${formatNumber(limit)} this period.`;
-  } else {
-    creditsMainEl.textContent = `${formatNumber(safeUsed)} credits used`;
-    creditsSubEl.textContent = "No monthly limit available.";
+  planNameEl.textContent = formatPlanName(planId);
+  planPillEl.textContent = "CREDITS";
+  planPercentEl.textContent = formatNumber(safeRemaining);
+  if (planLiquidSubEl) {
+    planLiquidSubEl.textContent = `${remainingPercent}%`;
   }
+  creditsMainEl.textContent = `${formatNumber(safeRemaining)} credits`;
+  creditsSubEl.textContent = `${remainingPercent}% available (${formatNumber(safeCapacity)} capacity)`;
+
+  updateTooltipRow(
+    monthlyEl,
+    "Monthly",
+    `${formatNumber(safeMonthlyBalance)} / ${formatNumber(safeMonthlyLimit)}`
+  );
+  updateTooltipRow(dailyEl, "Daily", `${formatNumber(safeDailyBalance)} / ${formatNumber(safeDailyCap)}`);
+  updateTooltipRow(dailyResetEl, "Reset daily", formatResetTime(status.next_daily_reset));
+  updateTooltipRow(monthlyResetEl, "Reset monthly", formatResetTime(status.next_monthly_reset));
 
   drawPlanProgress(root, remainingPercent);
 };
 
+const loadCreditStatus = async (root) => {
+  try {
+    await ensureAccountState();
+    const fromStore = getAccountState()?.credits || null;
+    const status = fromStore || (await getCreditStatus());
+    applyPlanData(root, status);
+  } catch (error) {
+    console.error("[Sidebar] credit status load failed", error);
+    applyPlanData(root, null);
+  }
+};
+const bindCreditStatusEvents = (root) => {
+  if (root.__daveriCreditsBound) return;
+  root.__daveriCreditsBound = true;
+  subscribeCreditUpdates((status) => {
+    applyPlanData(root, status);
+  });
+  subscribeAccountState((state) => {
+    applyPlanData(root, state?.credits || null);
+  });
+};
 const loadUser = async (root, authEndpoint) => {
   try {
     const endpointCandidates = Array.from(
       new Set(
         [
           authEndpoint,
-          "https://api.daveri.io/auth/me",
-          "https://api.daveri.io/api/me",
+          getApiUrl("/auth/me"),
+          getApiUrl("/api/me"),
         ].filter(Boolean)
       )
     );
-
     let data = null;
     for (const endpoint of endpointCandidates) {
       const response = await fetch(endpoint, { credentials: "include" });
@@ -431,12 +499,10 @@ const loadUser = async (root, authEndpoint) => {
         break;
       }
     }
-
     if (!data?.logged) {
       applyPlanData(root, null);
-      return;
+      return false;
     }
-
     const user = data.user || {};
     if (user.id) {
       root.dataset.userId = user.id;
@@ -446,13 +512,11 @@ const loadUser = async (root, authEndpoint) => {
     if (user.email) {
       root.dataset.userEmail = user.email;
     }
-
     const userName = root.querySelector("#userName");
     const userSub = root.querySelector("#userSub");
     const avatarBox = root.querySelector("#avatarBox");
-
     if (userName) {
-      userName.textContent = user.name || user.email || "Użytkownik";
+      userName.textContent = user.name || user.email || "User";
     }
     if (userSub) {
       userSub.textContent = user.email || "";
@@ -465,33 +529,18 @@ const loadUser = async (root, authEndpoint) => {
         avatarBox.textContent = getInitials(user.name || user.email || "U");
       }
     }
-
-    let planPayload = data.plan || null;
-    if (!planPayload) {
-      try {
-        const fallback = await fetch("https://api.daveri.io/api/me", { credentials: "include" });
-        if (fallback.ok) {
-          const fallbackData = await fallback.json();
-          if (fallbackData?.logged && fallbackData?.plan) {
-            planPayload = fallbackData.plan;
-          }
-        }
-      } catch (error) {
-        console.warn("[Sidebar] plan fallback failed", error);
-      }
-    }
-
-    applyPlanData(root, planPayload);
+    return true;
   } catch (error) {
     console.error("[Sidebar] auth load failed", error);
     applyPlanData(root, null);
+    return false;
   }
 };
 
 export const initSidebar = async (root, options = {}) => {
   if (!root) return;
   const routes = { ...DEFAULT_ROUTES, ...options.routes };
-  const authEndpoint = options.authEndpoint || "https://api.daveri.io/auth/me";
+  const authEndpoint = options.authEndpoint || getApiUrl("/auth/me");
 
   const sidebar = root.querySelector(".sidebar");
   if (!sidebar) return;
@@ -502,5 +551,10 @@ export const initSidebar = async (root, options = {}) => {
   initNavigation(root, routes);
   initDropdowns(root);
   initCollapseToggle(root);
-  await loadUser(root, authEndpoint);
+  bindCreditStatusEvents(root);
+  const isLogged = await loadUser(root, authEndpoint);
+  if (isLogged) {
+    await loadCreditStatus(root);
+  }
 };
+

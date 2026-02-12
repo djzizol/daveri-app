@@ -1,6 +1,7 @@
 import { initSidebar } from "./sidebar.js";
 import "./lang-dropdown.js";
 import { ensureAppLayout } from "./app-layout.js";
+import "./account-state.js";
 
 const SIDEBAR_STYLE_ID = "daveri-sidebar-style";
 const SIDEBAR_ROOT_ID = "daveri_sidebar";

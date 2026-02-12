@@ -652,6 +652,43 @@
   overflow:hidden;
   text-overflow:ellipsis;
 }
+#daveri_sidebar .plan-credit-tooltip{
+  position:absolute;
+  left:12px;
+  right:12px;
+  bottom:calc(100% + 10px);
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(12,14,20,.96);
+  box-shadow:0 14px 36px rgba(0,0,0,.5);
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  font-size:11px;
+  color:rgba(244,244,245,.82);
+  opacity:0;
+  transform:translateY(6px);
+  pointer-events:none;
+  transition:opacity 140ms var(--sb-ease), transform 140ms var(--sb-ease);
+  z-index:20;
+}
+#daveri_sidebar .plan-credit-tooltip-row{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#daveri_sidebar .plan-card:hover .plan-credit-tooltip,
+#daveri_sidebar .plan-card:focus-within .plan-credit-tooltip{
+  opacity:1;
+  transform:translateY(0);
+}
+[data-theme="light"] #daveri_sidebar .plan-credit-tooltip{
+  background:rgba(255,255,255,.98);
+  border-color:rgba(15,23,42,.16);
+  color:rgba(15,23,42,.82);
+  box-shadow:0 14px 32px rgba(15,23,42,.2);
+}
 
 /* ===== USER / FOOTER - reduced visual weight ===== */
 #daveri_sidebar .user{
@@ -744,6 +781,7 @@
 }
 #daveri_sidebar .sidebar.collapsed .plan-liquid-percent{font-size:10px;}
 #daveri_sidebar .sidebar.collapsed .plan-liquid-sub{display:none;}
+#daveri_sidebar .sidebar.collapsed .plan-credit-tooltip{display:none;}
 
 /* ===== DROPDOWN ===== */
 .ck-dropdown.dv-dd{
@@ -1027,7 +1065,7 @@
             <div class="plan-label" data-i18n="sidebar.plan.label">Your plan</div>
             <div class="plan-name" id="sidebar-plan-name">--</div>
           </div>
-          <span class="plan-pill" id="sidebar-plan-pill" data-i18n="sidebar.plan.pill">PLAN</span>
+          <span class="plan-pill" id="sidebar-plan-pill">CREDITS</span>
         </div>
 
         <div class="plan-card-body">
@@ -1042,11 +1080,17 @@
           </div>
 
           <div class="plan-credits-box">
-            <div class="plan-credits-main" id="sidebar-plan-credits-main" data-i18n="sidebar.plan.loading">Loading data...</div>
+            <div class="plan-credits-main" id="sidebar-plan-credits-main">Loading data...</div>
             <div class="plan-credits-sub" id="sidebar-plan-credits-sub">
               <span data-i18n="sidebar.plan.subtext">Checking your credits for this billing period.</span>
             </div>
           </div>
+        </div>
+        <div class="plan-credit-tooltip" id="sidebar-plan-tooltip" role="status" aria-live="polite">
+          <div class="plan-credit-tooltip-row" id="sidebar-plan-tooltip-monthly">Monthly: -- / --</div>
+          <div class="plan-credit-tooltip-row" id="sidebar-plan-tooltip-daily">Daily: -- / --</div>
+          <div class="plan-credit-tooltip-row" id="sidebar-plan-tooltip-daily-reset">Reset daily: --</div>
+          <div class="plan-credit-tooltip-row" id="sidebar-plan-tooltip-monthly-reset">Reset monthly: --</div>
         </div>
       </div><!-- /plan-card -->
 

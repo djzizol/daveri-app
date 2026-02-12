@@ -1013,6 +1013,173 @@ const handleMessagesGet = async (request, env, cors, auth, url) => {
   );
 };
 
+const normalizeRpcResponseRecord = (payload) => {
+  if (Array.isArray(payload)) {
+    return payload.length ? payload[0] : null;
+  }
+  if (payload === null || payload === undefined) return null;
+  return payload;
+};
+
+const callBillingRpc = async (env, rpcName, args) => {
+  const result = await supabaseRequest(env, `/rest/v1/rpc/${rpcName}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(args || {}),
+  });
+
+  return {
+    ok: result.ok,
+    status: result.status,
+    data: normalizeRpcResponseRecord(result.data),
+    raw: result.data,
+  };
+};
+
+const handleCreditsStatus = async (request, env, cors, auth) => {
+  const rpc = await callBillingRpc(env, "get_credit_status", {
+    p_user_id: auth.user.id,
+  });
+
+  if (!rpc.ok) {
+    return jsonResponse(
+      { error: "credits_status_failed", details: rpc.raw || null },
+      rpc.status || 502,
+      cors
+    );
+  }
+
+  return jsonResponse(
+    { status: rpc.data || null },
+    200,
+    cors,
+    buildSessionHeadersIfNeeded(auth, request)
+  );
+};
+
+const handleCreditsConsume = async (request, env, cors, auth) => {
+  let body = {};
+  try {
+    body = await readJsonBody(request);
+  } catch {
+    return jsonResponse({ error: "invalid_json" }, 400, cors);
+  }
+
+  const amount = Math.max(1, Math.floor(Number(body?.amount || 1)));
+  const rpc = await callBillingRpc(env, "consume_message_credit", {
+    p_user_id: auth.user.id,
+    p_amount: amount,
+  });
+
+  if (!rpc.ok) {
+    return jsonResponse(
+      { error: "credits_consume_failed", details: rpc.raw || null },
+      rpc.status || 502,
+      cors
+    );
+  }
+
+  const record = rpc.data;
+  const payload = isObject(record) ? record : {};
+  const allowed = isObject(record) ? record.allowed === true : record === true;
+
+  return jsonResponse(
+    {
+      ...payload,
+      allowed,
+      status: isObject(record) ? record : null,
+    },
+    200,
+    cors,
+    buildSessionHeadersIfNeeded(auth, request)
+  );
+};
+
+const handleCreditsUpgrade = async (request, env, cors, auth) => {
+  let body = {};
+  try {
+    body = await readJsonBody(request);
+  } catch {
+    return jsonResponse({ error: "invalid_json" }, 400, cors);
+  }
+
+  const newPlanId =
+    typeof body?.new_plan_id === "string" && body.new_plan_id.trim() ? body.new_plan_id.trim() : "premium";
+  const changeType =
+    typeof body?.change_type === "string" && body.change_type.trim() ? body.change_type.trim() : "upgrade";
+
+  const upgradeRpc = await callBillingRpc(env, "apply_plan_change", {
+    p_user_id: auth.user.id,
+    p_new_plan_id: newPlanId,
+    p_change_type: changeType,
+  });
+
+  if (!upgradeRpc.ok) {
+    return jsonResponse(
+      { error: "plan_upgrade_failed", details: upgradeRpc.raw || null },
+      upgradeRpc.status || 502,
+      cors
+    );
+  }
+
+  const statusRpc = await callBillingRpc(env, "get_credit_status", {
+    p_user_id: auth.user.id,
+  });
+
+  return jsonResponse(
+    {
+      ok: true,
+      result: upgradeRpc.data || null,
+      status: statusRpc.ok ? statusRpc.data || null : null,
+    },
+    200,
+    cors,
+    buildSessionHeadersIfNeeded(auth, request)
+  );
+};
+
+const normalizeEntitlementsMap = (payload) => {
+  if (isObject(payload?.entitlements_map)) return payload.entitlements_map;
+  if (isObject(payload?.entitlements)) return payload.entitlements;
+  if (isObject(payload?.map)) return payload.map;
+  if (isObject(payload)) return payload;
+
+  if (typeof payload === "string") {
+    const parsed = parseJsonSafe(payload, null);
+    if (isObject(parsed?.entitlements_map)) return parsed.entitlements_map;
+    if (isObject(parsed?.entitlements)) return parsed.entitlements;
+    if (isObject(parsed?.map)) return parsed.map;
+    if (isObject(parsed)) return parsed;
+  }
+
+  return {};
+};
+
+const handleEntitlementsMap = async (request, env, cors, auth) => {
+  const rpc = await callBillingRpc(env, "get_entitlements_map", {
+    p_user_id: auth.user.id,
+  });
+
+  if (!rpc.ok) {
+    return jsonResponse(
+      { error: "entitlements_fetch_failed", details: rpc.raw || null },
+      rpc.status || 502,
+      cors
+    );
+  }
+
+  return jsonResponse(
+    {
+      entitlements_map: normalizeEntitlementsMap(rpc.data),
+    },
+    200,
+    cors,
+    buildSessionHeadersIfNeeded(auth, request)
+  );
+};
+
 const parseMaybeJsonString = (value) => {
   if (typeof value !== "string") return { value, raw: null, parsed: false };
   const parsed = parseJsonSafe(value, null);
@@ -1340,6 +1507,38 @@ export default {
           501,
           cors
         );
+      }
+
+      if (pathname === "/api/credits/status") {
+        const { auth, response } = await getAuthOrUnauthorized(request, env, cors);
+        if (response) return response;
+
+        if (request.method === "GET") return handleCreditsStatus(request, env, cors, auth);
+        return jsonResponse({ error: "Method not allowed" }, 405, cors);
+      }
+
+      if (pathname === "/api/credits/consume") {
+        const { auth, response } = await getAuthOrUnauthorized(request, env, cors);
+        if (response) return response;
+
+        if (request.method === "POST") return handleCreditsConsume(request, env, cors, auth);
+        return jsonResponse({ error: "Method not allowed" }, 405, cors);
+      }
+
+      if (pathname === "/api/credits/upgrade") {
+        const { auth, response } = await getAuthOrUnauthorized(request, env, cors);
+        if (response) return response;
+
+        if (request.method === "POST") return handleCreditsUpgrade(request, env, cors, auth);
+        return jsonResponse({ error: "Method not allowed" }, 405, cors);
+      }
+
+      if (pathname === "/api/entitlements") {
+        const { auth, response } = await getAuthOrUnauthorized(request, env, cors);
+        if (response) return response;
+
+        if (request.method === "GET") return handleEntitlementsMap(request, env, cors, auth);
+        return jsonResponse({ error: "Method not allowed" }, 405, cors);
       }
 
       if (pathname === "/api/bots") {

@@ -50,12 +50,29 @@ export const createAIInput = ({ onSend, onActivate }) => {
   sendBtn.setAttribute("aria-label", "Send message");
   sendBtn.innerHTML = sendIcon;
 
-  const submit = () => {
+  let busy = false;
+
+  const setBusy = (nextBusy) => {
+    busy = Boolean(nextBusy);
+    sendBtn.disabled = busy;
+    input.disabled = busy;
+    row.classList.toggle("is-busy", busy);
+  };
+
+  const submit = async () => {
+    if (busy) return;
     const value = input.value.trim();
     if (!value) return;
-    onSend(value);
-    input.value = "";
-    input.style.height = "44px";
+    setBusy(true);
+    try {
+      const result = await onSend(value);
+      if (result?.accepted !== false) {
+        input.value = "";
+        input.style.height = "44px";
+      }
+    } finally {
+      setBusy(false);
+    }
   };
 
   const autoSize = () => {
@@ -69,7 +86,7 @@ export const createAIInput = ({ onSend, onActivate }) => {
   input.addEventListener("keydown", (event) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
-      submit();
+      void submit();
     }
     if (event.key === "Escape") {
       input.blur();
@@ -78,7 +95,7 @@ export const createAIInput = ({ onSend, onActivate }) => {
 
   sendBtn.addEventListener("click", () => {
     onActivate();
-    submit();
+    void submit();
   });
 
   row.appendChild(attachmentBtn);
@@ -86,5 +103,10 @@ export const createAIInput = ({ onSend, onActivate }) => {
   row.appendChild(micBtn);
   row.appendChild(sendBtn);
 
-  return { node: row, input };
+  return {
+    node: row,
+    input,
+    setBusy,
+    isBusy: () => busy,
+  };
 };

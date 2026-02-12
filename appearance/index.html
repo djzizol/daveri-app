@@ -4077,6 +4077,100 @@
       margin-bottom: 6px;
     }
 
+    #dv-configurator .feature-lock-disabled {
+      opacity: 0.48;
+      filter: grayscale(0.14);
+    }
+
+    #dv-configurator .feature-lock-anchor {
+      position: relative;
+    }
+
+    #dv-configurator .feature-lock-chip {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 15;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(236, 72, 153, 0.35);
+      background: rgba(20, 24, 33, 0.92);
+      padding: 4px 10px;
+      color: #f7d8e6;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: default;
+    }
+
+    #dv-configurator .feature-lock-chip i {
+      font-size: 10px;
+      color: #f472b6;
+    }
+
+    #dv-configurator .feature-lock-tooltip {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 270px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(12, 16, 24, 0.98);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+      padding: 12px;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(4px);
+      transition: opacity 140ms ease, transform 140ms ease, visibility 140ms ease;
+    }
+
+    #dv-configurator .feature-lock-chip:hover .feature-lock-tooltip,
+    #dv-configurator .feature-lock-chip:focus-within .feature-lock-tooltip {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    #dv-configurator .feature-lock-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #f2f5fb;
+      margin-bottom: 6px;
+    }
+
+    #dv-configurator .feature-lock-benefits {
+      margin: 0;
+      padding-left: 16px;
+      display: grid;
+      gap: 3px;
+      color: #c9d3e3;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    #dv-configurator .feature-lock-upgrade {
+      margin-top: 10px;
+      width: 100%;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid rgba(168, 85, 247, 0.42);
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.38), rgba(236, 72, 153, 0.32));
+      color: #f7f8fb;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+    }
+
+    #dv-configurator .feature-lock-upgrade:disabled {
+      opacity: 0.58;
+      cursor: not-allowed;
+    }
+
     #dv-configurator .appearance-sidebar .position-tiles {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
@@ -6081,7 +6175,7 @@
                           </button>
                         </div>
                         <div class="avatar-preview" id="avatarPreview">
-                          <img src="/assets/logo.svg" alt="DaVeri logo">
+                          <img src="/assets/icons/logo.svg" alt="DaVeri logo">
                         </div>
                       </div>
                     </div>
@@ -6498,6 +6592,118 @@
         return origin ? `${origin}${normalized}` : normalized;
       };
       const API_BOTS = getApiUrl("/api/bots");
+      const API_ENTITLEMENTS = getApiUrl("/api/entitlements");
+      const API_CREDITS_UPGRADE = getApiUrl("/api/credits/upgrade");
+      const DAVEREI_AI_MODE_PLAN = Object.freeze({
+        setup: "basic",
+        growth: "premium",
+        autopilot: "pro",
+      });
+      const FEATURE_RULES = Object.freeze({
+        avatar_upload: {
+          requiredPlan: "premium",
+          benefits: [
+            "Wlasny avatar bota",
+            "Lepsze dopasowanie do brandu",
+            "Wieksze zaufanie uzytkownikow",
+          ],
+        },
+        background_upload: {
+          requiredPlan: "premium",
+          benefits: [
+            "Wlasne tlo czatu (PNG)",
+            "Pelna personalizacja widgetu",
+            "Spojnosc wizualna z produktem",
+          ],
+        },
+        remove_branding: {
+          requiredPlan: "premium",
+          benefits: [
+            "Brak logo DaVeri",
+            "White-label experience",
+            "Profesjonalny wyglad",
+          ],
+        },
+        quick_replies: {
+          requiredPlan: "basic",
+          benefits: [
+            "Gotowe odpowiedzi",
+            "Szybsze wdrozenie",
+            "Lepsze UX",
+          ],
+        },
+        animations: {
+          requiredPlan: "premium",
+          benefits: [
+            "Plynne animacje",
+            "Lepsze first impression",
+            "Nowoczesny UX",
+          ],
+        },
+        export_chat: {
+          requiredPlan: "premium",
+          benefits: [
+            "Eksport rozmow",
+            "Analiza danych",
+            "Wnioski biznesowe",
+          ],
+        },
+        daverei_ai: {
+          requiredPlan: "basic",
+          benefits: [
+            "Pomoc w konfiguracji",
+            "Analiza ustawien",
+            "Rekomendacje AI",
+          ],
+        },
+        daverei_ai_mode: {
+          requiredPlan: "basic",
+          benefits: [
+            "Tryb setup/growth/autopilot",
+            "Zaawansowane wsparcie AI",
+            "Lepsza automatyzacja",
+          ],
+        },
+      });
+      const FEATURE_UI_TARGETS = Object.freeze({
+        avatar_upload: {
+          anchor: "#avatarUploadBtn",
+          controls: ["#avatarUploadBtn", "#avatarRemoveBtn", "#avatarUpload"],
+        },
+        background_upload: {
+          anchor: "#bgUploadBtn",
+          controls: ["#bgUploadBtn", "#bgRemoveBtn", "#bgUpload"],
+        },
+        remove_branding: {
+          anchor: "input[data-key='watermarkEnabled']",
+          controls: ["input[data-key='watermarkEnabled']"],
+        },
+        quick_replies: {
+          anchor: "#addQuickReply",
+          controls: [
+            "#addQuickReply",
+            "#quickRepliesEditor input",
+            "#quickRepliesEditor button",
+            "input[data-key='quickRepliesTop']",
+            "button[data-key='quickReplyStyle']",
+            "input[data-key='quickReplyRadius']",
+          ],
+        },
+        animations: {
+          anchor: "#demoAnimationBtn",
+          controls: [
+            "button[data-key='animationPreset']",
+            "input[data-key='animationEnabled']",
+            "#demoAnimationBtn",
+          ],
+        },
+        export_chat: {
+          anchor: "[data-role='action-load']",
+          controls: ["[data-role='action-load']"],
+        },
+      });
+      let entitlementsMap = {};
+      const featureLockNodes = new Map();
       const extractBots = (payload) => {
         if (Array.isArray(payload)) return payload;
         if (Array.isArray(payload?.bots)) return payload.bots;
@@ -6547,6 +6753,218 @@
         }
         return payload;
       };
+      const asObject = (value) => value && typeof value === "object" && !Array.isArray(value);
+      const toPlanSlug = (value, fallback = "premium") => {
+        const raw = typeof value === "string" ? value.trim().toLowerCase() : "";
+        return raw || fallback;
+      };
+      const toPlanLabel = (value) => {
+        const slug = toPlanSlug(value, "premium");
+        return slug.toUpperCase();
+      };
+      const normalizeEntitlementsPayload = (payload) => {
+        const source =
+          (asObject(payload?.entitlements_map) && payload.entitlements_map) ||
+          (asObject(payload?.entitlements) && payload.entitlements) ||
+          (asObject(payload) ? payload : {});
+        const normalized = {};
+        Object.entries(source).forEach(([featureKey, rawEntry]) => {
+          if (rawEntry === true || rawEntry === false) {
+            normalized[featureKey] = { enabled: rawEntry === true };
+            return;
+          }
+          if (!asObject(rawEntry)) {
+            normalized[featureKey] = { enabled: false };
+            return;
+          }
+          normalized[featureKey] = {
+            ...rawEntry,
+            enabled: rawEntry.enabled === true,
+            required_plan:
+              typeof rawEntry.required_plan === "string" && rawEntry.required_plan.trim()
+                ? rawEntry.required_plan.trim()
+                : null,
+            meta: asObject(rawEntry.meta) ? rawEntry.meta : null,
+          };
+        });
+        return normalized;
+      };
+      const getFeatureRequiredPlan = (featureKey, entry) => {
+        if (featureKey === "daverei_ai_mode") {
+          const mode = String(entry?.meta?.mode || "").trim().toLowerCase();
+          if (mode && DAVEREI_AI_MODE_PLAN[mode]) {
+            return DAVEREI_AI_MODE_PLAN[mode];
+          }
+        }
+        if (typeof entry?.required_plan === "string" && entry.required_plan.trim()) {
+          return entry.required_plan.trim().toLowerCase();
+        }
+        return toPlanSlug(FEATURE_RULES[featureKey]?.requiredPlan || "premium");
+      };
+      const getFeatureBenefits = (featureKey) => {
+        const source = FEATURE_RULES[featureKey]?.benefits;
+        if (!Array.isArray(source)) return [];
+        return source.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 3);
+      };
+      const collectFeatureControls = (featureKey) => {
+        const config = FEATURE_UI_TARGETS[featureKey];
+        if (!config) return [];
+        const nodes = [];
+        (config.controls || []).forEach((selector) => {
+          root.querySelectorAll(selector).forEach((node) => {
+            if (!nodes.includes(node)) {
+              nodes.push(node);
+            }
+          });
+        });
+        return nodes;
+      };
+      const setControlLockedState = (node, locked, featureKey) => {
+        if (!(node instanceof Element)) return;
+        node.classList.toggle("feature-lock-disabled", locked);
+        if (locked) {
+          node.setAttribute("data-entitlement-locked", featureKey);
+          node.setAttribute("aria-disabled", "true");
+        } else {
+          node.removeAttribute("data-entitlement-locked");
+          node.removeAttribute("aria-disabled");
+        }
+
+        if ("disabled" in node) {
+          node.disabled = Boolean(locked);
+        }
+      };
+      const removeFeatureLockNode = (featureKey) => {
+        const existing = featureLockNodes.get(featureKey);
+        if (existing && existing.isConnected) {
+          existing.remove();
+        }
+        featureLockNodes.delete(featureKey);
+      };
+      const upsertFeatureLockNode = (featureKey, anchorNode, requiredPlan, benefits) => {
+        if (!(anchorNode instanceof Element)) {
+          removeFeatureLockNode(featureKey);
+          return;
+        }
+
+        const host =
+          anchorNode.closest(".option-group, .form-group, .toggle-group, .section-content") || anchorNode.parentElement;
+        if (!(host instanceof Element)) return;
+        host.classList.add("feature-lock-anchor");
+
+        let chip = featureLockNodes.get(featureKey);
+        if (!chip || !chip.isConnected) {
+          chip = document.createElement("div");
+          chip.className = "feature-lock-chip";
+          chip.setAttribute("tabindex", "0");
+          chip.innerHTML = `
+            <i class="fas fa-lock" aria-hidden="true"></i>
+            <span>LOCKED</span>
+            <div class="feature-lock-tooltip">
+              <div class="feature-lock-title"></div>
+              <ul class="feature-lock-benefits"></ul>
+              <button type="button" class="feature-lock-upgrade"></button>
+            </div>
+          `;
+          host.appendChild(chip);
+          featureLockNodes.set(featureKey, chip);
+        }
+
+        const title = chip.querySelector(".feature-lock-title");
+        const benefitsList = chip.querySelector(".feature-lock-benefits");
+        const upgradeBtn = chip.querySelector(".feature-lock-upgrade");
+        const planLabel = toPlanLabel(requiredPlan);
+
+        if (title) {
+          title.textContent = `Odblokuj w ${planLabel}`;
+        }
+        if (benefitsList) {
+          benefitsList.innerHTML = "";
+          benefits.forEach((item) => {
+            const li = document.createElement("li");
+            li.textContent = item;
+            benefitsList.appendChild(li);
+          });
+        }
+        if (upgradeBtn) {
+          upgradeBtn.textContent = `Upgrade to ${planLabel}`;
+          upgradeBtn.dataset.plan = toPlanSlug(requiredPlan, "premium");
+          upgradeBtn.dataset.feature = featureKey;
+          if (!upgradeBtn.__wired) {
+            upgradeBtn.__wired = true;
+            upgradeBtn.addEventListener("click", async (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+
+              const button = event.currentTarget;
+              if (!(button instanceof HTMLButtonElement) || button.disabled) return;
+              const nextPlan = toPlanSlug(button.dataset.plan, "premium");
+              const originalLabel = button.textContent;
+              button.disabled = true;
+              button.textContent = "Upgrading...";
+
+              try {
+                await fetchJson(API_CREDITS_UPGRADE, {
+                  method: "POST",
+                  body: JSON.stringify({
+                    new_plan_id: nextPlan,
+                    change_type: "upgrade",
+                  }),
+                });
+                await refreshEntitlementsFromBackend();
+                if (window.DaVeriAccount?.refreshCredits) {
+                  await window.DaVeriAccount.refreshCredits();
+                }
+              } catch (error) {
+                console.error("[Appearance] plan upgrade failed", error);
+              } finally {
+                button.disabled = false;
+                button.textContent = originalLabel || `Upgrade to ${toPlanLabel(nextPlan)}`;
+              }
+            });
+          }
+        }
+      };
+      function applyFeatureLocks() {
+        Object.keys(FEATURE_UI_TARGETS).forEach((featureKey) => {
+          const config = FEATURE_UI_TARGETS[featureKey];
+          const controls = collectFeatureControls(featureKey);
+          if (!controls.length) {
+            removeFeatureLockNode(featureKey);
+            return;
+          }
+
+          const entry = asObject(entitlementsMap?.[featureKey]) ? entitlementsMap[featureKey] : { enabled: false };
+          const enabled = entry.enabled === true;
+          controls.forEach((node) => setControlLockedState(node, !enabled, featureKey));
+
+          if (enabled) {
+            removeFeatureLockNode(featureKey);
+            return;
+          }
+
+          const anchor = config.anchor ? root.querySelector(config.anchor) : controls[0];
+          const requiredPlan = getFeatureRequiredPlan(featureKey, entry);
+          const benefits = getFeatureBenefits(featureKey);
+          upsertFeatureLockNode(featureKey, anchor || controls[0], requiredPlan, benefits);
+        });
+      }
+      async function refreshEntitlementsFromBackend() {
+        try {
+          if (window.DaVeriAccount?.refreshEntitlements) {
+            entitlementsMap = normalizeEntitlementsPayload({
+              entitlements_map: await window.DaVeriAccount.refreshEntitlements(),
+            });
+          } else {
+            const payload = await fetchJson(API_ENTITLEMENTS, { method: "GET" });
+            entitlementsMap = normalizeEntitlementsPayload(payload);
+          }
+        } catch (error) {
+          console.error("[Appearance] entitlements load failed:", error);
+          entitlementsMap = {};
+        }
+        applyFeatureLocks();
+      }
       const resolveActiveBotId = async () => {
         const stored = getStoredActiveBotId();
         const payload = await fetchJson(API_BOTS);
@@ -6803,6 +7221,7 @@
         applyChatPosition();
         // Sync device frame clones
         syncDeviceFrameClones(workSnapshot, deviceSnapshot);
+        applyFeatureLocks();
         subscribers.forEach((cb) => {
           try {
             cb({ work: workSnapshot, device: deviceSnapshot });
@@ -6998,6 +7417,14 @@
         root.addEventListener("click", (e) => {
           const target = e.target instanceof Element ? e.target : null;
           if (!target) return;
+          if (!target.closest(".feature-lock-upgrade")) {
+            const lockedNode = target.closest("[data-entitlement-locked]");
+            if (lockedNode) {
+              e.preventDefault();
+              e.stopPropagation();
+              return;
+            }
+          }
           // Toggle switches
           if (target.closest('.toggle-slider') || target.closest('.toggle-label')) {
             e.preventDefault();
@@ -7005,6 +7432,7 @@
             if (!toggle) return;
             const checkbox = toggle.querySelector('input[type="checkbox"]');
             if (!checkbox) return;
+            if (checkbox.disabled) return;
             checkbox.checked = !checkbox.checked;
             checkbox.dispatchEvent(new Event('change', { bubbles: true }));
             return;
@@ -8836,6 +9264,12 @@ ${i18nText("i18n-appearance-scale-fit")}
         // NAPRAWA: renderuj wiadomości przy starcie
         renderWorkChatMessages();
         await waitForAuthReady();
+        if (window.DaVeriAccount?.ensureLoaded) {
+          try {
+            await window.DaVeriAccount.ensureLoaded();
+          } catch {}
+        }
+        await refreshEntitlementsFromBackend();
         await initBotPicker();
         await loadStateFromBackend();
         // Wywołaj notify aby zsynchronizować UI
@@ -8880,6 +9314,13 @@ ${i18nText("i18n-appearance-scale-fit")}
         const botId = event?.detail?.botId || getStoredActiveBotId();
         syncBotPickerSelection(botId);
         await loadStateFromBackend();
+        applyFeatureLocks();
+      });
+      window.addEventListener("daveri:entitlements-updated", (event) => {
+        entitlementsMap = normalizeEntitlementsPayload({
+          entitlements_map: event?.detail?.entitlements_map || {},
+        });
+        applyFeatureLocks();
       });
 
       // Run on load and resize
