@@ -735,6 +735,15 @@ body.app-layout-root .card-icon img {
   opacity: 0.86;
 }
 
+#aiWindow.ai-window.is-collapsed .ai-paywall,
+#aiWindow.ai-window.is-collapsed .chat-container.is-paywall-open .chat-messages-wrap,
+#aiWindow.ai-window.is-collapsed .chat-container.is-paywall-open .chat-input-row,
+#aiWindow.ai-window.is-collapsed .chat-container.is-paywall-open .chat-footer {
+  display: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
 .chat-footer {
   height: 32px;
   display: flex;

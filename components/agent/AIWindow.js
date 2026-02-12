@@ -19,27 +19,28 @@ const conversationsByBot = new Map();
 const AI_ACCESS_FALLBACK_ALLOWED_PLANS = new Set(["basic", "premium", "pro", "individual"]);
 const PAYWALL_REASON_CREDITS = "credits";
 const PAYWALL_REASON_AI_LOCKED = "ai_locked";
+const AI_LOCK_MESSAGE = "Odblokuj dostep do funkcji DaVeri AI przechodzac na wyzszy plan.";
 
 const PAYWALL_COPY = {
   [PAYWALL_REASON_CREDITS]: {
-    title: "Wykorzystales wszystkie kredyty",
-    description: "Przejdz na wyzsza wersje, aby odblokowac DaVeri AI.",
+    title: "DaVeri AI jest zablokowane",
+    description: AI_LOCK_MESSAGE,
     benefits: [
-      "Wiekszy pakiet kredytow monthly + daily.",
-      "Wiecej funkcji konfiguratora i brandingu.",
-      "Szybsze wdrozenie bota bez ograniczen.",
+      "Odblokujesz funkcje DaVeri AI.",
+      "Uzyskasz wiecej mozliwosci automatyzacji.",
+      "Skorzystasz z pelnego potencjalu asystenta.",
     ],
-    assistant: "Wykorzystales wszystkie kredyty. Przejdz na wyzsza wersje, aby odblokowac DaVeri AI.",
+    assistant: AI_LOCK_MESSAGE,
   },
   [PAYWALL_REASON_AI_LOCKED]: {
     title: "DaVeri AI jest zablokowane",
-    description: "Przejdz na wyzsza wersje, aby odblokowac DaVeri AI.",
+    description: AI_LOCK_MESSAGE,
     benefits: [
-      "Dostep do DaVeri AI bez blokady.",
-      "Wiecej automatyzacji i opcji pracy z botami.",
-      "Szybsza obsluga i lepsze limity.",
+      "Odblokujesz funkcje DaVeri AI.",
+      "Uzyskasz wiecej mozliwosci automatyzacji.",
+      "Skorzystasz z pelnego potencjalu asystenta.",
     ],
-    assistant: "Przejdz na wyzsza wersje, aby odblokowac DaVeri AI.",
+    assistant: AI_LOCK_MESSAGE,
   },
 };
 
@@ -95,6 +96,11 @@ const getVisitorId = () => {
 const normalizePlanId = (value) => {
   if (typeof value !== "string") return "";
   return value.trim().toLowerCase();
+};
+
+const isPaidPlanId = (planId) => {
+  const normalized = normalizePlanId(planId);
+  return normalized ? AI_ACCESS_FALLBACK_ALLOWED_PLANS.has(normalized) : false;
 };
 
 const getAiFeatureAccess = async () => {
@@ -189,15 +195,15 @@ const createAIWindowNode = () => {
   paywall.hidden = true;
   paywall.innerHTML = `
     <div class="ai-paywall-card">
-      <h3>Wykorzystales wszystkie kredyty</h3>
-      <p>Odblokuj wyzszy plan, aby kontynuowac rozmowe.</p>
+      <h3>DaVeri AI jest zablokowane</h3>
+      <p>${AI_LOCK_MESSAGE}</p>
       <ul class="ai-paywall-benefits">
-        <li>Wiekszy pakiet kredytow monthly + daily.</li>
-        <li>Wiecej funkcji konfiguratora i brandingu.</li>
-        <li>Szybsze wdrozenie bota bez ograniczen.</li>
+        <li>Odblokujesz funkcje DaVeri AI.</li>
+        <li>Uzyskasz wiecej mozliwosci automatyzacji.</li>
+        <li>Skorzystasz z pelnego potencjalu asystenta.</li>
       </ul>
       <div class="ai-paywall-actions">
-        <button type="button" class="ai-paywall-btn ai-paywall-upgrade">Upgrade plan</button>
+        <button type="button" class="ai-paywall-btn ai-paywall-upgrade">Przejdz na wyzszy plan</button>
         <button type="button" class="ai-paywall-btn ai-paywall-close">Close</button>
       </div>
     </div>
@@ -285,12 +291,19 @@ const createAIWindowNode = () => {
           const fallbackCredits = getAccountState()?.credits || null;
           const fallbackRemaining = Number(fallbackCredits?.remaining);
           const fallbackUnlimited = fallbackCredits?.monthly_limit === null;
-          const canProceed = fallbackUnlimited || (Number.isFinite(fallbackRemaining) && fallbackRemaining > 0);
+          const fallbackCapacity = Number(fallbackCredits?.capacity);
+          const fallbackPlanId = normalizePlanId(fallbackCredits?.plan_id || access.planId || "");
+          const fallbackPaidPlan = isPaidPlanId(fallbackPlanId);
+          const fallbackHasCapacity = Number.isFinite(fallbackCapacity) && fallbackCapacity > 0;
+          const canProceed =
+            fallbackUnlimited ||
+            (Number.isFinite(fallbackRemaining) && fallbackRemaining > 0) ||
+            (fallbackPaidPlan && !fallbackHasCapacity);
 
           if (!canProceed) {
             agentDockStore.addMessage({
               role: "assistant",
-              content: "Could not validate your credits right now. Try again in a moment.",
+              content: "Nie moge teraz potwierdzic limitu. Sprobuj ponownie za chwile.",
             });
             return { accepted: false };
           }
@@ -301,13 +314,21 @@ const createAIWindowNode = () => {
           const remaining = Number(status?.remaining);
           const unlimited = status?.monthly_limit === null;
           const degraded = consumeResult?.raw?.degraded === true;
-          const canProceed = unlimited || (Number.isFinite(remaining) && remaining > 0) || degraded;
+          const capacity = Number(status?.capacity);
+          const planId = normalizePlanId(status?.plan_id || access.planId || getAccountState()?.credits?.plan_id || "");
+          const paidPlan = isPaidPlanId(planId);
+          const hasCapacity = Number.isFinite(capacity) && capacity > 0;
+          const canProceed =
+            unlimited ||
+            (Number.isFinite(remaining) && remaining > 0) ||
+            degraded ||
+            (paidPlan && !hasCapacity);
 
           if (!canProceed) {
-            setPaywallVisible(true, PAYWALL_REASON_CREDITS);
+            setPaywallVisible(true, PAYWALL_REASON_AI_LOCKED);
             agentDockStore.addMessage({
               role: "assistant",
-              content: PAYWALL_COPY[PAYWALL_REASON_CREDITS].assistant,
+              content: PAYWALL_COPY[PAYWALL_REASON_AI_LOCKED].assistant,
             });
             return { accepted: false };
           }
@@ -433,6 +454,9 @@ const createAIWindowNode = () => {
   });
 
   const sync = (state) => {
+    if (!state.isExpanded && paywallVisible) {
+      setPaywallVisible(false);
+    }
     applyState(windowNode, state);
     messages.render(state.messages);
     minimize.innerHTML = state.isExpanded
