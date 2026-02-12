@@ -19,7 +19,9 @@ const conversationsByBot = new Map();
 const AI_ACCESS_FALLBACK_ALLOWED_PLANS = new Set(["basic", "premium", "pro", "individual"]);
 const PAYWALL_REASON_CREDITS = "credits";
 const PAYWALL_REASON_AI_LOCKED = "ai_locked";
+const PAYWALL_REASON_AUTH = "auth";
 const AI_LOCK_MESSAGE = "Odblokuj dostep do funkcji DaVeri AI przechodzac na wyzszy plan.";
+const AUTH_REQUIRED_MESSAGE = "Nie mozna potwierdzic sesji. Odswiez strone i zaloguj sie ponownie.";
 
 const PAYWALL_COPY = {
   [PAYWALL_REASON_CREDITS]: {
@@ -41,6 +43,14 @@ const PAYWALL_COPY = {
       "Skorzystasz z pelnego potencjalu asystenta.",
     ],
     assistant: AI_LOCK_MESSAGE,
+  },
+  [PAYWALL_REASON_AUTH]: {
+    title: "Wymagane ponowne logowanie",
+    description: AUTH_REQUIRED_MESSAGE,
+    benefits: [
+      "Odswiez strone i zaloguj sie ponownie.",
+    ],
+    assistant: AUTH_REQUIRED_MESSAGE,
   },
 };
 
@@ -239,6 +249,7 @@ const createAIWindowNode = () => {
     }
     if (paywallUpgradeBtn) {
       paywallUpgradeBtn.textContent = "Przejdz na wyzszy plan";
+      paywallUpgradeBtn.hidden = key === PAYWALL_REASON_AUTH;
     }
   };
 
@@ -290,6 +301,14 @@ const createAIWindowNode = () => {
         let consumeResult = null;
         try {
           const userId = window.DaVeriAuth?.user?.id || null;
+          if (typeof userId !== "string" || !userId.trim()) {
+            setPaywallVisible(true, PAYWALL_REASON_AUTH);
+            agentDockStore.addMessage({
+              role: "assistant",
+              content: PAYWALL_COPY[PAYWALL_REASON_AUTH].assistant,
+            });
+            return { accepted: false };
+          }
           consumeResult = await consumeMessageCredit(1, userId);
         } catch (error) {
           console.error("[AIWindow] consume_message_credit failed", {
