@@ -4,33 +4,41 @@ import {
   refreshAgentCreditStatus,
   subscribeAgentCreditStatus,
 } from "../../js/agent-credit-status-store.js";
-import { trackEvent } from "../../js/analytics.js";
 
 const RING_RADIUS = 14;
 const RING_SIZE = 34;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 const POLL_MS = 60_000;
+const isObject = (value) => value && typeof value === "object";
 
 const clamp01 = (value) => {
   if (!Number.isFinite(value)) return 0;
   return Math.max(0, Math.min(1, value));
 };
 
-const toSafeInt = (value) => {
+const toSafeInt = (value, fallback = 0) => {
   const numeric = Number(value);
-  if (!Number.isFinite(numeric)) return 0;
+  if (!Number.isFinite(numeric)) return fallback;
   return Math.max(0, Math.floor(numeric));
 };
 
+const toCapOrUnlimited = (value) => {
+  if (value === null || value === undefined || value === "") return null;
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return null;
+  if (numeric <= 0) return null;
+  return Math.floor(numeric);
+};
+
 const toPct = (used, cap) => {
-  if (!Number.isFinite(cap) || cap <= 0) return 0;
+  if (!Number.isFinite(cap) || cap <= 0) return null;
   return clamp01(used / cap);
 };
 
-const formatPct = (ratio) => `${(clamp01(ratio) * 100).toFixed(1)}%`;
+const formatPct = (ratio) => `${(clamp01(Number.isFinite(ratio) ? ratio : 0) * 100).toFixed(1)}%`;
 
 const formatUsageLine = (label, used, cap, ratio) =>
-  `${label}: ${used} / ${cap} (${formatPct(ratio)})`;
+  cap === null ? `${label}: unlimited` : `${label}: ${used} / ${cap} (${formatPct(ratio)})`;
 
 export const createCreditHUDRing = () => {
   const root = document.createElement("div");
@@ -107,6 +115,10 @@ export const createCreditHUDRing = () => {
   refreshButton.className = "ai-credit-tooltip-refresh";
   refreshButton.textContent = "Refresh";
 
+  const refreshToast = document.createElement("div");
+  refreshToast.className = "ai-credit-toast";
+  refreshToast.hidden = true;
+
   tooltipActions.appendChild(refreshButton);
   tooltip.appendChild(tooltipTitle);
   tooltip.appendChild(tooltipDaily);
@@ -117,37 +129,60 @@ export const createCreditHUDRing = () => {
 
   root.appendChild(trigger);
   root.appendChild(tooltip);
+  root.appendChild(refreshToast);
 
   let pinnedOpen = false;
-  let warningTracked = false;
+  let toastTimer = null;
 
   const setPinnedOpen = (isOpen) => {
     pinnedOpen = Boolean(isOpen);
     root.classList.toggle("is-open", pinnedOpen);
   };
 
+  const showRefreshToast = (message) => {
+    refreshToast.textContent = String(message || "");
+    refreshToast.hidden = false;
+    refreshToast.classList.add("is-visible");
+    if (toastTimer) {
+      window.clearTimeout(toastTimer);
+      toastTimer = null;
+    }
+    toastTimer = window.setTimeout(() => {
+      refreshToast.classList.remove("is-visible");
+      window.setTimeout(() => {
+        refreshToast.hidden = true;
+      }, 170);
+    }, 1800);
+  };
+
   const render = (snapshot) => {
-    const status = snapshot?.status || "idle";
-    const data = snapshot?.data || null;
+    const isLoading = snapshot?.isLoading === true;
     const error = snapshot?.error || null;
+    const hasData =
+      isObject(snapshot) &&
+      (typeof snapshot.day === "string" ||
+        snapshot.daily_used !== null ||
+        snapshot.daily_cap !== null ||
+        snapshot.monthly_used !== null ||
+        snapshot.monthly_cap !== null);
 
-    root.classList.toggle("is-loading", status === "idle" || status === "loading" || status === "refreshing");
-    root.classList.toggle("is-error", status === "error");
-    root.classList.remove("is-warning", "is-no-access");
+    root.classList.toggle("is-loading", isLoading);
+    root.classList.toggle("is-error", Boolean(error) && !hasData);
+    root.classList.remove("is-warning", "is-no-access", "is-unlimited");
 
-    if (status === "idle" || status === "loading" || status === "refreshing") {
+    if (!hasData && isLoading) {
       centerLabel.textContent = "...";
-      tooltipDaily.textContent = "Daily: loading...";
-      tooltipMonthly.textContent = "Monthly: loading...";
-      tooltipRemaining.textContent = "Remaining today: ... / Remaining month: ...";
+      tooltipDaily.textContent = "Loading credits...";
+      tooltipMonthly.textContent = "Loading credits...";
+      tooltipRemaining.textContent = "Loading credits...";
       tooltipError.hidden = true;
+      tooltipError.textContent = "";
       progress.style.strokeDashoffset = String(RING_CIRCUMFERENCE);
       warningBadge.hidden = true;
-      warningTracked = false;
       return;
     }
 
-    if (status === "error" || !data) {
+    if (!hasData && error) {
       centerLabel.textContent = "!";
       tooltipDaily.textContent = "Daily: unavailable";
       tooltipMonthly.textContent = "Monthly: unavailable";
@@ -156,65 +191,55 @@ export const createCreditHUDRing = () => {
       tooltipError.textContent = error?.message ? String(error.message) : "Could not fetch credit status.";
       progress.style.strokeDashoffset = String(RING_CIRCUMFERENCE);
       warningBadge.hidden = true;
-      warningTracked = false;
       return;
     }
 
-    const dailyUsed = toSafeInt(data.daily_used);
-    const dailyCap = toSafeInt(data.daily_cap);
-    const monthlyUsed = toSafeInt(data.monthly_used);
-    const monthlyCap = toSafeInt(data.monthly_cap);
-    const dailyRatio = toPct(dailyUsed, dailyCap);
-    const monthlyRatio = toPct(monthlyUsed, monthlyCap);
-    const dailyRemaining = Math.max(0, dailyCap - dailyUsed);
-    const monthlyRemaining = Math.max(0, monthlyCap - monthlyUsed);
-    const noAccess = dailyCap === 0 || monthlyCap === 0;
-    const nearLimit =
-      !noAccess &&
-      ((dailyCap > 0 && dailyRatio >= 0.8) || (monthlyCap > 0 && monthlyRatio >= 0.8));
-
-    root.classList.toggle("is-warning", nearLimit);
-    root.classList.toggle("is-no-access", noAccess);
-    warningBadge.hidden = !nearLimit;
-
-    if (nearLimit && !warningTracked) {
-      trackEvent("quota_warning_shown", {
-        daily_used: dailyUsed,
-        daily_cap: dailyCap,
-        monthly_used: monthlyUsed,
-        monthly_cap: monthlyCap,
-      });
-      warningTracked = true;
-    } else if (!nearLimit) {
-      warningTracked = false;
-    }
-
-    if (noAccess) {
-      centerLabel.textContent = "0";
-      tooltipDaily.textContent = "Daily: 0 / 0";
-      tooltipMonthly.textContent = "Monthly: 0 / 0";
-      tooltipRemaining.textContent = "Brak dostepu do kredytow AI. Wybierz plan, aby odblokowac wysylke.";
+    if (!hasData) {
+      centerLabel.textContent = "...";
+      tooltipDaily.textContent = "Loading credits...";
+      tooltipMonthly.textContent = "Loading credits...";
+      tooltipRemaining.textContent = "Loading credits...";
       tooltipError.hidden = true;
       tooltipError.textContent = "";
+      warningBadge.hidden = true;
       progress.style.strokeDashoffset = String(RING_CIRCUMFERENCE);
       return;
     }
 
-    centerLabel.textContent = `${Math.round(dailyRatio * 100)}`;
+    const dailyUsed = toSafeInt(snapshot?.daily_used, 0);
+    const dailyCap = toCapOrUnlimited(snapshot?.daily_cap);
+    const monthlyUsed = toSafeInt(snapshot?.monthly_used, 0);
+    const monthlyCap = toCapOrUnlimited(snapshot?.monthly_cap);
+    const dailyRatio = toPct(dailyUsed, dailyCap);
+    const monthlyRatio = toPct(monthlyUsed, monthlyCap);
+    const dailyRemaining = dailyCap === null ? "unlimited" : Math.max(0, dailyCap - dailyUsed);
+    const monthlyRemaining = monthlyCap === null ? "unlimited" : Math.max(0, monthlyCap - monthlyUsed);
+    const dailyExceeded = dailyCap !== null && dailyUsed >= dailyCap;
+    const monthlyExceeded = monthlyCap !== null && monthlyUsed >= monthlyCap;
+    const exceeded = dailyExceeded || monthlyExceeded;
+
+    root.classList.toggle("is-warning", exceeded);
+    warningBadge.hidden = !exceeded;
+
+    if (dailyCap === null) {
+      centerLabel.textContent = "\u221E";
+      root.classList.add("is-unlimited");
+      progress.style.strokeDashoffset = String(RING_CIRCUMFERENCE);
+    } else {
+      centerLabel.textContent = `${Math.round(clamp01(dailyRatio) * 100)}`;
+      const dashOffset = RING_CIRCUMFERENCE * (1 - clamp01(dailyRatio));
+      progress.style.strokeDashoffset = String(dashOffset);
+    }
+
     tooltipDaily.textContent = formatUsageLine("Daily", dailyUsed, dailyCap, dailyRatio);
     tooltipMonthly.textContent = formatUsageLine("Monthly", monthlyUsed, monthlyCap, monthlyRatio);
     tooltipRemaining.textContent = `Remaining today: ${dailyRemaining} / Remaining month: ${monthlyRemaining}`;
     tooltipError.hidden = true;
     tooltipError.textContent = "";
-
-    const dashOffset = RING_CIRCUMFERENCE * (1 - dailyRatio);
-    progress.style.strokeDashoffset = String(dashOffset);
   };
 
   const refresh = async ({ force = false } = {}) => {
-    try {
-      await refreshAgentCreditStatus({ force });
-    } catch {}
+    await refreshAgentCreditStatus({ force });
   };
 
   const onDocumentClick = (event) => {
@@ -238,15 +263,18 @@ export const createCreditHUDRing = () => {
   refreshButton.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    void refresh({ force: true });
+    void refresh({ force: true }).catch((error) => {
+      const message = String(error?.message || "").trim();
+      showRefreshToast(message || "Unable to refresh credits.");
+    });
   });
 
   const unsubscribe = subscribeAgentCreditStatus(render);
   render(getAgentCreditStatusSnapshot());
 
-  void refresh({ force: false });
+  void refresh({ force: false }).catch(() => {});
   const pollHandle = window.setInterval(() => {
-    void refresh({ force: false });
+    void refresh({ force: false }).catch(() => {});
   }, POLL_MS);
 
   document.addEventListener("click", onDocumentClick);
@@ -258,6 +286,10 @@ export const createCreditHUDRing = () => {
     applyUsageSnapshot: (payload) => applyAgentCreditUsageSnapshot(payload),
     destroy: () => {
       window.clearInterval(pollHandle);
+      if (toastTimer) {
+        window.clearTimeout(toastTimer);
+        toastTimer = null;
+      }
       unsubscribe();
       document.removeEventListener("click", onDocumentClick);
       document.removeEventListener("keydown", onDocumentEscape);

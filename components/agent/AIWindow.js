@@ -5,7 +5,7 @@ import {
   getAgentCreditStatusSnapshot,
   refreshAgentCreditStatus,
 } from "../../js/agent-credit-status-store.js";
-import { callRpcRecord } from "../../js/supabaseClient.js";
+import { callRpcRecord, supabase } from "../../js/supabaseClient.js";
 import { trackEvent } from "../../js/analytics.js";
 import {
   applyPlanUpgrade,
@@ -22,7 +22,7 @@ import { createQuotaExceededModal } from "./QuotaExceededModal.js";
 
 const AI_WINDOW_ID = "aiWindow";
 const COLLAPSED_HEIGHT = 92;
-const ASK_ENDPOINT = getApiUrl("/v1/ask");
+const AGENT_ASK_ENDPOINT = getApiUrl("/v1/agent/ask");
 const SEND_MESSAGE_RPC = "daveri_send_message_credit_limited";
 const MAX_CONTEXT_BOTS = 3;
 const RETRY_SEND_ACTION = "retry_send_message";
@@ -75,21 +75,24 @@ const toSafeInt = (value) => {
   if (!Number.isFinite(numeric)) return 0;
   return Math.max(0, Math.floor(numeric));
 };
+const toCapOrUnlimited = (value) => {
+  if (value === null || value === undefined || value === "") return null;
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return null;
+  if (numeric <= 0) return null;
+  return Math.floor(numeric);
+};
 
 const normalizeChatMode = (value) => (value === "operator" ? "operator" : "advisor");
-const hasNoCreditsAccess = (usage) => {
-  if (!isObject(usage)) return false;
-  return toSafeInt(usage.daily_cap) === 0 || toSafeInt(usage.monthly_cap) === 0;
-};
 const isQuotaExceeded = (usage) => {
   if (!isObject(usage)) return false;
-  const dailyCap = toSafeInt(usage.daily_cap);
-  const monthlyCap = toSafeInt(usage.monthly_cap);
+  const dailyCap = toCapOrUnlimited(usage.daily_cap);
+  const monthlyCap = toCapOrUnlimited(usage.monthly_cap);
   const dailyUsed = toSafeInt(usage.daily_used);
   const monthlyUsed = toSafeInt(usage.monthly_used);
 
-  const dailyExceeded = dailyCap > 0 && dailyUsed >= dailyCap;
-  const monthlyExceeded = monthlyCap > 0 && monthlyUsed >= monthlyCap;
+  const dailyExceeded = dailyCap !== null && dailyUsed >= dailyCap;
+  const monthlyExceeded = monthlyCap !== null && monthlyUsed >= monthlyCap;
   return dailyExceeded || monthlyExceeded;
 };
 
@@ -106,18 +109,28 @@ const createClientRequestId = () => {
 const extractCreditUsage = (value) => {
   if (!isObject(value)) return null;
 
-  const dailyCap = toSafeInt(value.daily_cap);
-  const monthlyCap = toSafeInt(value.monthly_cap);
+  const dailyCap = toCapOrUnlimited(value.daily_cap);
+  const monthlyCap = toCapOrUnlimited(value.monthly_cap);
   const dailyUsed = toSafeInt(value.daily_used);
   const monthlyUsed = toSafeInt(value.monthly_used);
 
-  if (!dailyCap && !monthlyCap && !dailyUsed && !monthlyUsed) {
+  const hasAnyValue =
+    value.day !== undefined ||
+    value.daily_used !== undefined ||
+    value.daily_cap !== undefined ||
+    value.month !== undefined ||
+    value.monthly_used !== undefined ||
+    value.monthly_cap !== undefined;
+
+  if (!hasAnyValue) {
     return null;
   }
 
   return {
+    day: typeof value.day === "string" ? value.day : null,
     daily_used: dailyUsed,
     daily_cap: dailyCap,
+    month: typeof value.month === "string" ? value.month : null,
     monthly_used: monthlyUsed,
     monthly_cap: monthlyCap,
   };
@@ -131,11 +144,41 @@ const parseJsonSafe = (value, fallback = null) => {
   }
 };
 
+const tokenPrefix = (token) => (typeof token === "string" ? token.slice(0, 12) : undefined);
+const isDevRuntime = () => {
+  const host = String(window?.location?.hostname || "").toLowerCase();
+  return host === "localhost" || host === "127.0.0.1" || host.endsWith(".local") || host.endsWith(".test");
+};
+const logAgentAskDev = (session, endpoint) => {
+  if (!isDevRuntime()) return;
+  console.debug("[AGENT ASK]", {
+    url: endpoint,
+    session_exists: Boolean(session),
+    token_prefix: tokenPrefix(session?.access_token),
+  });
+};
+const isAuthRequiredError = (error) => {
+  const code = String(error?.code || "").trim().toLowerCase();
+  const message = String(error?.message || "").trim().toLowerCase();
+  return (
+    code === "auth_required" ||
+    message.includes("no supabase session") ||
+    message.includes("not authenticated") ||
+    message.includes("zaloguj")
+  );
+};
+
 const pickAskAnswer = (payload) => {
   if (typeof payload === "string") return payload;
   if (!isObject(payload)) return "";
 
-  const candidates = [payload.answer, payload.output, payload.reply, payload.message];
+  const candidates = [
+    payload.assistant_message,
+    payload.answer,
+    payload.output,
+    payload.reply,
+    payload.message,
+  ];
   for (const candidate of candidates) {
     if (typeof candidate === "string") return candidate;
     if (candidate !== null && candidate !== undefined && typeof candidate !== "object") {
@@ -251,12 +294,24 @@ const getAiFeatureAccess = async () => {
   return { allowed: true, planId };
 };
 
-const askAssistant = async (botId, userMessage, selectedBotIds = []) => {
+const askAgent = async (botId, userMessage, selectedBotIds = []) => {
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  const session = sessionData?.session || null;
+  logAgentAskDev(session, AGENT_ASK_ENDPOINT);
+
+  const accessToken = typeof session?.access_token === "string" ? session.access_token : "";
+  if (sessionError || !accessToken) {
+    const error = new Error("Zaloguj sie ponownie");
+    error.code = "auth_required";
+    throw error;
+  }
+
   const conversationId = askConversationsByBot.get(botId) || null;
-  const response = await fetch(ASK_ENDPOINT, {
+  const response = await fetch(AGENT_ASK_ENDPOINT, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({
       bot_id: botId,
@@ -448,11 +503,20 @@ const createAIWindowNode = () => {
     container.classList.toggle("is-paywall-open", paywallVisible);
   };
 
+  let showSendToast = () => {};
+
   const refreshCreditStatus = async ({ force = true } = {}) => {
     try {
       await refreshAgentCreditStatus({ force });
-    } catch {}
-    return extractCreditUsage(getAgentCreditStatusSnapshot()?.data);
+    } catch (error) {
+      console.error("[AIWindow] credit refresh failed", error);
+      showSendToast("Could not refresh credits.");
+    }
+    const snapshot = getAgentCreditStatusSnapshot();
+    if (isAuthRequiredError(snapshot?.error)) {
+      return { auth_required: true };
+    }
+    return extractCreditUsage(snapshot);
   };
 
   const quotaModal = createQuotaExceededModal({
@@ -460,13 +524,18 @@ const createAIWindowNode = () => {
   });
 
   const setQuotaModalUsage = async ({ forceRefresh = false } = {}) => {
-    const fromCache = extractCreditUsage(getAgentCreditStatusSnapshot()?.data);
+    const fromCache = extractCreditUsage(getAgentCreditStatusSnapshot());
     if (fromCache && !forceRefresh) {
       quotaModal.setUsage(fromCache);
       return fromCache;
     }
 
     const refreshed = await refreshCreditStatus({ force: true });
+    if (isObject(refreshed) && refreshed.auth_required === true) {
+      quotaModal.setMode("auth_required");
+      quotaModal.setUsage(null);
+      return refreshed;
+    }
     if (refreshed) {
       quotaModal.setUsage(refreshed);
       return refreshed;
@@ -482,13 +551,15 @@ const createAIWindowNode = () => {
 
   const openQuotaModal = async ({ forceRefresh = false, mode = null } = {}) => {
     const usage = await setQuotaModalUsage({ forceRefresh });
-    const resolvedMode = mode || (hasNoCreditsAccess(usage) ? "no_access" : "quota_exceeded");
+    const authRequired = isObject(usage) && usage.auth_required === true;
+    const resolvedMode = mode || (authRequired ? "auth_required" : "quota_exceeded");
+    if (resolvedMode === "auth_required") {
+      quotaModal.open(null, { mode: resolvedMode });
+      setPaywallVisible(false);
+      return true;
+    }
     if (resolvedMode === "quota_exceeded" && !isQuotaExceeded(usage)) {
       console.warn("[AIWindow] quota modal suppressed: usage does not exceed limits", usage);
-      return false;
-    }
-    if (resolvedMode === "no_access" && !hasNoCreditsAccess(usage)) {
-      console.warn("[AIWindow] no-access modal suppressed: usage has valid caps", usage);
       return false;
     }
     quotaModal.open(usage, { mode: resolvedMode });
@@ -505,10 +576,11 @@ const createAIWindowNode = () => {
 
   const refreshQuotaState = async ({ forceRefresh = true } = {}) => {
     const usage = await setQuotaModalUsage({ forceRefresh });
+    const authRequired = isObject(usage) && usage.auth_required === true;
     return {
       usage,
-      noAccess: hasNoCreditsAccess(usage),
-      exceeded: isQuotaExceeded(usage),
+      authRequired,
+      exceeded: !authRequired && isQuotaExceeded(usage),
     };
   };
 
@@ -601,14 +673,6 @@ const createAIWindowNode = () => {
         return { accepted: false, reason: "blocked" };
       }
 
-      const cachedUsage = extractCreditUsage(getAgentCreditStatusSnapshot()?.data);
-      const currentPlanId = getCurrentPlanId();
-      const noAccessByCaps = hasNoCreditsAccess(cachedUsage);
-      if (noAccessByCaps && !isPaidPlanId(currentPlanId)) {
-        await openQuotaModal({ forceRefresh: true, mode: "no_access" });
-        return { accepted: false, reason: "no_access" };
-      }
-
       const rpcMeta = {
         selected_bot_ids: sendContext.selectedBotIds,
         mode: sendContext.chatMode,
@@ -630,19 +694,14 @@ const createAIWindowNode = () => {
 
       if (!sendResult || !sendResult.message_id) {
         const quotaState = await refreshQuotaState({ forceRefresh: true });
-        const currentPlanId = getCurrentPlanId();
-        const hasPaidPlan = isPaidPlanId(currentPlanId);
-        if (quotaState.noAccess && hasPaidPlan) {
-          return {
-            accepted: false,
-            reason: "send_error",
-            retryPayload: toRetryPayload({ text, sendContext }),
-          };
+        if (quotaState.authRequired) {
+          await openQuotaModal({ forceRefresh: false, mode: "auth_required" });
+          return { accepted: false, reason: "blocked" };
         }
-        if (quotaState.noAccess || quotaState.exceeded) {
+        if (quotaState.exceeded) {
           await openQuotaModal({
             forceRefresh: false,
-            mode: quotaState.noAccess ? "no_access" : "quota_exceeded",
+            mode: "quota_exceeded",
           });
           return { accepted: false, reason: "quota" };
         }
@@ -669,7 +728,7 @@ const createAIWindowNode = () => {
             throw new Error("No bot selected for response generation");
           }
 
-          const answer = await askAssistant(askBotId, text, sendContext.selectedBotIds);
+          const answer = await askAgent(askBotId, text, sendContext.selectedBotIds);
           if (!isCanceled()) {
             agentDockStore.addMessage({
               role: "assistant",
@@ -710,19 +769,14 @@ const createAIWindowNode = () => {
 
       if (message.includes("credit") || message.includes("quota") || message.includes("limit")) {
         const quotaState = await refreshQuotaState({ forceRefresh: true });
-        const currentPlanId = getCurrentPlanId();
-        const hasPaidPlan = isPaidPlanId(currentPlanId);
-        if (quotaState.noAccess && hasPaidPlan) {
-          return {
-            accepted: false,
-            reason: "send_error",
-            retryPayload: toRetryPayload({ text, sendContext }),
-          };
+        if (quotaState.authRequired) {
+          await openQuotaModal({ forceRefresh: false, mode: "auth_required" });
+          return { accepted: false, reason: "blocked" };
         }
-        if (quotaState.noAccess || quotaState.exceeded) {
+        if (quotaState.exceeded) {
           await openQuotaModal({
             forceRefresh: false,
-            mode: quotaState.noAccess ? "no_access" : "quota_exceeded",
+            mode: "quota_exceeded",
           });
           return { accepted: false, reason: "quota" };
         }
@@ -887,7 +941,7 @@ const createAIWindowNode = () => {
     }, 1450);
   };
 
-  const showSendToast = (text) => {
+  showSendToast = (text) => {
     sendToast.textContent = text;
     sendToast.hidden = false;
     sendToast.classList.add("is-visible");

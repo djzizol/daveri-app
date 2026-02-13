@@ -1893,7 +1893,13 @@ const pickAskAnswer = (payload) => {
   if (typeof payload === "string") return payload;
   if (!isObject(payload)) return "";
 
-  const candidates = [payload.answer, payload.output, payload.reply, payload.message];
+  const candidates = [
+    payload.assistant_message,
+    payload.answer,
+    payload.output,
+    payload.reply,
+    payload.message,
+  ];
   for (const candidate of candidates) {
     if (typeof candidate === "string") return candidate;
     if (candidate !== null && candidate !== undefined && typeof candidate !== "object") {
@@ -1916,6 +1922,253 @@ const pickConversationId = (payload) => {
     payload.conversation_id ?? payload.conversationId ?? payload.session_id ?? payload.sessionId ?? null;
   if (typeof candidate === "string" && candidate.trim()) return candidate.trim();
   return null;
+};
+
+const readBearerToken = (request) => {
+  const headerValue = request.headers.get("Authorization") || request.headers.get("authorization") || "";
+  if (typeof headerValue !== "string") return null;
+  const match = headerValue.match(/^Bearer\s+(.+)$/i);
+  if (!match) return null;
+  const token = match[1]?.trim();
+  return token || null;
+};
+
+const isLikelyJwt = (token) => {
+  if (typeof token !== "string") return false;
+  const trimmed = token.trim();
+  if (!trimmed) return false;
+  const parts = trimmed.split(".");
+  return parts.length === 3 && parts[0].startsWith("eyJ");
+};
+
+const parseResponseDetails = (rawText, parsed, fallbackStatus) => {
+  if (typeof parsed === "string") return parsed;
+  if (isObject(parsed) || Array.isArray(parsed)) return JSON.stringify(parsed);
+  if (typeof rawText === "string" && rawText.trim()) return rawText;
+  return `HTTP ${fallbackStatus}`;
+};
+
+const supabaseRpcAsUserWithKey = async (env, apiKey, accessToken, rpcName, args = {}) => {
+  const url = `${env.SUPABASE_URL}/rest/v1/rpc/${encodeURIComponent(rpcName)}`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: apiKey,
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(args || {}),
+  });
+
+  const rawText = await response.text();
+  const parsed = rawText ? parseJsonSafe(rawText, rawText) : null;
+  return {
+    ok: response.ok,
+    status: response.status,
+    data: parsed,
+    details: parseResponseDetails(rawText, parsed, response.status || 500),
+  };
+};
+
+const supabaseRpcAsUser = async (env, accessToken, rpcName, args = {}) => {
+  const anonKey = env.SUPABASE_ANON_KEY;
+  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+  const firstKey = anonKey || serviceKey;
+  if (!firstKey) {
+    return { ok: false, status: 502, data: null, details: "Missing SUPABASE key in worker env" };
+  }
+
+  const firstAttempt = await supabaseRpcAsUserWithKey(env, firstKey, accessToken, rpcName, args);
+  if (
+    anonKey &&
+    serviceKey &&
+    anonKey !== serviceKey &&
+    !firstAttempt.ok &&
+    (firstAttempt.status === 401 || firstAttempt.status === 403)
+  ) {
+    return supabaseRpcAsUserWithKey(env, serviceKey, accessToken, rpcName, args);
+  }
+  return firstAttempt;
+};
+
+const getSupabaseAuthUserFromToken = async (env, accessToken) => {
+  const anonKey = env.SUPABASE_ANON_KEY;
+  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+  const apiKey = anonKey || serviceKey;
+  if (!apiKey) {
+    return { user: null, error: "Missing SUPABASE key in worker env", status: 502 };
+  }
+
+  const requestUser = async (key) =>
+    fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
+      method: "GET",
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+  let response = await requestUser(apiKey);
+  if (
+    anonKey &&
+    serviceKey &&
+    anonKey !== serviceKey &&
+    !response.ok &&
+    (response.status === 401 || response.status === 403)
+  ) {
+    response = await requestUser(serviceKey);
+  }
+
+  const rawText = await response.text();
+  const parsed = parseJsonSafe(rawText, null);
+  if (!response.ok) {
+    const details =
+      typeof parsed === "string"
+        ? parsed
+        : isObject(parsed) || Array.isArray(parsed)
+          ? JSON.stringify(parsed)
+          : rawText || `HTTP ${response.status}`;
+    return { user: null, error: details, status: response.status || 401 };
+  }
+
+  if (!isObject(parsed) || typeof parsed.id !== "string" || !parsed.id.trim()) {
+    return { user: null, error: "Invalid Supabase auth user payload", status: 401 };
+  }
+
+  return { user: parsed, error: null, status: 200 };
+};
+
+const normalizeRpcRecord = (payload) => {
+  if (Array.isArray(payload)) return payload[0] || null;
+  if (payload === null || payload === undefined) return null;
+  return payload;
+};
+
+const extractInternalUserId = (payload) => {
+  if (typeof payload === "string" && payload.trim()) return payload.trim();
+  if (!payload || typeof payload !== "object") return null;
+
+  const candidates = [
+    payload.daveri_internal_user_id,
+    payload.internal_user_id,
+    payload.user_id,
+    payload.id,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === "string" && candidate.trim()) {
+      return candidate.trim();
+    }
+  }
+  return null;
+};
+
+const ensureAgentUserContext = async (env, accessToken) => {
+  const ensureResult = await supabaseRpcAsUser(env, accessToken, "daveri_ensure_user_row", {});
+  if (!ensureResult.ok) {
+    return {
+      ok: false,
+      status: ensureResult.status || 502,
+      error: `daveri_ensure_user_row failed: ${ensureResult.details}`,
+    };
+  }
+
+  const internalResult = await supabaseRpcAsUser(env, accessToken, "daveri_internal_user_id", {});
+  if (!internalResult.ok) {
+    return {
+      ok: false,
+      status: internalResult.status || 502,
+      error: `daveri_internal_user_id failed: ${internalResult.details}`,
+    };
+  }
+
+  const internalUserId = extractInternalUserId(normalizeRpcRecord(internalResult.data) || internalResult.data);
+  if (!internalUserId) {
+    return {
+      ok: false,
+      status: 500,
+      error: "Unable to resolve internal_user_id from daveri_internal_user_id()",
+    };
+  }
+
+  const ensuredRecord = normalizeRpcRecord(ensureResult.data);
+  return {
+    ok: true,
+    internal_user_id: internalUserId,
+    ensured_user: ensuredRecord,
+  };
+};
+
+const normalizeAgentUsage = (payload) => {
+  const row = normalizeRpcRecord(payload);
+  if (!isObject(row)) return null;
+
+  const dailyUsed = toIntOrNull(row.daily_used);
+  const dailyCap = toIntOrNull(row.daily_cap);
+  const monthlyUsed = toIntOrNull(row.monthly_used);
+  const monthlyCap = toIntOrNull(row.monthly_cap);
+
+  if (dailyUsed === null || dailyCap === null || monthlyUsed === null || monthlyCap === null) {
+    return null;
+  }
+
+  return {
+    daily_used: dailyUsed,
+    daily_cap: dailyCap,
+    monthly_used: monthlyUsed,
+    monthly_cap: monthlyCap,
+  };
+};
+
+const getAgentUsageAsUser = async (env, accessToken) => {
+  const usageResult = await supabaseRpcAsUser(env, accessToken, "daveri_agent_credit_status", {});
+  if (!usageResult.ok) return null;
+  return normalizeAgentUsage(usageResult.data);
+};
+
+const askBotViaEdge = async (env, payload) => {
+  const anonKey = env.SUPABASE_ANON_KEY;
+  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+  const apiKey = anonKey || serviceKey;
+  if (!apiKey) {
+    return { ok: false, status: 502, details: "Missing SUPABASE key in worker env", parsed: null, rawText: "" };
+  }
+
+  const askRequest = async (key) =>
+    fetch(`${env.SUPABASE_URL}/functions/v1/ask-bot`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+  let response = await askRequest(apiKey);
+  if (
+    anonKey &&
+    serviceKey &&
+    anonKey !== serviceKey &&
+    !response.ok &&
+    (response.status === 401 || response.status === 403)
+  ) {
+    response = await askRequest(serviceKey);
+  }
+
+  const rawText = await response.text();
+  const parsed = parseJsonSafe(rawText, null);
+  if (!response.ok) {
+    return {
+      ok: false,
+      status: 502,
+      details: parseResponseDetails(rawText, parsed, response.status || 502),
+      parsed,
+      rawText,
+    };
+  }
+
+  return { ok: true, status: 200, details: null, parsed, rawText };
 };
 
 const handleV1BotConfig = async (env, cors, botId) => {
@@ -1957,6 +2210,18 @@ const handleV1BotConfig = async (env, cors, botId) => {
 };
 
 const handleV1Ask = async (request, env, cors) => {
+  const bearerToken = readBearerToken(request);
+  if (isLikelyJwt(bearerToken)) {
+    return jsonResponse(
+      {
+        error: "agent_endpoint_required",
+        details: "AGENT UI must call /v1/agent/ask. Endpoint /v1/ask is widget-only.",
+      },
+      400,
+      cors
+    );
+  }
+
   let body;
   try {
     body = await readJsonBody(request);
@@ -1978,13 +2243,6 @@ const handleV1Ask = async (request, env, cors) => {
       : null;
   const history = Array.isArray(body?.history) ? body.history : [];
 
-  const anonKey = env.SUPABASE_ANON_KEY;
-  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
-  const apiKey = anonKey || serviceKey;
-  if (!apiKey) {
-    return jsonResponse({ error: "ask_failed", details: "Missing SUPABASE key in worker env" }, 502, cors);
-  }
-
   const forwardPayload = {
     bot_id: botId,
     visitor_id: visitorId,
@@ -1993,48 +2251,125 @@ const handleV1Ask = async (request, env, cors) => {
     history,
   };
 
-  const askRequest = async (key) =>
-    fetch(`${env.SUPABASE_URL}/functions/v1/ask-bot`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-      },
-      body: JSON.stringify(forwardPayload),
-    });
-
-  let response = await askRequest(apiKey);
-  if (
-    anonKey &&
-    serviceKey &&
-    anonKey !== serviceKey &&
-    !response.ok &&
-    (response.status === 401 || response.status === 403)
-  ) {
-    response = await askRequest(serviceKey);
+  const askResult = await askBotViaEdge(env, forwardPayload);
+  if (!askResult.ok) {
+    return jsonResponse({ error: "ask_failed", details: askResult.details }, askResult.status || 502, cors);
   }
 
-  const rawText = await response.text();
-  const parsed = parseJsonSafe(rawText, null);
-
-  if (!response.ok) {
-    const details =
-      typeof parsed === "string"
-        ? parsed
-        : isObject(parsed) || Array.isArray(parsed)
-          ? JSON.stringify(parsed)
-          : rawText || `HTTP ${response.status}`;
-    return jsonResponse({ error: "ask_failed", details }, 502, cors);
-  }
-
-  const answer = pickAskAnswer(parsed || rawText);
-  const nextConversationId = pickConversationId(parsed);
+  const answer = pickAskAnswer(askResult.parsed || askResult.rawText);
+  const nextConversationId = pickConversationId(askResult.parsed);
 
   return jsonResponse(
     {
       answer: typeof answer === "string" ? answer : String(answer || ""),
+      assistant_message: typeof answer === "string" ? answer : String(answer || ""),
       conversation_id: nextConversationId,
+    },
+    200,
+    cors
+  );
+};
+
+/*
+Manual test (JWT):
+curl -i -X POST "https://api.daveri.io/v1/agent/ask" \
+  -H "Authorization: Bearer <SUPABASE_ACCESS_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d "{\"bot_id\":\"<BOT_ID>\",\"message\":\"Hello from agent\"}"
+
+Expected: HTTP 200 + { assistant_message, conversation_id, usage? }
+
+Manual test (without JWT):
+curl -i -X POST "https://api.daveri.io/v1/agent/ask" \
+  -H "Content-Type: application/json" \
+  -d "{\"bot_id\":\"<BOT_ID>\",\"message\":\"Hello\"}"
+
+Expected: HTTP 401 auth_required
+*/
+const handleV1AgentAsk = async (request, env, cors) => {
+  const accessToken = readBearerToken(request);
+  if (!isLikelyJwt(accessToken)) {
+    return jsonResponse({ error: "auth_required", details: "Missing Bearer token" }, 401, cors);
+  }
+
+  const authResult = await getSupabaseAuthUserFromToken(env, accessToken);
+  if (!authResult.user) {
+    return jsonResponse(
+      { error: "auth_required", details: authResult.error || "Unauthorized" },
+      authResult.status || 401,
+      cors
+    );
+  }
+
+  const authUid = String(authResult.user.id || "").trim();
+  const authEmail = typeof authResult.user.email === "string" ? authResult.user.email.trim() : "";
+  if (!authUid) {
+    return jsonResponse({ error: "auth_required", details: "Invalid auth user id" }, 401, cors);
+  }
+
+  const userContext = await ensureAgentUserContext(env, accessToken);
+  if (!userContext.ok) {
+    return jsonResponse(
+      { error: "user_mapping_failed", details: userContext.error },
+      userContext.status || 500,
+      cors
+    );
+  }
+
+  let body;
+  try {
+    body = await readJsonBody(request);
+  } catch {
+    return jsonResponse({ error: "invalid_json" }, 400, cors);
+  }
+
+  const botId = typeof body?.bot_id === "string" ? body.bot_id.trim() : "";
+  const message = typeof body?.message === "string" ? body.message.trim() : "";
+  if (!botId || !message) {
+    return jsonResponse({ error: "invalid_payload", details: "bot_id and message are required" }, 400, cors);
+  }
+
+  const conversationId =
+    typeof body?.conversation_id === "string" && body.conversation_id.trim()
+      ? body.conversation_id.trim()
+      : null;
+  const history = Array.isArray(body?.history) ? body.history : [];
+  const activeBotId = typeof body?.active_bot_id === "string" && body.active_bot_id.trim() ? body.active_bot_id.trim() : null;
+  const selectedBotIds = Array.isArray(body?.selected_bot_ids)
+    ? body.selected_bot_ids
+        .map((item) => (typeof item === "string" ? item.trim() : ""))
+        .filter(Boolean)
+    : [];
+
+  const forwardPayload = {
+    bot_id: botId,
+    visitor_id: authUid,
+    conversation_id: conversationId,
+    message,
+    history,
+    active_bot_id: activeBotId,
+    selected_bot_ids: selectedBotIds,
+    agent_auth_uid: authUid,
+    agent_email: authEmail || null,
+    agent_internal_user_id: userContext.internal_user_id,
+  };
+
+  const askResult = await askBotViaEdge(env, forwardPayload);
+  if (!askResult.ok) {
+    return jsonResponse({ error: "ask_failed", details: askResult.details }, askResult.status || 502, cors);
+  }
+
+  const usage = await getAgentUsageAsUser(env, accessToken);
+  const answer = pickAskAnswer(askResult.parsed || askResult.rawText);
+  const nextConversationId = pickConversationId(askResult.parsed);
+  const assistantMessage = typeof answer === "string" ? answer : String(answer || "");
+
+  return jsonResponse(
+    {
+      assistant_message: assistantMessage,
+      answer: assistantMessage,
+      conversation_id: nextConversationId,
+      usage: usage || null,
     },
     200,
     cors
@@ -2116,6 +2451,12 @@ export default {
         if (pathname === "/v1/ask") {
           if (request.method === "POST") {
             return handleV1Ask(request, env, publicV1Cors);
+          }
+          return jsonResponse({ error: "method_not_allowed" }, 405, publicV1Cors);
+        }
+        if (pathname === "/v1/agent/ask") {
+          if (request.method === "POST") {
+            return handleV1AgentAsk(request, env, publicV1Cors);
           }
           return jsonResponse({ error: "method_not_allowed" }, 405, publicV1Cors);
         }

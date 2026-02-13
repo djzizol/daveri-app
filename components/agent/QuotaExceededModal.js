@@ -6,11 +6,20 @@ const toSafeInt = (value) => {
   return Math.max(0, Math.floor(numeric));
 };
 
+const toCapOrUnlimited = (value) => {
+  if (value === null || value === undefined || value === "") return null;
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return null;
+  if (numeric <= 0) return null;
+  return Math.floor(numeric);
+};
+
 const normalizeUsage = (usage) => ({
+  is_loading: usage?.is_loading === true,
   daily_used: toSafeInt(usage?.daily_used),
-  daily_cap: toSafeInt(usage?.daily_cap),
+  daily_cap: toCapOrUnlimited(usage?.daily_cap),
   monthly_used: toSafeInt(usage?.monthly_used),
-  monthly_cap: toSafeInt(usage?.monthly_cap),
+  monthly_cap: toCapOrUnlimited(usage?.monthly_cap),
 });
 
 export const createQuotaExceededModal = ({ onRefreshStatus } = {}) => {
@@ -57,31 +66,64 @@ export const createQuotaExceededModal = ({ onRefreshStatus } = {}) => {
   const closeButton = root.querySelector("[data-role='close']");
 
   const applyMode = () => {
-    const noAccess = modalMode === "no_access";
+    const authRequired = modalMode === "auth_required";
 
     if (titleNode) {
-      titleNode.textContent = noAccess ? "Brak dostepu do kredytow AI" : "Limit kredytow wyczerpany";
+      titleNode.textContent = authRequired
+        ? "Zaloguj sie ponownie"
+        : "Limit kredytow wyczerpany";
     }
     if (subtitleNode) {
-      subtitleNode.textContent = noAccess
-        ? "Wybierz plan, aby aktywowac kredyty i rozpoczac wysylanie wiadomosci."
+      subtitleNode.textContent = authRequired
+        ? "Sesja wygasla lub jest niedostepna. Zaloguj sie ponownie i odswiez status."
         : "Nie mozemy wyslac wiadomosci, bo przekroczono quota.";
     }
     if (primaryLink) {
-      primaryLink.textContent = noAccess ? "Wybierz plan" : "Upgrade plan";
-      primaryLink.setAttribute("href", noAccess ? "#choose-plan" : "#upgrade-plan");
+      primaryLink.textContent = authRequired ? "Zaloguj sie ponownie" : "Upgrade plan";
+      primaryLink.setAttribute("href", authRequired ? "/login/" : "#upgrade-plan");
     }
     if (secondaryLink) {
-      secondaryLink.hidden = noAccess;
+      secondaryLink.hidden = authRequired;
     }
   };
 
   const render = () => {
+    if (modalMode === "auth_required") {
+      if (dailyNode) dailyNode.textContent = "-- / --";
+      if (monthlyNode) monthlyNode.textContent = "-- / --";
+      return;
+    }
+
+    const usageMissing =
+      !currentUsage.is_loading &&
+      currentUsage.daily_used === 0 &&
+      currentUsage.monthly_used === 0 &&
+      currentUsage.daily_cap === null &&
+      currentUsage.monthly_cap === null;
+
+    if (currentUsage.is_loading) {
+      if (dailyNode) dailyNode.textContent = "Loading credits...";
+      if (monthlyNode) monthlyNode.textContent = "Loading credits...";
+      return;
+    }
+
+    if (usageMissing) {
+      if (dailyNode) dailyNode.textContent = "Loading credits...";
+      if (monthlyNode) monthlyNode.textContent = "Loading credits...";
+      return;
+    }
+
     if (dailyNode) {
-      dailyNode.textContent = `${currentUsage.daily_used} / ${currentUsage.daily_cap}`;
+      dailyNode.textContent =
+        currentUsage.daily_cap === null
+          ? `${currentUsage.daily_used} / unlimited`
+          : `${currentUsage.daily_used} / ${currentUsage.daily_cap}`;
     }
     if (monthlyNode) {
-      monthlyNode.textContent = `${currentUsage.monthly_used} / ${currentUsage.monthly_cap}`;
+      monthlyNode.textContent =
+        currentUsage.monthly_cap === null
+          ? `${currentUsage.monthly_used} / unlimited`
+          : `${currentUsage.monthly_used} / ${currentUsage.monthly_cap}`;
     }
   };
 
@@ -91,9 +133,10 @@ export const createQuotaExceededModal = ({ onRefreshStatus } = {}) => {
   };
 
   const setMode = (mode) => {
-    modalMode = mode === "no_access" ? "no_access" : "quota_exceeded";
+    modalMode = mode === "auth_required" ? "auth_required" : "quota_exceeded";
     root.dataset.mode = modalMode;
     applyMode();
+    render();
   };
 
   const open = (usage, options = {}) => {
@@ -113,9 +156,22 @@ export const createQuotaExceededModal = ({ onRefreshStatus } = {}) => {
   refreshButton?.addEventListener("click", async () => {
     if (typeof onRefreshStatus !== "function") return;
     refreshButton.disabled = true;
+    setUsage({ is_loading: true });
     try {
       const usage = await onRefreshStatus();
-      if (usage) setUsage(usage);
+      if (usage && typeof usage === "object" && usage.auth_required === true) {
+        setMode("auth_required");
+        setUsage(null);
+        return;
+      }
+      if (usage) {
+        if (modalMode === "auth_required") {
+          setMode("quota_exceeded");
+        }
+        setUsage(usage);
+      } else {
+        setUsage(null);
+      }
     } finally {
       refreshButton.disabled = false;
     }

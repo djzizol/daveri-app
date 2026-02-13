@@ -38,6 +38,10 @@
   };
 
   const sanitizeText = (value) => String(value == null ? "" : value).trim();
+  const isDevRuntime = () => {
+    const host = String(window?.location?.hostname || "").toLowerCase();
+    return host === "localhost" || host === "127.0.0.1" || host.endsWith(".local") || host.endsWith(".test");
+  };
 
   const isDark = (hex) => {
     if (!hex || typeof hex !== "string") return false;
@@ -516,13 +520,18 @@
     return {};
   };
 
-  const callAskBot = async (userText) => {
+  const askWidget = async (userText) => {
     const history = state.messages.map((m) => ({
       role: m.role === "user" ? "user" : "assistant",
       content: m.text,
     }));
 
-    const response = await fetch(`${API_BASE}/v1/ask`, {
+    const widgetAskUrl = `${API_BASE}/v1/ask`;
+    if (isDevRuntime()) {
+      console.debug("[WIDGET ASK]", { url: widgetAskUrl });
+    }
+
+    const response = await fetch(widgetAskUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -573,7 +582,7 @@
     sendBtn.disabled = true;
 
     try {
-      const result = await callAskBot(text);
+      const result = await askWidget(text);
       if (result.conversationId) {
         state.conversationId = result.conversationId;
       }
