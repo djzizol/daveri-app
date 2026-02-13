@@ -1,7 +1,4 @@
 const SUPPORTED_LANGS = new Set(["en", "pl", "de", "fr", "es", "pt"]);
-const FOOTER_TEMPLATE_URL = new URL("../components/marketing-footer.html", import.meta.url);
-
-let footerTemplatePromise = null;
 
 const getCurrentLanguage = () => {
   const languageApi = window.DaVeriLanguage;
@@ -58,37 +55,7 @@ const syncFooterYear = (root = document) => {
   });
 };
 
-const getFooterTemplate = async () => {
-  if (!footerTemplatePromise) {
-    footerTemplatePromise = fetch(FOOTER_TEMPLATE_URL, { cache: "no-cache" })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Cannot load footer template: ${response.status}`);
-        }
-        return response.text();
-      })
-      .catch((error) => {
-        footerTemplatePromise = null;
-        throw error;
-      });
-  }
-  return footerTemplatePromise;
-};
-
-const mountFooterHosts = async (root = document) => {
-  const hosts = Array.from(root.querySelectorAll("[data-marketing-footer-host]"));
-  if (hosts.length === 0) return;
-
-  const template = await getFooterTemplate();
-  hosts.forEach((host) => {
-    if (host.dataset.marketingFooterMounted === "1") return;
-    host.innerHTML = template;
-    host.dataset.marketingFooterMounted = "1";
-  });
-};
-
 const initMarketingShell = async () => {
-  await mountFooterHosts(document);
   syncFooterYear(document);
   updateLocalizedLinks(document);
 };
@@ -111,6 +78,5 @@ document.addEventListener("language:changed", () => {
 
 window.DaVeriMarketingShell = {
   init: initMarketingShell,
-  mountFooter: () => mountFooterHosts(document),
   refreshLinks: () => updateLocalizedLinks(document),
 };

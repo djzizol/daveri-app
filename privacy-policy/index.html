@@ -138,7 +138,23 @@
     </article>
   </main>
 
-  <div data-marketing-footer-host></div>
+    <footer class="marketing-footer" aria-label="Footer">
+    <div class="marketing-footer-inner">
+      <div class="marketing-footer-brand">
+        <span class="marketing-footer-logo">DaVeri</span>
+        <span class="marketing-footer-copy">&copy; <span data-marketing-year></span> DaVeri. All rights reserved.</span>
+      </div>
+      <nav class="marketing-footer-links" aria-label="Footer links">
+        <span class="marketing-footer-group-label">Company</span>
+        <a class="marketing-footer-link" data-marketing-path="/about/" href="/about/">About</a>
+        <a class="marketing-footer-link" data-marketing-path="/contact/" href="/contact/">Contact</a>
+        <span class="marketing-footer-divider" aria-hidden="true"></span>
+        <span class="marketing-footer-group-label">Legal</span>
+        <a class="marketing-footer-link" href="/privacy">Privacy Policy</a>
+        <a class="marketing-footer-link" href="/terms">Terms of Service</a>
+      </nav>
+    </div>
+  </footer>
 
   <script type="module" src="/js/language.js"></script>
   <script type="module" src="/js/marketing-shell.js"></script>
