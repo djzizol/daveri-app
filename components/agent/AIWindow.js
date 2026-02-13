@@ -68,6 +68,17 @@ const hasNoCreditsAccess = (usage) => {
   if (!isObject(usage)) return false;
   return toSafeInt(usage.daily_cap) === 0 || toSafeInt(usage.monthly_cap) === 0;
 };
+const isQuotaExceeded = (usage) => {
+  if (!isObject(usage)) return false;
+  const dailyCap = toSafeInt(usage.daily_cap);
+  const monthlyCap = toSafeInt(usage.monthly_cap);
+  const dailyUsed = toSafeInt(usage.daily_used);
+  const monthlyUsed = toSafeInt(usage.monthly_used);
+
+  const dailyExceeded = dailyCap > 0 && dailyUsed >= dailyCap;
+  const monthlyExceeded = monthlyCap > 0 && monthlyUsed >= monthlyCap;
+  return dailyExceeded || monthlyExceeded;
+};
 
 const createClientRequestId = () => {
   try {
@@ -457,6 +468,15 @@ const createAIWindowNode = () => {
     setPaywallVisible(false);
   };
 
+  const refreshQuotaState = async ({ forceRefresh = true } = {}) => {
+    const usage = await setQuotaModalUsage({ forceRefresh });
+    return {
+      usage,
+      noAccess: hasNoCreditsAccess(usage),
+      exceeded: isQuotaExceeded(usage),
+    };
+  };
+
   const closeQuotaModal = () => {
     quotaModal.close();
   };
@@ -572,8 +592,20 @@ const createAIWindowNode = () => {
       }
 
       if (!sendResult || !sendResult.message_id) {
-        await openQuotaModal({ forceRefresh: true });
-        return { accepted: false, reason: "quota" };
+        const quotaState = await refreshQuotaState({ forceRefresh: true });
+        if (quotaState.noAccess || quotaState.exceeded) {
+          await openQuotaModal({
+            forceRefresh: false,
+            mode: quotaState.noAccess ? "no_access" : "quota_exceeded",
+          });
+          return { accepted: false, reason: "quota" };
+        }
+
+        return {
+          accepted: false,
+          reason: "send_error",
+          retryPayload: toRetryPayload({ text, sendContext }),
+        };
       }
 
       if (typeof sendResult.conversation_id === "string" && sendResult.conversation_id) {
@@ -631,8 +663,14 @@ const createAIWindowNode = () => {
       }
 
       if (message.includes("credit") || message.includes("quota") || message.includes("limit")) {
-        await openQuotaModal({ forceRefresh: true });
-        return { accepted: false, reason: "quota" };
+        const quotaState = await refreshQuotaState({ forceRefresh: true });
+        if (quotaState.noAccess || quotaState.exceeded) {
+          await openQuotaModal({
+            forceRefresh: false,
+            mode: quotaState.noAccess ? "no_access" : "quota_exceeded",
+          });
+          return { accepted: false, reason: "quota" };
+        }
       }
 
       return {
