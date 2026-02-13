@@ -32,8 +32,11 @@ const askConversationsByBot = new Map();
 const AI_ACCESS_FALLBACK_ALLOWED_PLANS = new Set(["basic", "premium", "pro", "individual"]);
 const PAYWALL_REASON_AI_LOCKED = "ai_locked";
 const PAYWALL_REASON_AUTH = "auth";
+const PAYWALL_REASON_ENTITLEMENTS = "entitlements_error";
 const AI_LOCK_MESSAGE = "Odblokuj dostep do funkcji DaVeri AI przechodzac na wyzszy plan.";
 const AUTH_REQUIRED_MESSAGE = "Nie mozna potwierdzic sesji. Odswiez strone i zaloguj sie ponownie.";
+const ENTITLEMENTS_ERROR_MESSAGE =
+  "Nie mozemy odczytac uprawnien planu. Odswiez strone lub skontaktuj sie z supportem.";
 
 const PAYWALL_COPY = {
   [PAYWALL_REASON_AI_LOCKED]: {
@@ -53,6 +56,16 @@ const PAYWALL_COPY = {
       "Odswiez strone i zaloguj sie ponownie.",
     ],
     assistant: AUTH_REQUIRED_MESSAGE,
+  },
+  [PAYWALL_REASON_ENTITLEMENTS]: {
+    title: "Problem z uprawnieniami planu",
+    description: ENTITLEMENTS_ERROR_MESSAGE,
+    benefits: [
+      "Sprawdz konfiguracje planu i entitlementow.",
+      "Odswiez sesje i pobierz status ponownie.",
+      "Skontaktuj sie z supportem, jesli problem utrzymuje sie.",
+    ],
+    assistant: ENTITLEMENTS_ERROR_MESSAGE,
   },
 };
 
@@ -180,6 +193,7 @@ const getAuthPlanId = () =>
       window?.DaVeriAuth?.session?.user?.app_metadata?.plan_id ||
       ""
   );
+const getCurrentPlanId = () => normalizePlanId(getAccountState()?.credits?.plan_id || "") || getAuthPlanId();
 
 const isPaidPlanId = (planId) => {
   const normalized = normalizePlanId(planId);
@@ -193,6 +207,7 @@ const getAiFeatureAccess = async () => {
 
   let state = getAccountState();
   let entitlements = isObject(state?.entitlements_map) ? state.entitlements_map : {};
+  const entitlementsMissingInitially = !Object.keys(entitlements).length;
   let aiFeature = isObject(entitlements?.daverei_ai) ? entitlements.daverei_ai : null;
   let aiMode = isObject(entitlements?.daverei_ai_mode) ? entitlements.daverei_ai_mode : null;
 
@@ -207,6 +222,14 @@ const getAiFeatureAccess = async () => {
   }
 
   const planId = normalizePlanId(state?.credits?.plan_id || "") || getAuthPlanId();
+  const entitlementsMissing = !Object.keys(entitlements).length;
+  if (entitlementsMissing) {
+    if (isPaidPlanId(planId)) {
+      return { allowed: true, planId, entitlementsMissing: true };
+    }
+    return { allowed: false, reason: PAYWALL_REASON_ENTITLEMENTS, planId };
+  }
+
   if (aiFeature?.enabled === true) return { allowed: true, planId };
   if (aiFeature?.enabled === false) {
     if (isPaidPlanId(planId)) {
@@ -222,6 +245,9 @@ const getAiFeatureAccess = async () => {
   if (planId && AI_ACCESS_FALLBACK_ALLOWED_PLANS.has(planId)) return { allowed: true, planId };
 
   // Fail-open for unknown states, do not block paid users due transient entitlement fetch issues.
+  if (entitlementsMissingInitially && isPaidPlanId(planId)) {
+    return { allowed: true, planId, entitlementsMissing: true };
+  }
   return { allowed: true, planId };
 };
 
@@ -576,7 +602,9 @@ const createAIWindowNode = () => {
       }
 
       const cachedUsage = extractCreditUsage(getAgentCreditStatusSnapshot()?.data);
-      if (hasNoCreditsAccess(cachedUsage)) {
+      const currentPlanId = getCurrentPlanId();
+      const noAccessByCaps = hasNoCreditsAccess(cachedUsage);
+      if (noAccessByCaps && !isPaidPlanId(currentPlanId)) {
         await openQuotaModal({ forceRefresh: true, mode: "no_access" });
         return { accepted: false, reason: "no_access" };
       }
@@ -602,6 +630,15 @@ const createAIWindowNode = () => {
 
       if (!sendResult || !sendResult.message_id) {
         const quotaState = await refreshQuotaState({ forceRefresh: true });
+        const currentPlanId = getCurrentPlanId();
+        const hasPaidPlan = isPaidPlanId(currentPlanId);
+        if (quotaState.noAccess && hasPaidPlan) {
+          return {
+            accepted: false,
+            reason: "send_error",
+            retryPayload: toRetryPayload({ text, sendContext }),
+          };
+        }
         if (quotaState.noAccess || quotaState.exceeded) {
           await openQuotaModal({
             forceRefresh: false,
@@ -673,6 +710,15 @@ const createAIWindowNode = () => {
 
       if (message.includes("credit") || message.includes("quota") || message.includes("limit")) {
         const quotaState = await refreshQuotaState({ forceRefresh: true });
+        const currentPlanId = getCurrentPlanId();
+        const hasPaidPlan = isPaidPlanId(currentPlanId);
+        if (quotaState.noAccess && hasPaidPlan) {
+          return {
+            accepted: false,
+            reason: "send_error",
+            retryPayload: toRetryPayload({ text, sendContext }),
+          };
+        }
         if (quotaState.noAccess || quotaState.exceeded) {
           await openQuotaModal({
             forceRefresh: false,
