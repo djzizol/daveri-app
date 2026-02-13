@@ -2,38 +2,40 @@ import { agentDockStore } from "../../js/agent-dock-store.js";
 import { getActiveBotId } from "../../js/active-bot.js";
 import { getApiUrl } from "../../js/api.js";
 import {
+  getAgentCreditStatusSnapshot,
+  refreshAgentCreditStatus,
+} from "../../js/agent-credit-status-store.js";
+import { callRpcRecord } from "../../js/supabaseClient.js";
+import { trackEvent } from "../../js/analytics.js";
+import {
   applyPlanUpgrade,
-  consumeMessageCredit,
   ensureAccountState,
   getAccountState,
-  refreshCredits,
   refreshEntitlements,
 } from "../../js/account-state.js";
+import { createBotContextPicker } from "./BotContextPicker.js";
+import { createCreditHUDRing } from "./CreditHUDRing.js";
+import { createModePicker } from "./ModePicker.js";
 import { createAIMessages } from "./AIMessages.js";
 import { createAIInput } from "./AIInput.js";
+import { createQuotaExceededModal } from "./QuotaExceededModal.js";
 
 const AI_WINDOW_ID = "aiWindow";
 const COLLAPSED_HEIGHT = 92;
 const ASK_ENDPOINT = getApiUrl("/v1/ask");
-const conversationsByBot = new Map();
+const SEND_MESSAGE_RPC = "daveri_send_message_credit_limited";
+const MAX_CONTEXT_BOTS = 3;
+const RETRY_SEND_ACTION = "retry_send_message";
+const CANCEL_SEND_ACTION = "cancel_send_message";
+const conversationsByContext = new Map();
+const askConversationsByBot = new Map();
 const AI_ACCESS_FALLBACK_ALLOWED_PLANS = new Set(["basic", "premium", "pro", "individual"]);
-const PAYWALL_REASON_CREDITS = "credits";
 const PAYWALL_REASON_AI_LOCKED = "ai_locked";
 const PAYWALL_REASON_AUTH = "auth";
 const AI_LOCK_MESSAGE = "Odblokuj dostep do funkcji DaVeri AI przechodzac na wyzszy plan.";
-const CREDITS_LOCK_MESSAGE = "Wyczerpales limit wiadomosci/kredytow. Poczekaj na reset lub zwieksz limit.";
 const AUTH_REQUIRED_MESSAGE = "Nie mozna potwierdzic sesji. Odswiez strone i zaloguj sie ponownie.";
 
 const PAYWALL_COPY = {
-  [PAYWALL_REASON_CREDITS]: {
-    title: "Limit kredytow wyczerpany",
-    description: CREDITS_LOCK_MESSAGE,
-    benefits: [
-      "Poczekaj na dzienny reset.",
-      "Sprawdz limity w zakladce Credits.",
-    ],
-    assistant: CREDITS_LOCK_MESSAGE,
-  },
   [PAYWALL_REASON_AI_LOCKED]: {
     title: "DaVeri AI jest zablokowane",
     description: AI_LOCK_MESSAGE,
@@ -55,6 +57,47 @@ const PAYWALL_COPY = {
 };
 
 const isObject = (value) => value && typeof value === "object" && !Array.isArray(value);
+const toSafeInt = (value) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 0;
+  return Math.max(0, Math.floor(numeric));
+};
+
+const normalizeChatMode = (value) => (value === "operator" ? "operator" : "advisor");
+const hasNoCreditsAccess = (usage) => {
+  if (!isObject(usage)) return false;
+  return toSafeInt(usage.daily_cap) === 0 || toSafeInt(usage.monthly_cap) === 0;
+};
+
+const createClientRequestId = () => {
+  try {
+    if (typeof crypto?.randomUUID === "function") {
+      return crypto.randomUUID();
+    }
+  } catch {}
+
+  return `req_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+};
+
+const extractCreditUsage = (value) => {
+  if (!isObject(value)) return null;
+
+  const dailyCap = toSafeInt(value.daily_cap);
+  const monthlyCap = toSafeInt(value.monthly_cap);
+  const dailyUsed = toSafeInt(value.daily_used);
+  const monthlyUsed = toSafeInt(value.monthly_used);
+
+  if (!dailyCap && !monthlyCap && !dailyUsed && !monthlyUsed) {
+    return null;
+  }
+
+  return {
+    daily_used: dailyUsed,
+    daily_cap: dailyCap,
+    monthly_used: monthlyUsed,
+    monthly_cap: monthlyCap,
+  };
+};
 
 const parseJsonSafe = (value, fallback = null) => {
   try {
@@ -83,6 +126,18 @@ const pickConversationId = (payload) => {
   const candidate = payload.conversation_id ?? payload.conversationId ?? null;
   if (typeof candidate === "string" && candidate.trim()) return candidate.trim();
   return null;
+};
+
+const normalizeSelectedBotIds = (selectedBotIds) =>
+  [...new Set((Array.isArray(selectedBotIds) ? selectedBotIds : []).map((item) => String(item || "").trim()).filter(Boolean))].slice(
+    0,
+    MAX_CONTEXT_BOTS
+  );
+
+const getContextKey = (selectedBotIds) => {
+  const normalized = normalizeSelectedBotIds(selectedBotIds);
+  if (!normalized.length) return "__default__";
+  return normalized.slice().sort().join(",");
 };
 
 const applyState = (windowNode, state) => {
@@ -154,8 +209,8 @@ const getAiFeatureAccess = async () => {
   return { allowed: true, planId };
 };
 
-const askAssistant = async (botId, userMessage) => {
-  const conversationId = conversationsByBot.get(botId) || null;
+const askAssistant = async (botId, userMessage, selectedBotIds = []) => {
+  const conversationId = askConversationsByBot.get(botId) || null;
   const response = await fetch(ASK_ENDPOINT, {
     method: "POST",
     headers: {
@@ -166,6 +221,8 @@ const askAssistant = async (botId, userMessage) => {
       visitor_id: getVisitorId(),
       conversation_id: conversationId,
       message: userMessage,
+      active_bot_id: botId,
+      selected_bot_ids: normalizeSelectedBotIds(selectedBotIds),
       history: [],
     }),
   });
@@ -183,10 +240,53 @@ const askAssistant = async (botId, userMessage) => {
   const answer = pickAskAnswer(payload);
   const nextConversationId = pickConversationId(payload);
   if (nextConversationId) {
-    conversationsByBot.set(botId, nextConversationId);
+    askConversationsByBot.set(botId, nextConversationId);
   }
 
   return answer;
+};
+
+const sendMessageCreditLimited = async ({
+  conversationId = null,
+  role = "user",
+  content = "",
+  meta = {},
+  activeBotId = null,
+  modeDefault = "advisor",
+}) =>
+  callRpcRecord(SEND_MESSAGE_RPC, {
+    p_cost: 1,
+    p_conversation_id: conversationId,
+    p_role: role,
+    p_content: content,
+    p_meta: meta,
+    p_active_bot_id: activeBotId,
+    p_mode_default: modeDefault,
+  });
+
+const applyChatModeToUi = (container, chatMode) => {
+  const normalizedMode = chatMode === "operator" ? "operator" : "advisor";
+  container.dataset.chatMode = normalizedMode;
+  container.classList.toggle("is-chat-mode-advisor", normalizedMode === "advisor");
+
+  const operatorOnlyControls = container.querySelectorAll("[data-requires-operator='true'], .ai-propose-action-btn");
+  operatorOnlyControls.forEach((control) => {
+    if (!(control instanceof HTMLElement)) return;
+    const isButton = control instanceof HTMLButtonElement;
+    if (normalizedMode === "advisor") {
+      control.setAttribute("aria-hidden", "true");
+      control.classList.add("is-disabled-by-mode");
+      if (isButton) {
+        control.disabled = true;
+      }
+    } else {
+      control.removeAttribute("aria-hidden");
+      control.classList.remove("is-disabled-by-mode");
+      if (isButton) {
+        control.disabled = false;
+      }
+    }
+  });
 };
 
 const createAIWindowNode = () => {
@@ -200,12 +300,56 @@ const createAIWindowNode = () => {
   const messagesWrap = document.createElement("div");
   messagesWrap.className = "chat-messages-wrap ai-messages-wrap";
 
-  const messages = createAIMessages();
+  const creditHud = createCreditHUDRing();
+  const botContextPicker = createBotContextPicker({ maxSelected: MAX_CONTEXT_BOTS });
+  const modePicker = createModePicker();
+
+  const chatHeader = document.createElement("div");
+  chatHeader.className = "ai-chat-header";
+
+  const chatHeaderControls = document.createElement("div");
+  chatHeaderControls.className = "ai-chat-header-controls";
+
+  const chatHeaderBots = document.createElement("div");
+  chatHeaderBots.className = "ai-chat-header-bots";
+
+  const chatHeaderBotsLabel = document.createElement("span");
+  chatHeaderBotsLabel.className = "ai-chat-header-label";
+  chatHeaderBotsLabel.textContent = "Active bots";
+
+  chatHeaderBots.appendChild(chatHeaderBotsLabel);
+  chatHeaderBots.appendChild(botContextPicker.node);
+
+  const chatHeaderMode = document.createElement("div");
+  chatHeaderMode.className = "ai-chat-header-mode";
+
+  const chatHeaderModeLabel = document.createElement("span");
+  chatHeaderModeLabel.className = "ai-chat-header-label";
+  chatHeaderModeLabel.textContent = "Mode";
+
+  chatHeaderMode.appendChild(chatHeaderModeLabel);
+  chatHeaderMode.appendChild(modePicker.node);
+
+  const chatHeaderCredits = document.createElement("div");
+  chatHeaderCredits.className = "ai-chat-header-credits";
+  chatHeaderCredits.appendChild(creditHud.node);
+
+  chatHeaderControls.appendChild(chatHeaderBots);
+  chatHeaderControls.appendChild(chatHeaderMode);
+  chatHeader.appendChild(chatHeaderControls);
+  chatHeader.appendChild(chatHeaderCredits);
+
+  let handleRetryAction = () => {};
+  const messages = createAIMessages({
+    onAction: (event) => handleRetryAction(event),
+  });
+
+  const inflightRequestsById = new Map();
+  const inflightRequestIdByKey = new Map();
 
   let paywallVisible = false;
   let paywallReason = PAYWALL_REASON_AI_LOCKED;
   let upgrading = false;
-  let sendingMessage = false;
 
   const paywall = document.createElement("div");
   paywall.className = "ai-paywall";
@@ -249,7 +393,7 @@ const createAIWindowNode = () => {
     }
     if (paywallUpgradeBtn) {
       paywallUpgradeBtn.textContent = "Przejdz na wyzszy plan";
-      paywallUpgradeBtn.hidden = key === PAYWALL_REASON_AUTH || key === PAYWALL_REASON_CREDITS;
+      paywallUpgradeBtn.hidden = key === PAYWALL_REASON_AUTH;
     }
   };
 
@@ -262,133 +406,450 @@ const createAIWindowNode = () => {
     container.classList.toggle("is-paywall-open", paywallVisible);
   };
 
+  const refreshCreditStatus = async ({ force = true } = {}) => {
+    try {
+      await refreshAgentCreditStatus({ force });
+    } catch {}
+    return extractCreditUsage(getAgentCreditStatusSnapshot()?.data);
+  };
+
+  const quotaModal = createQuotaExceededModal({
+    onRefreshStatus: () => refreshCreditStatus({ force: true }),
+  });
+
+  const setQuotaModalUsage = async ({ forceRefresh = false } = {}) => {
+    const fromCache = extractCreditUsage(getAgentCreditStatusSnapshot()?.data);
+    if (fromCache && !forceRefresh) {
+      quotaModal.setUsage(fromCache);
+      return fromCache;
+    }
+
+    const refreshed = await refreshCreditStatus({ force: true });
+    if (refreshed) {
+      quotaModal.setUsage(refreshed);
+      return refreshed;
+    }
+
+    if (fromCache) {
+      quotaModal.setUsage(fromCache);
+      return fromCache;
+    }
+
+    return null;
+  };
+
+  const openQuotaModal = async ({ forceRefresh = false, mode = null } = {}) => {
+    const usage = await setQuotaModalUsage({ forceRefresh });
+    const resolvedMode = mode || (hasNoCreditsAccess(usage) ? "no_access" : "quota_exceeded");
+    quotaModal.open(usage, { mode: resolvedMode });
+    trackEvent("quota_exceeded_shown", {
+      mode: resolvedMode,
+      daily_used: toSafeInt(usage?.daily_used),
+      daily_cap: toSafeInt(usage?.daily_cap),
+      monthly_used: toSafeInt(usage?.monthly_used),
+      monthly_cap: toSafeInt(usage?.monthly_cap),
+    });
+    setPaywallVisible(false);
+  };
+
+  const closeQuotaModal = () => {
+    quotaModal.close();
+  };
+
+  quotaModal.node.addEventListener("quota-modal:open", () => {
+    container.classList.add("is-quota-modal-open");
+  });
+
+  quotaModal.node.addEventListener("quota-modal:close", () => {
+    container.classList.remove("is-quota-modal-open");
+  });
+
+  const buildSendContext = (contextOverrides = null) => {
+    const normalizedOverrides = isObject(contextOverrides) ? contextOverrides : {};
+    const selectedBotIds = normalizeSelectedBotIds(
+      Array.isArray(normalizedOverrides.selectedBotIds)
+        ? normalizedOverrides.selectedBotIds
+        : botContextPicker.getSelectedBotIds()
+    );
+    const contextKey = getContextKey(selectedBotIds);
+    const resolvedConversationId =
+      Object.prototype.hasOwnProperty.call(normalizedOverrides, "conversationId")
+        ? normalizedOverrides.conversationId || null
+        : conversationsByContext.get(contextKey) || null;
+    const chatMode = normalizeChatMode(normalizedOverrides.chatMode ?? modePicker.getMode());
+    const activeBotId = selectedBotIds.length === 1 ? selectedBotIds[0] : null;
+
+    return {
+      selectedBotIds,
+      contextKey,
+      conversationId: resolvedConversationId,
+      chatMode,
+      activeBotId,
+    };
+  };
+
+  const toRetryPayload = ({ text, sendContext }) => ({
+    text,
+    selectedBotIds: sendContext.selectedBotIds,
+    chatMode: sendContext.chatMode,
+    conversationId: sendContext.conversationId,
+  });
+
+  const getSendDedupKey = ({ text, sendContext }) =>
+    `${sendContext.contextKey}::${sendContext.conversationId || "new"}::${sendContext.chatMode}::${text}`;
+
+  const clearInflightRequest = (requestState) => {
+    if (!requestState || typeof requestState !== "object") return;
+    inflightRequestsById.delete(requestState.requestId);
+    const keyOwnerId = inflightRequestIdByKey.get(requestState.dedupKey);
+    if (keyOwnerId === requestState.requestId) {
+      inflightRequestIdByKey.delete(requestState.dedupKey);
+    }
+  };
+
+  const cancelInflightRequest = (requestState) => {
+    if (!requestState || typeof requestState !== "object" || requestState.canceled) return;
+    requestState.canceled = true;
+    clearInflightRequest(requestState);
+    agentDockStore.removeMessage(requestState.optimisticMessageId);
+  };
+
+  const executeSendMessage = async ({ text, sendContext, clientRequestId, isCanceled }) => {
+    try {
+      const access = await getAiFeatureAccess();
+      if (!access.allowed) {
+        if (isCanceled()) return { accepted: false, reason: "canceled" };
+        const reason = access.reason || PAYWALL_REASON_AI_LOCKED;
+        setPaywallVisible(true, reason);
+        closeQuotaModal();
+        agentDockStore.addMessage({
+          role: "assistant",
+          content: PAYWALL_COPY[reason]?.assistant || PAYWALL_COPY[PAYWALL_REASON_AI_LOCKED].assistant,
+        });
+        return { accepted: false, reason: "blocked" };
+      }
+
+      const userId = window.DaVeriAuth?.user?.id || null;
+      if (typeof userId !== "string" || !userId.trim()) {
+        if (isCanceled()) return { accepted: false, reason: "canceled" };
+        setPaywallVisible(true, PAYWALL_REASON_AUTH);
+        closeQuotaModal();
+        agentDockStore.addMessage({
+          role: "assistant",
+          content: PAYWALL_COPY[PAYWALL_REASON_AUTH].assistant,
+        });
+        return { accepted: false, reason: "blocked" };
+      }
+
+      const cachedUsage = extractCreditUsage(getAgentCreditStatusSnapshot()?.data);
+      if (hasNoCreditsAccess(cachedUsage)) {
+        await openQuotaModal({ forceRefresh: true, mode: "no_access" });
+        return { accepted: false, reason: "no_access" };
+      }
+
+      const rpcMeta = {
+        selected_bot_ids: sendContext.selectedBotIds,
+        mode: sendContext.chatMode,
+        client_request_id: clientRequestId,
+      };
+
+      const sendResult = await sendMessageCreditLimited({
+        conversationId: sendContext.conversationId,
+        role: "user",
+        content: text,
+        meta: rpcMeta,
+        activeBotId: sendContext.activeBotId,
+        modeDefault: sendContext.chatMode,
+      });
+
+      if (isCanceled()) {
+        return { accepted: false, reason: "canceled" };
+      }
+
+      if (!sendResult || !sendResult.message_id) {
+        await openQuotaModal({ forceRefresh: true });
+        return { accepted: false, reason: "quota" };
+      }
+
+      if (typeof sendResult.conversation_id === "string" && sendResult.conversation_id) {
+        conversationsByContext.set(sendContext.contextKey, sendResult.conversation_id);
+      }
+
+      creditHud.applyUsageSnapshot(sendResult);
+      closeQuotaModal();
+      setPaywallVisible(false);
+
+      if (!isCanceled()) {
+        const askBotId = sendContext.activeBotId || sendContext.selectedBotIds[0] || getActiveBotId();
+        try {
+          if (!askBotId) {
+            throw new Error("No bot selected for response generation");
+          }
+
+          const answer = await askAssistant(askBotId, text, sendContext.selectedBotIds);
+          if (!isCanceled()) {
+            agentDockStore.addMessage({
+              role: "assistant",
+              content: answer || "I could not generate a response right now.",
+            });
+          }
+        } catch (error) {
+          console.error("[AIWindow] ask failed", error);
+          if (!isCanceled()) {
+            agentDockStore.addMessage({
+              role: "assistant",
+              content: "The assistant is temporarily unavailable. Your message was received.",
+            });
+          }
+        }
+      }
+
+      void refreshCreditStatus({ force: true });
+
+      return { accepted: true, sendResult };
+    } catch (error) {
+      if (isCanceled()) {
+        return { accepted: false, reason: "canceled" };
+      }
+
+      const message = String(error?.message || "").toLowerCase();
+      console.error("[AIWindow] send failed", error);
+
+      if (message.includes("auth") || message.includes("jwt") || message.includes("not authenticated")) {
+        closeQuotaModal();
+        setPaywallVisible(true, PAYWALL_REASON_AUTH);
+        agentDockStore.addMessage({
+          role: "assistant",
+          content: PAYWALL_COPY[PAYWALL_REASON_AUTH].assistant,
+        });
+        return { accepted: false, reason: "blocked" };
+      }
+
+      if (message.includes("credit") || message.includes("quota") || message.includes("limit")) {
+        await openQuotaModal({ forceRefresh: true });
+        return { accepted: false, reason: "quota" };
+      }
+
+      return {
+        accepted: false,
+        reason: "send_error",
+        retryPayload: toRetryPayload({ text, sendContext }),
+      };
+    }
+  };
+
+  const setOptimisticFailed = (requestState, retryPayload) => {
+    agentDockStore.updateMessage(requestState.optimisticMessageId, {
+      status: "failed",
+      action: {
+        type: RETRY_SEND_ACTION,
+        label: "Retry",
+        payload: {
+          text: retryPayload.text,
+          selectedBotIds: normalizeSelectedBotIds(retryPayload.selectedBotIds),
+          chatMode: normalizeChatMode(retryPayload.chatMode),
+          conversationId:
+            typeof retryPayload.conversationId === "string" && retryPayload.conversationId
+              ? retryPayload.conversationId
+              : null,
+        },
+      },
+    });
+  };
+
+  const finalizeOptimisticSuccess = (requestState, sendResult) => {
+    const createdAt = Date.parse(sendResult?.message_created_at || "");
+    agentDockStore.updateMessage(requestState.optimisticMessageId, {
+      status: "sent",
+      action: null,
+      ts: Number.isFinite(createdAt) ? createdAt : Date.now(),
+    });
+  };
+
+  const startSendRequest = (content, contextOverrides = null) => {
+    const text = String(content || "").trim();
+    if (!text) return { accepted: false };
+
+    const sendContext = buildSendContext(contextOverrides);
+    const dedupKey = getSendDedupKey({ text, sendContext });
+    const existingRequestId = inflightRequestIdByKey.get(dedupKey);
+    if (existingRequestId && inflightRequestsById.has(existingRequestId)) {
+      showSendToast("This message is already sending.");
+      return { accepted: false, reason: "duplicate" };
+    }
+
+    const requestId = createClientRequestId();
+    const requestState = {
+      requestId,
+      dedupKey,
+      text,
+      sendContext,
+      optimisticMessageId: `optimistic_${requestId}`,
+      canceled: false,
+    };
+
+    inflightRequestsById.set(requestId, requestState);
+    inflightRequestIdByKey.set(dedupKey, requestId);
+
+    agentDockStore.addMessage({
+      id: requestState.optimisticMessageId,
+      role: "user",
+      content: text,
+      status: "sending",
+      action: {
+        type: CANCEL_SEND_ACTION,
+        label: "Cancel",
+        payload: {
+          request_id: requestId,
+        },
+      },
+    });
+
+    void (async () => {
+      const result = await executeSendMessage({
+        text,
+        sendContext,
+        clientRequestId: requestId,
+        isCanceled: () => Boolean(requestState.canceled),
+      });
+
+      if (requestState.canceled || result?.reason === "canceled") {
+        return;
+      }
+
+      if (result?.accepted && result.sendResult) {
+        finalizeOptimisticSuccess(requestState, result.sendResult);
+        return;
+      }
+
+      if (result?.reason === "quota") {
+        agentDockStore.removeMessage(requestState.optimisticMessageId);
+        return;
+      }
+
+      if (result?.reason === "send_error" && isObject(result.retryPayload)) {
+        showSendToast("Network/server error. Use Retry in the thread.");
+        setOptimisticFailed(requestState, result.retryPayload);
+        return;
+      }
+
+      agentDockStore.removeMessage(requestState.optimisticMessageId);
+    })().finally(() => {
+      clearInflightRequest(requestState);
+    });
+
+    return { accepted: true };
+  };
+
   const input = createAIInput({
     onActivate: () => {
       agentDockStore.setExpanded(true);
     },
-    onSend: async (content) => {
-      if (sendingMessage) return { accepted: false };
-      sendingMessage = true;
+    onSend: (content) => startSendRequest(content),
+  });
 
-      const text = String(content || "").trim();
-      if (!text) {
-        sendingMessage = false;
-        return { accepted: false };
+  const contextLine = document.createElement("div");
+  contextLine.className = "ai-context-line";
+  const updateContextLine = () => {
+    contextLine.textContent = `Context: ${botContextPicker.getContextText()}`;
+  };
+  updateContextLine();
+  botContextPicker.subscribe(updateContextLine);
+
+  const composer = document.createElement("div");
+  composer.className = "ai-composer";
+  composer.appendChild(contextLine);
+  composer.appendChild(input.node);
+
+  const modeToast = document.createElement("div");
+  modeToast.className = "ai-mode-toast";
+  modeToast.hidden = true;
+  container.appendChild(modeToast);
+
+  const sendToast = document.createElement("div");
+  sendToast.className = "ai-send-toast";
+  sendToast.hidden = true;
+  container.appendChild(sendToast);
+
+  let toastTimer = null;
+  let sendToastTimer = null;
+  const showModeToast = (label) => {
+    modeToast.textContent = `Mode set to ${label}`;
+    modeToast.hidden = false;
+    modeToast.classList.add("is-visible");
+    if (toastTimer) {
+      window.clearTimeout(toastTimer);
+      toastTimer = null;
+    }
+    toastTimer = window.setTimeout(() => {
+      modeToast.classList.remove("is-visible");
+      window.setTimeout(() => {
+        modeToast.hidden = true;
+      }, 170);
+    }, 1450);
+  };
+
+  const showSendToast = (text) => {
+    sendToast.textContent = text;
+    sendToast.hidden = false;
+    sendToast.classList.add("is-visible");
+    if (sendToastTimer) {
+      window.clearTimeout(sendToastTimer);
+      sendToastTimer = null;
+    }
+    sendToastTimer = window.setTimeout(() => {
+      sendToast.classList.remove("is-visible");
+      window.setTimeout(() => {
+        sendToast.hidden = true;
+      }, 170);
+    }, 2200);
+  };
+
+  handleRetryAction = (event) => {
+    if (!isObject(event) || !isObject(event.action)) return;
+    const actionType = String(event.action.type || "").trim();
+
+    if (actionType === CANCEL_SEND_ACTION) {
+      const payload = isObject(event.action.payload) ? event.action.payload : {};
+      const requestId = typeof payload.request_id === "string" ? payload.request_id : "";
+      const requestState = requestId ? inflightRequestsById.get(requestId) : null;
+      if (requestState) {
+        cancelInflightRequest(requestState);
+      } else if (typeof event?.message?.id === "string") {
+        agentDockStore.removeMessage(event.message.id);
       }
+      return;
+    }
 
-      const botId = getActiveBotId();
-      if (!botId) {
-        agentDockStore.addMessage({
-          role: "assistant",
-          content: "Select an active bot first to start chatting.",
-        });
-        sendingMessage = false;
-        return { accepted: false };
-      }
+    if (actionType !== RETRY_SEND_ACTION) return;
 
-      try {
-        const access = await getAiFeatureAccess();
-        if (!access.allowed) {
-          const reason = access.reason || PAYWALL_REASON_AI_LOCKED;
-          setPaywallVisible(true, reason);
-          agentDockStore.addMessage({
-            role: "assistant",
-            content: PAYWALL_COPY[reason]?.assistant || PAYWALL_COPY[PAYWALL_REASON_AI_LOCKED].assistant,
-          });
-          return { accepted: false };
-        }
+    const messageId = typeof event?.message?.id === "string" ? event.message.id : "";
+    if (messageId) {
+      agentDockStore.removeMessage(messageId);
+    }
 
-        let consumeResult = null;
-        try {
-          const userId = window.DaVeriAuth?.user?.id || null;
-          if (typeof userId !== "string" || !userId.trim()) {
-            setPaywallVisible(true, PAYWALL_REASON_AUTH);
-            agentDockStore.addMessage({
-              role: "assistant",
-              content: PAYWALL_COPY[PAYWALL_REASON_AUTH].assistant,
-            });
-            return { accepted: false };
-          }
-          consumeResult = await consumeMessageCredit(1, userId);
-        } catch (error) {
-          console.error("[AIWindow] consume_message_credit failed", {
-            code: error?.code || null,
-            message: error?.message || "unknown_error",
-          });
-          const fallbackCredits = getAccountState()?.credits || null;
-          const fallbackRemaining = Number(fallbackCredits?.remaining);
-          const fallbackUnlimited = fallbackCredits?.monthly_limit === null;
-          const fallbackCapacity = Number(fallbackCredits?.capacity);
-          const fallbackPlanId = normalizePlanId(fallbackCredits?.plan_id || access.planId || "");
-          const fallbackPaidPlan = isPaidPlanId(fallbackPlanId);
-          const fallbackHasCapacity = Number.isFinite(fallbackCapacity) && fallbackCapacity > 0;
-          const canProceed =
-            fallbackUnlimited ||
-            (Number.isFinite(fallbackRemaining) && fallbackRemaining > 0) ||
-            (fallbackPaidPlan && !fallbackHasCapacity);
+    const retryPayload = isObject(event.action.payload) ? event.action.payload : {};
+    const retryText = typeof retryPayload.text === "string" ? retryPayload.text.trim() : "";
+    if (!retryText) return;
 
-          if (!canProceed) {
-            agentDockStore.addMessage({
-              role: "assistant",
-              content: "Nie moge teraz potwierdzic limitu. Sprobuj ponownie za chwile.",
-            });
-            return { accepted: false };
-          }
-        }
+    const contextOverrides = {
+      selectedBotIds: normalizeSelectedBotIds(retryPayload.selectedBotIds),
+      chatMode: normalizeChatMode(retryPayload.chatMode),
+      conversationId:
+        typeof retryPayload.conversationId === "string" && retryPayload.conversationId
+          ? retryPayload.conversationId
+          : null,
+    };
 
-        if (consumeResult?.allowed !== true && consumeResult) {
-          const status = isObject(consumeResult?.status) ? consumeResult.status : {};
-          const remaining = Number(status?.remaining);
-          const unlimited = status?.monthly_limit === null;
-          const degraded = consumeResult?.raw?.degraded === true;
-          const capacity = Number(status?.capacity);
-          const planId = normalizePlanId(status?.plan_id || access.planId || getAccountState()?.credits?.plan_id || "");
-          const paidPlan = isPaidPlanId(planId);
-          const hasCapacity = Number.isFinite(capacity) && capacity > 0;
-          const canProceed =
-            unlimited ||
-            (Number.isFinite(remaining) && remaining > 0) ||
-            degraded ||
-            (paidPlan && !hasCapacity);
+    startSendRequest(retryText, contextOverrides);
+  };
 
-          if (!canProceed) {
-            setPaywallVisible(true, PAYWALL_REASON_CREDITS);
-            agentDockStore.addMessage({
-              role: "assistant",
-              content: PAYWALL_COPY[PAYWALL_REASON_CREDITS].assistant,
-            });
-            return { accepted: false };
-          }
-        }
-
-        setPaywallVisible(false);
-        agentDockStore.addMessage({ role: "user", content: text });
-
-        try {
-          const answer = await askAssistant(botId, text);
-          agentDockStore.addMessage({
-            role: "assistant",
-            content: answer || "I could not generate a response right now.",
-          });
-        } catch (error) {
-          console.error("[AIWindow] ask failed", error);
-          agentDockStore.addMessage({
-            role: "assistant",
-            content: "The assistant is temporarily unavailable. Your message was received.",
-          });
-        } finally {
-          try {
-            await refreshCredits();
-          } catch (error) {
-            console.warn("[AIWindow] credit refresh failed", error);
-          }
-        }
-
-        return { accepted: true };
-      } finally {
-        sendingMessage = false;
-      }
-    },
+  applyChatModeToUi(container, modePicker.getMode());
+  modePicker.subscribe((event) => {
+    applyChatModeToUi(container, event?.mode || "advisor");
+    if (event?.source === "user") {
+      showModeToast(event.label || "Read only");
+    }
   });
 
   paywallCloseBtn?.addEventListener("click", () => {
@@ -403,6 +864,10 @@ const createAIWindowNode = () => {
 
   paywallUpgradeBtn?.addEventListener("click", async () => {
     if (upgrading) return;
+    trackEvent("upgrade_clicked", {
+      source: "paywall",
+      reason: paywallReason,
+    });
     upgrading = true;
     paywallUpgradeBtn.disabled = true;
     paywallUpgradeBtn.textContent = "Upgrading...";
@@ -462,10 +927,12 @@ const createAIWindowNode = () => {
 
   messagesWrap.appendChild(messages.node);
   container.appendChild(minimize);
+  container.appendChild(chatHeader);
   container.appendChild(messagesWrap);
-  container.appendChild(input.node);
+  container.appendChild(composer);
   container.appendChild(footer);
   container.appendChild(paywall);
+  container.appendChild(quotaModal.node);
   windowNode.appendChild(container);
 
   document.addEventListener("keydown", (event) => {
@@ -477,12 +944,18 @@ const createAIWindowNode = () => {
       if (paywallVisible) {
         setPaywallVisible(false);
       }
+      if (quotaModal.isOpen()) {
+        closeQuotaModal();
+      }
     }
   });
 
   const sync = (state) => {
     if (!state.isExpanded && paywallVisible) {
       setPaywallVisible(false);
+    }
+    if (!state.isExpanded && quotaModal.isOpen()) {
+      closeQuotaModal();
     }
     applyState(windowNode, state);
     messages.render(state.messages);
