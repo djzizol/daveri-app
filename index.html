@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/marketing-shell.css">
     <style>
         * {
             margin: 0;
@@ -41,9 +42,9 @@
             margin: 0 auto;
             padding: 14px 22px;
             display: flex;
-            justify-content: flex-start;
+            justify-content: space-between;
             align-items: center;
-            gap: 28px;
+            gap: 16px;
         }
         
         .navbar.shrink .navbar-inner {
@@ -116,7 +117,51 @@
         .btn-area {
             display: flex;
             align-items: center;
+            margin-left: auto;
             gap: 8px;
+        }
+
+        .nav-auth-btn {
+            height: 38px;
+            padding: 0 16px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid transparent;
+            transition: background-color .18s, border-color .18s, color .18s, transform .18s, box-shadow .18s;
+        }
+
+        .nav-auth-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .nav-auth-btn-outline {
+            color: #f8fafc;
+            border-color: rgba(148,163,184,.35);
+            background: rgba(15,23,42,.75);
+        }
+
+        .nav-auth-btn-outline:hover {
+            border-color: rgba(148,163,184,.55);
+            background: rgba(15,23,42,.95);
+            box-shadow: 0 10px 28px rgba(0,0,0,.45);
+        }
+
+        .nav-auth-btn-solid {
+            color: #020617;
+            border-color: #f8fafc;
+            background: #f8fafc;
+            box-shadow: 0 12px 30px rgba(0,0,0,.4);
+        }
+
+        .nav-auth-btn-solid:hover {
+            background: #ffffff;
+            border-color: #ffffff;
+            box-shadow: 0 14px 34px rgba(0,0,0,.52);
         }
         
         .nav-btn {
@@ -264,8 +309,15 @@
             .nav-menu {
                 display: none;
             }
+            .logo-img {
+                height: 46px;
+            }
             .btn-area {
-                display: none;
+                gap: 6px;
+            }
+            .nav-auth-btn {
+                height: 36px;
+                padding: 0 14px;
             }
         }
         
@@ -1494,75 +1546,16 @@
     <!-- Nawigacja -->
     <div class="navbar" id="navbar">
         <div class="navbar-inner">
-            <div class="navbar-logo" onclick="window.location.href='/'">
+            <a class="navbar-logo" data-marketing-path="/" href="/">
                 <img
                     src="https://d98a890ebc03293bc70c4f2e92e9e2e5.cdn.bubble.io/f1767564819792x710725775517473700/DaVeri.png"
                     class="logo-img logo-animate"
                     alt="DaVeri">
-            </div>
-            
-            <div class="nav-menu">
-                <a href="https://daveri.io/plan" class="menu-item" data-i18n="nav.plans"></a>
-                <a href="https://daveri.io/jak_to_dzia_a" class="menu-item" data-i18n="nav.howItWorks"></a>
-                <a href="https://daveri.io/kontakt" class="menu-item" data-i18n="nav.contact"></a>
-                <a href="https://daveri.io/polityka" class="menu-item" data-i18n="nav.privacy"></a>
-                <a href="https://daveri.io/regulamin" class="menu-item" data-i18n="nav.terms"></a>
-            </div>
+            </a>
             
             <div class="btn-area">
-                <div class="language-dropdown-container" data-lang-dropdown>
-                    <div class="language-selector" data-lang-current>
-                        <img class="language-flag" data-lang-current-flag src="/assets/flags/en.svg" alt="" width="20" height="14" />
-                        <span data-lang-current-label>English</span>
-                        <span class="lang-arrow">▼</span>
-                    </div>
-                    <div class="language-dropdown" data-lang-menu>
-                        <div class="language-option" data-lang="en">
-                            <img src="/assets/flags/en.svg" class="language-flag" alt="" width="20" height="14" />
-                            <span>English</span>
-                        </div>
-                        <div class="language-option" data-lang="pl">
-                            <img src="/assets/flags/pl.svg" class="language-flag" alt="" width="20" height="14" />
-                            <span>Polski</span>
-                        </div>
-                        <div class="language-option" data-lang="de">
-                            <img src="/assets/flags/de.svg" class="language-flag" alt="" width="20" height="14" />
-                            <span>Deutsch</span>
-                        </div>
-                        <div class="language-option" data-lang="fr">
-                            <img src="/assets/flags/fr.svg" class="language-flag" alt="" width="20" height="14" />
-                            <span>Français</span>
-                        </div>
-                        <div class="language-option" data-lang="es">
-                            <img src="/assets/flags/es.svg" class="language-flag" alt="" width="20" height="14" />
-                            <span>Español</span>
-                        </div>
-                        <div class="language-option" data-lang="pt">
-                            <img src="/assets/flags/pt.svg" class="language-flag" alt="" width="20" height="14" />
-                            <span>Português</span>
-                        </div>
-                    </div>
-                </div>
-                <!-- Przycisk logowania (domyślnie widoczny) -->
-                <button class="nav-btn" id="login-btn" onclick="startGoogleLogin()" data-i18n="nav.login"></button>
-                
-                <!-- Dropdown dla zalogowanego użytkownika (domyślnie ukryty) -->
-                <div id="user-dropdown" style="display: none;">
-                    <div class="nav-btn" id="user-menu-btn" style="padding: 0; width: 40px; height: 40px;">
-                        <span id="user-initials">U</span>
-                    </div>
-                    <div id="user-dropdown-menu">
-                        <div class="dropdown-item" style="font-weight: 600; color: #f9fafb;">
-                            <div id="dropdown-email"></div>
-                        </div>
-                        <div class="dropdown-divider"></div>
-                        <a href="/dashboard/" class="dropdown-item">Dashboard</a>
-                        <a href="/dashboard/#boty" class="dropdown-item">Moje boty</a>
-                        <a href="/dashboard/#pliki" class="dropdown-item">Pliki wiedzy</a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" data-auth-logout class="dropdown-item" style="color: #fb7185;">Wyloguj</a>
-                    </div>
-                </div>
+                <a class="nav-auth-btn nav-auth-btn-outline" data-login-link data-marketing-path="/login/" href="/login/">Log In</a>
+                <a class="nav-auth-btn nav-auth-btn-solid" data-signup-link data-marketing-path="/login/" href="/login/">Sign Up</a>
             </div>
         </div>
     </div>
@@ -1893,9 +1886,10 @@
             </div>
         </section>
     </main>
+    <div data-marketing-footer-host></div>
 
     <script type="module" src="/js/language.js"></script>
-    <script type="module" src="/js/lang-dropdown.js"></script>
+    <script type="module" src="/js/marketing-shell.js"></script>
 
     <!-- SYSTEM AUTORYZACJI I INTERAKCJI -->
     <script>
@@ -1903,6 +1897,7 @@
     let isLoggedIn = false;
     const LOGIN_REDIRECT_KEY = 'daveri_login_redirect';
     const SUPABASE_CLIENT_MODULE_PATH = '/js/supabaseClient.js';
+    const SUPPORTED_LANGS = new Set(['en', 'pl', 'de', 'fr', 'es', 'pt']);
     let supabaseClientPromise = null;
     let authStateListenerBound = false;
 
@@ -1925,9 +1920,14 @@
     }
 
     function updateLandingLinks() {
+        const loginUrl = buildLangUrl('/login/');
         const dashboardUrl = buildLangUrl('/dashboard/');
         const botsUrl = buildLangUrl('/dashboard/', '#boty');
         const filesUrl = buildLangUrl('/dashboard/', '#pliki');
+
+        document.querySelectorAll('[data-login-link], [data-signup-link]').forEach((link) => {
+            link.href = loginUrl;
+        });
 
         document.querySelectorAll('#user-dropdown-menu a[href="/dashboard/"]').forEach((link) => {
             link.href = dashboardUrl;
@@ -1942,6 +1942,10 @@
         const welcomeDashboard = document.querySelector('.welcome-btn-primary[href="/dashboard/"]');
         if (welcomeDashboard) {
             welcomeDashboard.href = dashboardUrl;
+        }
+
+        if (window.DaVeriMarketingShell?.refreshLinks) {
+            window.DaVeriMarketingShell.refreshLinks();
         }
     }
 
@@ -2035,6 +2039,33 @@
         return false;
     }
 
+    function stripLanguagePrefix(pathname = '/') {
+        const segments = String(pathname || '/').split('/').filter(Boolean);
+        if (segments.length > 0 && SUPPORTED_LANGS.has(segments[0])) {
+            segments.shift();
+        }
+        return segments.length ? `/${segments.join('/')}` : '/';
+    }
+
+    function isDashboardPath(pathname = window.location.pathname) {
+        const normalized = stripLanguagePrefix(pathname).replace(/\/+$/, '') || '/';
+        return normalized === '/dashboard';
+    }
+
+    function redirectAuthenticatedLandingUser() {
+        if (isDashboardPath(window.location.pathname)) {
+            return false;
+        }
+
+        const normalized = stripLanguagePrefix(window.location.pathname).replace(/\/+$/, '') || '/';
+        if (normalized !== '/') {
+            return false;
+        }
+
+        window.location.replace(buildLangUrl('/dashboard/'));
+        return true;
+    }
+
     async function initAuthStateListener() {
         if (authStateListenerBound) return;
 
@@ -2048,9 +2079,12 @@
             console.groupEnd();
 
             if (session?.user) {
+                if (redirectAuthenticatedLandingUser()) {
+                    return;
+                }
+
                 const mappedUser = mapSessionUser(session.user);
                 isLoggedIn = true;
-                updateNavbarForLoggedUser(mappedUser);
                 updateCTAButton(mappedUser);
                 return;
             }
@@ -2081,14 +2115,16 @@
                 const mappedUser = mapSessionUser(session.user);
                 console.log('[LANDING] zalogowany user:', mappedUser.email);
 
-                isLoggedIn = true;
-                updateNavbarForLoggedUser(mappedUser);
-                updateCTAButton(mappedUser);
-                showWelcomeNotification(mappedUser);
-
                 if (handlePostLoginRedirect()) {
                     return true;
                 }
+
+                if (redirectAuthenticatedLandingUser()) {
+                    return true;
+                }
+
+                isLoggedIn = true;
+                updateCTAButton(mappedUser);
 
                 return true;
             }
