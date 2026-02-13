@@ -1,4 +1,4 @@
-import { callRpcRecord } from "./supabaseClient.js";
+import { callRpcRecord, supabase } from "./supabaseClient.js";
 
 const CREDIT_STATUS_RPC = "daveri_agent_credit_status";
 const CACHE_TTL_MS = 45_000;
@@ -110,6 +110,25 @@ export const refreshAgentCreditStatus = async ({ force = false } = {}) => {
 
   state.inFlight = (async () => {
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+
+      console.group("[RPC DEBUG]");
+      console.log("rpc:", CREDIT_STATUS_RPC);
+      console.log("session exists:", Boolean(sessionData?.session));
+      console.log("user id:", sessionData?.session?.user?.id);
+      console.log(
+        "access_token prefix:",
+        typeof sessionData?.session?.access_token === "string"
+          ? sessionData.session.access_token.slice(0, 12)
+          : undefined
+      );
+      console.groupEnd();
+
+      if (!sessionData?.session?.access_token) {
+        console.warn("[RPC BLOCKED] No Supabase session");
+        return null;
+      }
+
       const record = await callRpcRecord(CREDIT_STATUS_RPC);
       const normalized = normalizeCreditStatus(record);
       state.data = normalized;
@@ -141,4 +160,3 @@ export const applyAgentCreditUsageSnapshot = (payload) => {
   emit();
   return normalized;
 };
-

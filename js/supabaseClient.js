@@ -30,6 +30,31 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
+if (typeof window !== "undefined") {
+  supabase.auth.onAuthStateChange((event, session) => {
+    console.group("[SUPABASE AUTH STATE]");
+    console.log("event:", event);
+    console.log("session exists:", Boolean(session));
+    console.log("user id:", session?.user?.id);
+    console.log(
+      "access_token prefix:",
+      typeof session?.access_token === "string" ? session.access_token.slice(0, 12) : undefined
+    );
+    console.groupEnd();
+  });
+
+  supabase.auth.getSession().then(({ data }) => {
+    console.group("[SUPABASE AUTH INIT]");
+    console.log("session exists:", Boolean(data?.session));
+    console.log("user id:", data?.session?.user?.id);
+    console.log(
+      "access_token prefix:",
+      typeof data?.session?.access_token === "string" ? data.session.access_token.slice(0, 12) : undefined
+    );
+    console.groupEnd();
+  });
+}
+
 export const getCurrentUserId = () => {
   const fromAuth = window?.DaVeriAuth?.user?.id;
   if (typeof fromAuth === "string" && fromAuth.trim()) return fromAuth.trim();
