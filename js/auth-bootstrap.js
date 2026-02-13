@@ -1,64 +1,162 @@
-const AUTH_ENDPOINT = "https://api.daveri.io/auth/me";
+import {
+  getAuthSnapshot,
+  getLoginUrl,
+  initAuthStore,
+  isLoginRoute,
+  subscribeAuthState,
+} from "./auth-store.js";
 
-const getLanguageApi = () => window?.DaVeriLanguage;
+const AUTH_LOADER_ID = "daveri-auth-loader";
+const LOGIN_REDIRECT_KEY = "daveri_login_redirect";
 
-const getLanguageFromPath = () => {
-  if (typeof window === "undefined") return "en";
-  const segments = window.location.pathname.split("/").filter(Boolean);
-  const candidate = segments[0];
-  if (["en", "pl", "de", "fr", "es", "pt"].includes(candidate)) {
-    return candidate;
+const createAuthLoader = () => {
+  if (typeof document === "undefined") return null;
+  if (document.getElementById(AUTH_LOADER_ID)) {
+    return document.getElementById(AUTH_LOADER_ID);
   }
-  return "en";
+
+  const loader = document.createElement("div");
+  loader.id = AUTH_LOADER_ID;
+  loader.style.position = "fixed";
+  loader.style.inset = "0";
+  loader.style.zIndex = "2147483646";
+  loader.style.display = "grid";
+  loader.style.placeItems = "center";
+  loader.style.background = "rgba(8, 10, 16, 0.78)";
+  loader.style.backdropFilter = "blur(2px)";
+  loader.style.color = "#e5e7eb";
+  loader.style.fontFamily = "Inter, system-ui, -apple-system, Segoe UI, sans-serif";
+  loader.style.fontSize = "14px";
+  loader.style.letterSpacing = "0.02em";
+  loader.textContent = "Checking session...";
+  document.body.appendChild(loader);
+  return loader;
 };
 
-const getLoginUrl = () => {
-  const langApi = getLanguageApi();
-  if (langApi?.buildLanguageUrl) {
-    return langApi.buildLanguageUrl(langApi.getCurrentLanguage?.() || getLanguageFromPath(), { pathname: "/login/" });
-  }
-  return `/${getLanguageFromPath()}/login/`;
+const hideNode = (node) => {
+  if (!node) return;
+  node.hidden = true;
+  node.style.display = "none";
 };
 
-const ensureAuthReady = () => {
-  if (typeof window === "undefined") {
-    return Promise.resolve({ logged: false });
+const showNode = (node, display = "") => {
+  if (!node) return;
+  node.hidden = false;
+  node.style.display = display;
+};
+
+const resolveWindowAuthObject = (readyPromise) => {
+  window.DaVeriAuth = window.DaVeriAuth || {};
+  window.DaVeriAuth.ready = readyPromise;
+  window.DaVeriAuth.getSnapshot = getAuthSnapshot;
+  window.DaVeriAuth.session = null;
+  window.DaVeriAuth.user = null;
+  window.DaVeriAuth.isAuthReady = false;
+  return window.DaVeriAuth;
+};
+
+const applyAuthScreenState = (snapshot) => {
+  const authScreen = document.getElementById("auth-screen");
+  const pageWrapper = document.getElementById("page-wrapper");
+  if (!authScreen && !pageWrapper) return;
+
+  if (!snapshot?.isAuthReady) {
+    if (authScreen) showNode(authScreen, "");
+    if (pageWrapper) hideNode(pageWrapper);
+    return;
   }
 
-  if (window.DaVeriAuth?.ready) {
-    return window.DaVeriAuth.ready;
+  if (snapshot?.session?.user) {
+    if (authScreen) hideNode(authScreen);
+    if (pageWrapper) showNode(pageWrapper, "flex");
+    return;
   }
 
-  const ready = (async () => {
-    const response = await fetch(AUTH_ENDPOINT, { credentials: "include" });
-    if (!response.ok) {
-      throw new Error("Not authenticated");
-    }
-    const data = await response.json();
-    if (!data?.logged) {
-      throw new Error("Not authenticated");
-    }
-    return data;
-  })();
+  if (authScreen) showNode(authScreen, "");
+  if (pageWrapper) hideNode(pageWrapper);
+};
 
-  window.DaVeriAuth = { ready };
+const redirectToLogin = () => {
+  try {
+    localStorage.setItem(LOGIN_REDIRECT_KEY, window.location.href);
+  } catch {}
+  window.location.href = getLoginUrl();
+};
 
-  ready
-    .then((data) => {
-      window.DaVeriAuth.user = data.user;
-      window.DaVeriAuth.payload = data;
-      window.DaVeriAuth.supabase = data?.supabase || data?.supabase_session || data?.session || null;
-      document.dispatchEvent(new CustomEvent("auth:ready", { detail: data }));
-    })
-    .catch((error) => {
-      document.dispatchEvent(new CustomEvent("auth:failed", { detail: { error } }));
-      const authScreen = document.getElementById("auth-screen");
-      if (!authScreen) {
-        window.location.href = getLoginUrl();
+const bootAuth = () => {
+  const loginPage = isLoginRoute();
+  const hasAuthScreen = Boolean(document.getElementById("auth-screen"));
+  const requiresAuth = !loginPage;
+  const loader = requiresAuth && !hasAuthScreen ? createAuthLoader() : null;
+
+  let readySettled = false;
+  let resolveReady;
+  let rejectReady;
+
+  const ready = new Promise((resolve, reject) => {
+    resolveReady = resolve;
+    rejectReady = reject;
+  });
+  ready.catch(() => {});
+
+  const authObject = resolveWindowAuthObject(ready);
+
+  const syncAuthObject = (snapshot) => {
+    authObject.session = snapshot?.session || null;
+    authObject.user = snapshot?.session?.user || snapshot?.user || null;
+    authObject.isAuthReady = snapshot?.isAuthReady === true;
+    applyAuthScreenState(snapshot);
+  };
+
+  const handleSnapshot = (snapshot) => {
+    syncAuthObject(snapshot);
+
+    if (!snapshot?.isAuthReady) {
+      return;
+    }
+
+    if (loader) {
+      loader.remove();
+    }
+
+    if (snapshot?.session?.user) {
+      document.dispatchEvent(new CustomEvent("auth:ready", { detail: snapshot }));
+      if (!readySettled) {
+        readySettled = true;
+        resolveReady(snapshot);
       }
-    });
+      return;
+    }
 
-  return ready;
+    const authError = snapshot?.error || new Error("Not authenticated");
+    document.dispatchEvent(
+      new CustomEvent("auth:failed", {
+        detail: {
+          error: authError,
+          state: snapshot,
+        },
+      })
+    );
+
+    if (!readySettled) {
+      readySettled = true;
+      rejectReady(authError);
+    }
+
+    if (requiresAuth) {
+      redirectToLogin();
+    }
+  };
+
+  subscribeAuthState(handleSnapshot);
+  handleSnapshot(getAuthSnapshot());
+  void initAuthStore().then((snapshot) => handleSnapshot(snapshot));
 };
 
-ensureAuthReady();
+if (typeof window !== "undefined") {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootAuth, { once: true });
+  } else {
+    bootAuth();
+  }
+}

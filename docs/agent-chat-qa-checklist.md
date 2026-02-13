@@ -86,3 +86,16 @@ When E2E is added, implement minimum:
 1. `success send`: optimistic -> sent, single message persisted, usage refresh.
 2. `quota exceeded`: mocked `rpc` returns `[]`, optimistic removed, quota modal visible.
 
+## Auth Migration Checklist (Supabase-only)
+
+1. Sign up with email/password on `/login`.
+2. In Supabase dashboard -> Auth -> Users, confirm user exists.
+3. Sign in on `/login` with the same user.
+4. In browser console, verify auth logs show `session exists: true`.
+5. In browser Network, verify RPC calls use `Authorization: Bearer eyJ...`.
+6. In DB `public.users`, verify row exists:
+   - `id = <auth.uid() as text>`
+   - `email = <auth user email>`
+7. Open dashboard/chat and confirm no `401`/`42501` in network for credit RPC path.
+8. Click logout in sidebar.
+9. Confirm redirect to `/login` and protected pages redirect back to login when opened directly.

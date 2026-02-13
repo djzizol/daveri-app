@@ -1081,17 +1081,14 @@ body {
   <script type="module" src="../js/language.js"></script>
   <script type="module" src="../js/lang-dropdown.js"></script>
   <script type="module" src="../js/auth-bootstrap.js"></script>
-
-  <!-- SYSTEM AUTORYZACJI - wykonuje siĂ„â„˘ jako pierwszy -->
+  <!-- Dashboard auth bootstrap -->
   <script>
-  (async function checkAuth() {
-    console.log('Ä‘Ĺşâ€ťÂ Dashboard: sprawdzam sesjĂ„â„˘...');
-
-    const getLanguage = () => window.DaVeriLanguage?.getCurrentLanguage?.() || 'en';
+  (async function bootstrapDashboardAuth() {
+    const getLanguage = () => window.DaVeriLanguage?.getCurrentLanguage?.() || "en";
     const buildLoginUrl = () => {
       const langApi = window.DaVeriLanguage;
       if (langApi?.buildLanguageUrl) {
-        return langApi.buildLanguageUrl(getLanguage(), { pathname: '/login/' });
+        return langApi.buildLanguageUrl(getLanguage(), { pathname: "/login/" });
       }
       return `/${getLanguage()}/login/`;
     };
@@ -1100,49 +1097,48 @@ body {
       if (window.DaVeriAuth?.ready) {
         return window.DaVeriAuth.ready;
       }
+
       return new Promise((resolve, reject) => {
-        const handleReady = (event) => {
+        const onReady = (event) => {
           cleanup();
-          resolve(event.detail);
+          resolve(event.detail || {});
         };
-        const handleFailed = (event) => {
+        const onFailed = (event) => {
           cleanup();
-          reject(event.detail?.error || new Error('Not authenticated'));
+          reject(event.detail?.error || new Error("Not authenticated"));
         };
         const cleanup = () => {
-          document.removeEventListener('auth:ready', handleReady);
-          document.removeEventListener('auth:failed', handleFailed);
+          document.removeEventListener("auth:ready", onReady);
+          document.removeEventListener("auth:failed", onFailed);
         };
-        document.addEventListener('auth:ready', handleReady, { once: true });
-        document.addEventListener('auth:failed', handleFailed, { once: true });
+
+        document.addEventListener("auth:ready", onReady, { once: true });
+        document.addEventListener("auth:failed", onFailed, { once: true });
       });
     };
 
     try {
-      const data = await waitForAuth();
-      console.log('Dane sesji:', data);
-
-      console.log('Ă˘Ĺ›â€¦ ZALOGOWANY jako:', data.user.email);
-
-      const root = document.getElementById('panel_root');
-      if (root) {
-        root.dataset.userId = data.user.id || data.user.email || "";
+      const auth = await waitForAuth();
+      const user = auth?.session?.user || auth?.user || null;
+      const root = document.getElementById("panel_root");
+      if (root && user?.id) {
+        root.dataset.userId = user.id;
       }
 
-      document.getElementById('auth-screen').style.display = 'none';
-      document.getElementById('page-wrapper').style.display = 'flex';
+      const authScreen = document.getElementById("auth-screen");
+      const pageWrapper = document.getElementById("page-wrapper");
+      if (authScreen) authScreen.style.display = "none";
+      if (pageWrapper) pageWrapper.style.display = "flex";
 
-      if (typeof initPanel === 'function') initPanel();
+      if (typeof initPanel === "function") initPanel();
     } catch (error) {
-      console.error('Ă˘ĹĄĹš BÄąâ€šĂ„â€¦d autoryzacji:', error);
-
-      const authMessage = document.getElementById('auth-message');
+      const authMessage = document.getElementById("auth-message");
       if (authMessage) {
         authMessage.innerHTML = `
           <p style="color: var(--dv-burg); margin-bottom: 15px;" data-i18n="dashboard.auth.notLoggedIn"></p>
-          <button onclick="window.location.href='https://api.daveri.io/auth/google'" 
+          <button onclick="window.location.href='${buildLoginUrl()}'"
                   style="padding: 10px 20px; background: var(--dv-grad); border: none; border-radius: var(--dv-radius-sm); color: white; font-weight: 600; cursor: pointer;">
-            Zaloguj przez Google
+            Go to login
           </button>
           <p style="margin-top: 15px; font-size: 12px;">
             <a href="javascript:location.reload()" style="color: var(--dv-muted); text-decoration: underline;" data-i18n="dashboard.auth.refresh"></a>
@@ -1154,8 +1150,7 @@ body {
     }
   })();
   </script>
-
-  <!-- Particles Animation -->
+<!-- Particles Animation -->
   <script>
   (function() {
     'use strict';
@@ -1634,6 +1629,7 @@ body {
   <script type="module" src="../js/i18n.js"></script>
 </body>
 </html>
+
 
 
 

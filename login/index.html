@@ -225,173 +225,116 @@ src="/assets/logo.png">
   <span id="i18n-auth-signup-error" data-i18n="auth.errors.signupFailed"></span>
 </div>
 
-<script>
+<script type="module">
+import { supabase } from "../js/supabaseClient.js";
+import { getDashboardUrl } from "../js/auth-store.js";
+
 const i18nText = (id) => document.getElementById(id)?.textContent || "";
 const LOGIN_REDIRECT_KEY = "daveri_login_redirect";
 
-const getLanguageApi = () => window.DaVeriLanguage;
-
-const getActiveLanguage = () =>
-  getLanguageApi()?.getCurrentLanguage?.() || document.documentElement.lang || "en";
-
-const buildLangUrl = (pathname) => {
-  const langApi = getLanguageApi();
-  if (langApi?.buildLanguageUrl) {
-    return langApi.buildLanguageUrl(getActiveLanguage(), { pathname, search: "", hash: "" });
-  }
-  const normalizedPath = pathname.startsWith("/") ? pathname : `/${pathname}`;
-  return `/${getActiveLanguage()}${normalizedPath}`;
+const readRedirectTarget = () => {
+  try {
+    const raw = localStorage.getItem(LOGIN_REDIRECT_KEY);
+    if (typeof raw === "string" && raw.trim()) {
+      localStorage.removeItem(LOGIN_REDIRECT_KEY);
+      return raw.trim();
+    }
+  } catch {}
+  return getDashboardUrl();
 };
-
-const getDashboardUrl = () => buildLangUrl("/dashboard/");
 
 const rememberLoginRedirect = () => {
   try {
     localStorage.setItem(LOGIN_REDIRECT_KEY, getDashboardUrl());
-  } catch (e) {
-    console.warn("Unable to store login redirect", e);
+  } catch {}
+};
+
+const switchView = (id) => {
+  document.querySelectorAll(".auth-view").forEach((view) => view.classList.remove("active"));
+  document.getElementById(id)?.classList.add("active");
+};
+
+const loginGoogle = async () => {
+  rememberLoginRedirect();
+  const redirectTo = new URL(readRedirectTarget(), window.location.origin).toString();
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo },
+  });
+  if (error) {
+    alert(error.message || i18nText("i18n-auth-login-error"));
   }
 };
 
+const loginEmail = async () => {
+  const email = document.getElementById("login-email")?.value?.trim() || "";
+  const password = document.getElementById("login-pass")?.value || "";
 
-/* view switch */
+  if (!email || !password) {
+    alert(i18nText("i18n-auth-missing-credentials"));
+    return;
+  }
 
-function switchView(id){
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-document
-.querySelectorAll(".auth-view")
-.forEach(v=>v.classList.remove("active"))
+  if (error) {
+    alert(error.message || i18nText("i18n-auth-login-error"));
+    return;
+  }
 
-document
-.getElementById(id)
-.classList.add("active")
+  window.location.href = readRedirectTarget();
+};
 
-}
+const signupEmail = async () => {
+  const email = document.getElementById("signup-email")?.value?.trim() || "";
+  const password = document.getElementById("signup-pass")?.value || "";
+  const legal = document.getElementById("signup-legal")?.checked === true;
 
+  if (!legal) {
+    alert(i18nText("i18n-auth-accept-terms"));
+    return;
+  }
 
-/* GOOGLE LOGIN */
+  if (!email || !password) {
+    alert(i18nText("i18n-auth-missing-credentials"));
+    return;
+  }
 
-function loginGoogle(){
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+  });
 
-rememberLoginRedirect();
-window.location.href =
-"https://api.daveri.io/auth/google"
+  if (error) {
+    alert(error.message || i18nText("i18n-auth-signup-error"));
+    return;
+  }
 
-}
+  if (data?.session) {
+    window.location.href = readRedirectTarget();
+    return;
+  }
 
+  alert("Account created. Verify your email, then sign in.");
+  switchView("login-view");
+};
 
-/* EMAIL LOGIN */
+const checkAuth = async () => {
+  const { data } = await supabase.auth.getSession();
+  if (data?.session?.user) {
+    window.location.href = readRedirectTarget();
+  }
+};
 
-async function loginEmail(){
+window.switchView = switchView;
+window.loginGoogle = loginGoogle;
+window.loginEmail = loginEmail;
+window.signupEmail = signupEmail;
 
-const email =
-document.getElementById("login-email").value
-
-const pass =
-document.getElementById("login-pass").value
-
-if(!email||!pass){
-
-alert(i18nText("i18n-auth-missing-credentials"))
-return
-
-}
-
-const res =
-await fetch(
-"https://api.daveri.io/auth/login",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({email,pass}),
-credentials:"include"
-})
-
-if(res.ok){
-
-window.location.href =
-getDashboardUrl()
-
-}else{
-
-alert(i18nText("i18n-auth-login-error"))
-
-}
-
-}
-
-
-/* EMAIL SIGNUP */
-
-async function signupEmail(){
-
-const email =
-document.getElementById("signup-email").value
-
-const pass =
-document.getElementById("signup-pass").value
-
-const legal =
-document.getElementById("signup-legal").checked
-
-if(!legal){
-
-alert(i18nText("i18n-auth-accept-terms"))
-return
-
-}
-
-const res =
-await fetch(
-"https://api.daveri.io/auth/signup",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({email,pass}),
-credentials:"include"
-})
-
-if(res.ok){
-
-window.location.href =
-getDashboardUrl()
-
-}else{
-
-alert(i18nText("i18n-auth-signup-error"))
-
-}
-
-}
-
-async function checkAuth(){
-
-try{
-
-const res =
-await fetch(
-"https://api.daveri.io/auth/me",
-{
-credentials:"include"
-})
-
-if(res.ok){
-
-window.location.href =
-getDashboardUrl()
-
-}
-
-}catch(e){}
-
-}
-
-checkAuth()
-
+void checkAuth();
 </script>
 
   <script type="module" src="../js/i18n.js"></script>

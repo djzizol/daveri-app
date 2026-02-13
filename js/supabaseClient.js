@@ -20,36 +20,6 @@ const { url: supabaseUrl, anonKey: supabaseAnonKey } = resolveSupabaseConfig();
 
 const tokenPrefix = (token) => (typeof token === "string" ? token.slice(0, 12) : undefined);
 
-const asRecord = (value) => (value && typeof value === "object" ? value : null);
-
-const extractSupabaseSessionCandidate = (payload) => {
-  const candidateSources = [];
-
-  const root = asRecord(payload);
-  if (root) {
-    candidateSources.push(root);
-    candidateSources.push(asRecord(root.supabase));
-    candidateSources.push(asRecord(root.tokens));
-    candidateSources.push(asRecord(root.supabase_tokens));
-    candidateSources.push(asRecord(root.session));
-    candidateSources.push(asRecord(root.supabase_session));
-    candidateSources.push(asRecord(root.auth));
-  }
-
-  for (const source of candidateSources) {
-    if (!source) continue;
-    if (typeof source.access_token !== "string" || !source.access_token.trim()) continue;
-    if (typeof source.refresh_token !== "string" || !source.refresh_token.trim()) continue;
-
-    return {
-      access_token: source.access_token.trim(),
-      refresh_token: source.refresh_token.trim(),
-    };
-  }
-
-  return null;
-};
-
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
@@ -61,39 +31,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     },
   },
 });
-
-const syncSupabaseSessionFromPayload = async (payload, source) => {
-  const candidate = extractSupabaseSessionCandidate(payload);
-  if (!candidate) return false;
-
-  try {
-    const { data: current } = await supabase.auth.getSession();
-    if (current?.session?.access_token === candidate.access_token) {
-      return true;
-    }
-
-    const { error } = await supabase.auth.setSession(candidate);
-    if (error) {
-      console.warn("[SUPABASE AUTH SYNC]", {
-        source,
-        error: error.message,
-      });
-      return false;
-    }
-
-    console.info("[SUPABASE AUTH SYNC]", {
-      source,
-      access_token_prefix: tokenPrefix(candidate.access_token),
-    });
-    return true;
-  } catch (error) {
-    console.warn("[SUPABASE AUTH SYNC]", {
-      source,
-      error: error?.message || String(error),
-    });
-    return false;
-  }
-};
 
 if (typeof window !== "undefined") {
   supabase.auth.onAuthStateChange((event, session) => {
@@ -111,26 +48,15 @@ if (typeof window !== "undefined") {
     console.log("user id:", data?.session?.user?.id);
     console.log("access_token prefix:", tokenPrefix(data?.session?.access_token));
     console.groupEnd();
-
-    if (!data?.session && window?.DaVeriAuth) {
-      void syncSupabaseSessionFromPayload(window.DaVeriAuth, "window.DaVeriAuth:init");
-    }
-  });
-
-  if (window?.DaVeriAuth?.ready && typeof window.DaVeriAuth.ready.then === "function") {
-    window.DaVeriAuth.ready
-      .then((payload) => syncSupabaseSessionFromPayload(payload, "DaVeriAuth.ready"))
-      .catch(() => {});
-  }
-
-  document.addEventListener("auth:ready", (event) => {
-    void syncSupabaseSessionFromPayload(event?.detail, "auth:ready");
   });
 }
 
 export const getCurrentUserId = () => {
   const fromAuth = window?.DaVeriAuth?.user?.id;
   if (typeof fromAuth === "string" && fromAuth.trim()) return fromAuth.trim();
+
+  const fromAuthStore = window?.DaVeriAuthStore?.getSnapshot?.()?.session?.user?.id;
+  if (typeof fromAuthStore === "string" && fromAuthStore.trim()) return fromAuthStore.trim();
 
   const fromSidebar = document.getElementById("daveri_sidebar")?.dataset?.userId;
   if (typeof fromSidebar === "string" && fromSidebar.trim()) return fromSidebar.trim();
@@ -156,13 +82,23 @@ export const normalizeRpcRecord = (payload) => {
 };
 
 export const callRpc = async (rpcName, args = {}) => {
-  const { data: sessionData } = await supabase.auth.getSession();
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
   console.group("[RPC DEBUG]");
   console.log("rpc:", rpcName);
   console.log("session exists:", Boolean(sessionData?.session));
   console.log("user id:", sessionData?.session?.user?.id);
   console.log("access_token prefix:", tokenPrefix(sessionData?.session?.access_token));
   console.groupEnd();
+
+  if (sessionError || !sessionData?.session?.access_token) {
+    const authError = new Error("No Supabase session");
+    authError.code = "auth_required";
+    console.warn("[RPC BLOCKED]", {
+      rpc: rpcName,
+      reason: sessionError?.message || authError.message,
+    });
+    throw authError;
+  }
 
   const { data, error } = await supabase.rpc(rpcName, args);
   if (error) {

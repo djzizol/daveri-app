@@ -1,11 +1,12 @@
 import { mountSidebarIcons } from "../components/brand/SidebarIcon.js";
-import { getApiUrl } from "./api.js";
 import {
   ensureAccountState,
   getAccountState,
   refreshCredits,
   subscribeAccountState,
 } from "./account-state.js";
+import { getLoginUrl } from "./auth-store.js";
+import { supabase } from "./supabaseClient.js";
 
 const DEFAULT_ROUTES = {
   panel: "/dashboard",
@@ -201,8 +202,14 @@ const initDropdowns = (root) => {
     }
   });
 
-  logoutBtn?.addEventListener("click", () => {
-    window.location.href = "https://api.daveri.io/auth/logout";
+  logoutBtn?.addEventListener("click", async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error("[Sidebar] signOut failed", error);
+    } finally {
+      window.location.href = getLoginUrl();
+    }
   });
 
   profileBtn?.addEventListener("click", () => {
@@ -497,70 +504,63 @@ const bindCreditStatusEvents = (root) => {
     applyPlanData(root, state?.credits || null);
   });
 };
-const loadUser = async (root, authEndpoint) => {
-  try {
-    const endpointCandidates = Array.from(
-      new Set(
-        [
-          authEndpoint,
-          getApiUrl("/auth/me"),
-          getApiUrl("/api/me"),
-        ].filter(Boolean)
-      )
-    );
-    let data = null;
-    for (const endpoint of endpointCandidates) {
-      const response = await fetch(endpoint, { credentials: "include" });
-      if (!response.ok) continue;
-      const payload = await response.json();
-      if (payload?.logged) {
-        data = payload;
-        break;
-      }
-    }
-    if (!data?.logged) {
-      applyPlanData(root, null);
-      return false;
-    }
-    const user = data.user || {};
-    if (user.id) {
-      root.dataset.userId = user.id;
-    } else if (user.email) {
-      root.dataset.userId = user.email;
-    }
-    if (user.email) {
-      root.dataset.userEmail = user.email;
-    }
-    const userName = root.querySelector("#userName");
-    const userSub = root.querySelector("#userSub");
-    const avatarBox = root.querySelector("#avatarBox");
-    if (userName) {
-      userName.textContent = user.name || user.email || "User";
-    }
-    if (userSub) {
-      userSub.textContent = user.email || "";
-    }
-    if (avatarBox) {
-      const avatarUrl = user.avatar_url || user.picture || null;
-      if (avatarUrl) {
-        avatarBox.innerHTML = `<img src="${avatarUrl}" alt="Avatar" />`;
-      } else {
-        avatarBox.textContent = getInitials(user.name || user.email || "U");
-      }
-    }
-    return true;
-  } catch (error) {
-    console.error("[Sidebar] auth load failed", error);
+const loadUser = async (root) => {
+  const sessionUser = window?.DaVeriAuth?.session?.user || window?.DaVeriAuth?.user || null;
+  if (!sessionUser) {
     applyPlanData(root, null);
     return false;
   }
+
+  const userId = typeof sessionUser.id === "string" && sessionUser.id.trim() ? sessionUser.id.trim() : null;
+  const userEmail =
+    typeof sessionUser.email === "string" && sessionUser.email.trim() ? sessionUser.email.trim() : null;
+  const userMetadata =
+    sessionUser.user_metadata && typeof sessionUser.user_metadata === "object"
+      ? sessionUser.user_metadata
+      : {};
+  const displayName =
+    (typeof userMetadata.full_name === "string" && userMetadata.full_name.trim()) ||
+    (typeof userMetadata.name === "string" && userMetadata.name.trim()) ||
+    userEmail ||
+    "User";
+  const avatarUrl =
+    (typeof userMetadata.avatar_url === "string" && userMetadata.avatar_url.trim()) ||
+    (typeof userMetadata.picture === "string" && userMetadata.picture.trim()) ||
+    null;
+
+  if (userId) {
+    root.dataset.userId = userId;
+  } else if (userEmail) {
+    root.dataset.userId = userEmail;
+  }
+  if (userEmail) {
+    root.dataset.userEmail = userEmail;
+  }
+
+  const userName = root.querySelector("#userName");
+  const userSub = root.querySelector("#userSub");
+  const avatarBox = root.querySelector("#avatarBox");
+
+  if (userName) {
+    userName.textContent = displayName;
+  }
+  if (userSub) {
+    userSub.textContent = userEmail || "";
+  }
+  if (avatarBox) {
+    if (avatarUrl) {
+      avatarBox.innerHTML = `<img src="${avatarUrl}" alt="Avatar" />`;
+    } else {
+      avatarBox.textContent = getInitials(displayName || userEmail || "U");
+    }
+  }
+
+  return true;
 };
 
 export const initSidebar = async (root, options = {}) => {
   if (!root) return;
   const routes = { ...DEFAULT_ROUTES, ...options.routes };
-  const authEndpoint = options.authEndpoint || getApiUrl("/auth/me");
-
   const sidebar = root.querySelector(".sidebar");
   if (!sidebar) return;
 
@@ -571,7 +571,7 @@ export const initSidebar = async (root, options = {}) => {
   initDropdowns(root);
   initCollapseToggle(root);
   bindCreditStatusEvents(root);
-  const isLogged = await loadUser(root, authEndpoint);
+  const isLogged = await loadUser(root);
   if (isLogged) {
     await loadCreditStatus(root);
   }
