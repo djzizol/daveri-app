@@ -125,6 +125,108 @@
   line-height: 1.7;
 }
 
+.marketing-main-page {
+  flex: 1;
+  padding: 52px 22px 72px;
+}
+
+.marketing-doc {
+  width: min(920px, 100%);
+  margin: 0 auto;
+  padding: 34px 32px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(9, 14, 27, 0.72);
+  box-shadow: 0 22px 48px rgba(2, 6, 23, 0.35);
+}
+
+.marketing-page-eyebrow {
+  margin: 0 0 10px;
+  color: var(--marketing-muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.marketing-doc h1 {
+  margin: 0 0 8px;
+  font-size: clamp(1.9rem, 3vw, 2.6rem);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+}
+
+.marketing-last-updated {
+  margin: 0 0 24px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.marketing-doc h2 {
+  margin: 30px 0 10px;
+  font-size: 1.2rem;
+  color: #f8fafc;
+}
+
+.marketing-doc h3 {
+  margin: 18px 0 8px;
+  font-size: 1rem;
+  color: #e2e8f0;
+}
+
+.marketing-doc p {
+  margin: 0 0 14px;
+  color: #cbd5e1;
+  line-height: 1.72;
+}
+
+.marketing-doc ul {
+  margin: 0 0 16px;
+  padding-left: 20px;
+  color: #cbd5e1;
+}
+
+.marketing-doc li {
+  margin: 0 0 8px;
+  line-height: 1.66;
+}
+
+.marketing-doc a {
+  color: #f8fafc;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(248, 250, 252, 0.45);
+}
+
+.marketing-doc a:hover {
+  text-decoration-color: rgba(248, 250, 252, 0.9);
+}
+
+.marketing-cta-row {
+  margin-top: 26px;
+}
+
+.marketing-cta-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid #f8fafc;
+  background: #f8fafc;
+  color: #020617;
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 600;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.marketing-cta-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+}
+
 [data-marketing-footer-host] {
   display: block;
 }
@@ -231,5 +333,14 @@
 
   .marketing-footer-divider {
     display: none;
+  }
+
+  .marketing-main-page {
+    padding: 32px 14px 52px;
+  }
+
+  .marketing-doc {
+    padding: 24px 18px;
+    border-radius: 14px;
   }
 }
