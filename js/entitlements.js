@@ -56,6 +56,30 @@ const isRpcAuthError = (error) => {
   return code === "P0001" || message.includes("NOT_AUTHENTICATED") || message.includes("JWT");
 };
 
+const isMissingUsersRowError = (error) => {
+  const code = String(error?.code || "").toUpperCase();
+  const details = String(error?.details || "").toLowerCase();
+  const message = String(error?.message || "").toLowerCase();
+  return (
+    code === "23503" &&
+    (details.includes("is not present in table \"users\"") ||
+      message.includes("violates foreign key constraint"))
+  );
+};
+
+const ensureAuthUserRow = async () => {
+  try {
+    await callRpcRecord("daveri_ensure_user_row");
+    return true;
+  } catch (error) {
+    console.error("[RPC:entitlements] ensure user row failed", {
+      code: error?.code || null,
+      message: error?.message || String(error),
+    });
+    return false;
+  }
+};
+
 const requestWorkerJson = async (url, options = {}) => {
   const method = String(options.method || "GET").toUpperCase();
   const headers = {
@@ -118,6 +142,21 @@ export const getEntitlementsMap = async (userId = null) => {
       });
       entitlementsMap = normalizeEntitlementsMap(record);
     } catch (error) {
+      if (isMissingUsersRowError(error)) {
+        const ensured = await ensureAuthUserRow();
+        if (ensured) {
+          const retryRecord = await callRpcRecord("get_entitlements_map", {
+            p_user_id: resolvedUserId,
+          });
+          entitlementsMap = normalizeEntitlementsMap(retryRecord);
+        } else if (!isRpcAuthError(error)) {
+          throw error;
+        }
+        if (entitlementsMap) {
+          emitEntitlementsMap(entitlementsMap);
+          return entitlementsMap;
+        }
+      }
       if (!isRpcAuthError(error)) throw error;
     }
   }

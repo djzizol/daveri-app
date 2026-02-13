@@ -47,6 +47,31 @@ const isRpcAuthError = (error) => {
   return code === "P0001" || message.includes("NOT_AUTHENTICATED") || message.includes("JWT");
 };
 
+const isMissingUserRowError = (error) => {
+  const code = String(error?.code || "").toUpperCase();
+  const message = String(error?.message || "").toLowerCase();
+  const details = String(error?.details || "").toLowerCase();
+  return (
+    code === "23503" &&
+    (message.includes("user_credit_state_user_id_fkey") ||
+      message.includes("violates foreign key constraint") ||
+      details.includes("is not present in table \"users\""))
+  );
+};
+
+const ensureAuthUserRow = async () => {
+  try {
+    await callRpcRecord("daveri_ensure_user_row");
+    return true;
+  } catch (error) {
+    console.error("[RPC:credits] ensure user row failed", {
+      code: error?.code || null,
+      message: error?.message || String(error),
+    });
+    return false;
+  }
+};
+
 const requestWorkerJson = async (url, options = {}) => {
   const method = String(options.method || "GET").toUpperCase();
   const headers = {
@@ -105,6 +130,21 @@ export const getCreditStatus = async (userId = null) => {
       });
       status = normalizeCreditStatus(record);
     } catch (error) {
+      if (isMissingUserRowError(error)) {
+        const ensured = await ensureAuthUserRow();
+        if (ensured) {
+          const retryRecord = await callRpcRecord("get_credit_status", {
+            p_user_id: resolvedUserId,
+          });
+          status = normalizeCreditStatus(retryRecord);
+        } else if (!isRpcAuthError(error)) {
+          throw error;
+        }
+        if (status) {
+          emitCreditStatus(status);
+          return status;
+        }
+      }
       if (!isRpcAuthError(error)) throw error;
     }
   }
