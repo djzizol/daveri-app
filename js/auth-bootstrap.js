@@ -103,7 +103,7 @@ const bootAuth = () => {
 
   const syncAuthObject = (snapshot) => {
     authObject.session = snapshot?.session || null;
-    authObject.user = snapshot?.session?.user || snapshot?.user || null;
+    authObject.user = snapshot?.session?.user || null;
     authObject.isAuthReady = snapshot?.isAuthReady === true;
     applyAuthScreenState(snapshot);
   };

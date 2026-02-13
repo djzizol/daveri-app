@@ -1,7 +1,6 @@
 const SESSION_COOKIE = "session";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 const DEFAULT_APP_ORIGIN = "https://daveri.io";
-const DEFAULT_API_ORIGIN = "https://api.daveri.io";
 
 const jsonResponse = (payload, status = 200, cors = {}, extraHeaders = {}) =>
   new Response(JSON.stringify(payload), {
@@ -2042,100 +2041,42 @@ const handleV1Ask = async (request, env, cors) => {
   );
 };
 
-const buildGoogleRedirectUri = (env) => env.GOOGLE_REDIRECT_URI || `${DEFAULT_API_ORIGIN}/auth/callback`;
+const SUPABASE_GOOGLE_CALLBACK_URL = "https://inayqymryrriobowyysw.supabase.co/auth/v1/callback";
 
-const buildAuthSuccessRedirect = (env) =>
-  env.AUTH_SUCCESS_REDIRECT || `${DEFAULT_APP_ORIGIN}/?auth_success=1`;
+const buildAuthLoginRedirect = (env) => env.AUTH_LOGIN_REDIRECT || `${DEFAULT_APP_ORIGIN}/login/`;
 
-const handleGoogleStart = (request, env, cors) => {
-  const params = new URLSearchParams({
-    client_id: env.GOOGLE_CLIENT_ID,
-    redirect_uri: buildGoogleRedirectUri(env),
-    response_type: "code",
-    scope: "openid email profile",
-    access_type: "offline",
-    prompt: "select_account",
-    state: crypto.randomUUID(),
-  });
+const buildGoogleLoginLocation = (request, env) => {
+  const sourceUrl = new URL(request.url);
+  const loginUrl = new URL(buildAuthLoginRedirect(env), sourceUrl.origin);
 
-  return new Response(null, {
+  loginUrl.searchParams.set("oauth", "google");
+  const next = sourceUrl.searchParams.get("next") || sourceUrl.searchParams.get("redirect_to");
+  if (typeof next === "string" && next.trim()) {
+    loginUrl.searchParams.set("next", next.trim());
+  }
+
+  return loginUrl.toString();
+};
+
+const handleGoogleStart = (request, env, cors) =>
+  new Response(null, {
     status: 302,
     headers: {
       ...cors,
-      Location: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`,
+      Location: buildGoogleLoginLocation(request, env),
+      "X-DaVeri-Auth-Callback": SUPABASE_GOOGLE_CALLBACK_URL,
     },
   });
-};
 
-const handleGoogleCallback = async (request, env, cors, url) => {
-  const code = url.searchParams.get("code");
-  if (!code) {
-    return textResponse("Missing code", 400, cors);
-  }
-
-  const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams({
-      code,
-      client_id: env.GOOGLE_CLIENT_ID,
-      client_secret: env.GOOGLE_CLIENT_SECRET,
-      redirect_uri: buildGoogleRedirectUri(env),
-      grant_type: "authorization_code",
-    }),
-  });
-
-  const tokenData = parseJsonSafe(await tokenResponse.text(), {});
-  if (!tokenResponse.ok || !tokenData?.access_token) {
-    return jsonResponse({ error: "Google token exchange failed", details: tokenData }, 500, cors);
-  }
-
-  const profileResponse = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
-    headers: {
-      Authorization: `Bearer ${tokenData.access_token}`,
-    },
-  });
-  const profile = parseJsonSafe(await profileResponse.text(), {});
-  if (!profileResponse.ok || !profile?.email) {
-    return jsonResponse({ error: "Google profile fetch failed", details: profile }, 500, cors);
-  }
-
-  const diagnostics = {};
-  const user = await getOrCreateUser(env, {
-    email: profile.email,
-    id: null,
-  }, diagnostics);
-  if (!user) {
-    return jsonResponse(
-      {
-        error: "Failed to create user profile",
-        details: diagnostics.create_user_error || null,
-        hint: getServiceRoleKeyIssue(env),
-      },
-      500,
-      cors
-    );
-  }
-
-  const session = {
-    id: user.id,
-    email: user.email,
-    name: profile.name || deriveDisplayName(user.email),
-    picture: profile.picture || null,
-    created: Date.now(),
-  };
-
-  return new Response(null, {
+const handleGoogleCallback = (request, env, cors) =>
+  new Response(null, {
     status: 302,
     headers: {
       ...cors,
-      Location: buildAuthSuccessRedirect(env),
-      "Set-Cookie": buildSessionCookie(session, request.url),
+      Location: buildGoogleLoginLocation(request, env),
+      "X-DaVeri-Auth-Callback": SUPABASE_GOOGLE_CALLBACK_URL,
     },
   });
-};
 
 const handleLogout = (request, env, cors) =>
   new Response(null, {
@@ -2200,7 +2141,7 @@ export default {
       }
 
       if (pathname === "/auth/callback" || pathname === "/auth/google/callback") {
-        return handleGoogleCallback(request, env, cors, url);
+        return handleGoogleCallback(request, env, cors);
       }
 
       if (pathname === "/auth/me" || pathname === "/api/me") {

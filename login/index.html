@@ -231,6 +231,7 @@ import { getDashboardUrl } from "../js/auth-store.js";
 
 const i18nText = (id) => document.getElementById(id)?.textContent || "";
 const LOGIN_REDIRECT_KEY = "daveri_login_redirect";
+const SUPABASE_GOOGLE_CALLBACK_URL = "https://inayqymryrriobowyysw.supabase.co/auth/v1/callback";
 
 const readRedirectTarget = () => {
   try {
@@ -243,9 +244,9 @@ const readRedirectTarget = () => {
   return getDashboardUrl();
 };
 
-const rememberLoginRedirect = () => {
+const rememberLoginRedirect = (target = getDashboardUrl()) => {
   try {
-    localStorage.setItem(LOGIN_REDIRECT_KEY, getDashboardUrl());
+    localStorage.setItem(LOGIN_REDIRECT_KEY, target);
   } catch {}
 };
 
@@ -254,9 +255,13 @@ const switchView = (id) => {
   document.getElementById(id)?.classList.add("active");
 };
 
-const loginGoogle = async () => {
-  rememberLoginRedirect();
+const loginGoogle = async (target = getDashboardUrl()) => {
+  rememberLoginRedirect(target);
   const redirectTo = new URL(readRedirectTarget(), window.location.origin).toString();
+  console.log("[AUTH GOOGLE]", {
+    redirectTo,
+    callbackPrefix: SUPABASE_GOOGLE_CALLBACK_URL.slice(0, 40),
+  });
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: { redirectTo },
@@ -326,7 +331,26 @@ const checkAuth = async () => {
   const { data } = await supabase.auth.getSession();
   if (data?.session?.user) {
     window.location.href = readRedirectTarget();
+    return true;
   }
+  return false;
+};
+
+const maybeAutoStartGoogle = () => {
+  const params = new URLSearchParams(window.location.search);
+  const autoGoogle = params.get("oauth") === "google" || params.get("provider") === "google";
+  if (!autoGoogle) return;
+
+  const next = params.get("next");
+  const target = typeof next === "string" && next.trim() ? next.trim() : getDashboardUrl();
+
+  const cleanedUrl = new URL(window.location.href);
+  cleanedUrl.searchParams.delete("oauth");
+  cleanedUrl.searchParams.delete("provider");
+  cleanedUrl.searchParams.delete("next");
+  window.history.replaceState({}, "", `${cleanedUrl.pathname}${cleanedUrl.search}${cleanedUrl.hash}`);
+
+  void loginGoogle(target);
 };
 
 window.switchView = switchView;
@@ -334,7 +358,12 @@ window.loginGoogle = loginGoogle;
 window.loginEmail = loginEmail;
 window.signupEmail = signupEmail;
 
-void checkAuth();
+void (async () => {
+  const alreadyLoggedIn = await checkAuth();
+  if (!alreadyLoggedIn) {
+    maybeAutoStartGoogle();
+  }
+})();
 </script>
 
   <script type="module" src="../js/i18n.js"></script>

@@ -400,7 +400,9 @@ const toNonNegativeOrNull = (value) => {
 };
 
 const getAuthPlanId = () => {
-  const value = window?.DaVeriAuth?.user?.plan_id;
+  const value =
+    window?.DaVeriAuth?.session?.user?.user_metadata?.plan_id ||
+    window?.DaVeriAuth?.session?.user?.app_metadata?.plan_id;
   return typeof value === "string" && value.trim() ? value.trim() : null;
 };
 
@@ -505,7 +507,7 @@ const bindCreditStatusEvents = (root) => {
   });
 };
 const loadUser = async (root) => {
-  const sessionUser = window?.DaVeriAuth?.session?.user || window?.DaVeriAuth?.user || null;
+  const sessionUser = window?.DaVeriAuth?.session?.user || null;
   if (!sessionUser) {
     applyPlanData(root, null);
     return false;

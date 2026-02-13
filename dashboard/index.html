@@ -1119,7 +1119,7 @@ body {
 
     try {
       const auth = await waitForAuth();
-      const user = auth?.session?.user || auth?.user || null;
+      const user = auth?.session?.user || null;
       const root = document.getElementById("panel_root");
       if (root && user?.id) {
         root.dataset.userId = user.id;
@@ -1299,7 +1299,7 @@ body {
     };
 
     function getUserId() {
-      const id = String(root?.dataset.userId || window?.DaVeriAuth?.user?.id || "").trim();
+      const id = String(root?.dataset.userId || window?.DaVeriAuth?.session?.user?.id || "").trim();
       return id || null;
     }
 

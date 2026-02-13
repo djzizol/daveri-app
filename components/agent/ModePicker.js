@@ -16,7 +16,7 @@ const MODE_DEFINITIONS = [
 ];
 
 const resolveCurrentUserId = () => {
-  const fromAuth = window?.DaVeriAuth?.user?.id;
+  const fromAuth = window?.DaVeriAuth?.session?.user?.id;
   if (typeof fromAuth === "string" && fromAuth.trim()) return fromAuth.trim();
 
   const fromSidebar = document.getElementById("daveri_sidebar")?.dataset?.userId;
@@ -128,4 +128,3 @@ export const createModePicker = () => {
     },
   };
 };
-

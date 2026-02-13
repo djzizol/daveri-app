@@ -52,7 +52,7 @@ if (typeof window !== "undefined") {
 }
 
 export const getCurrentUserId = () => {
-  const fromAuth = window?.DaVeriAuth?.user?.id;
+  const fromAuth = window?.DaVeriAuth?.session?.user?.id;
   if (typeof fromAuth === "string" && fromAuth.trim()) return fromAuth.trim();
 
   const fromAuthStore = window?.DaVeriAuthStore?.getSnapshot?.()?.session?.user?.id;

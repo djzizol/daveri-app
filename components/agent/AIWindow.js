@@ -149,7 +149,7 @@ const applyState = (windowNode, state) => {
 };
 
 const getVisitorId = () => {
-  const fromAuth = window?.DaVeriAuth?.user?.id;
+  const fromAuth = window?.DaVeriAuth?.session?.user?.id;
   if (typeof fromAuth === "string" && fromAuth.trim()) return fromAuth.trim();
 
   const fromSidebar = document.getElementById("daveri_sidebar")?.dataset?.userId;
@@ -163,7 +163,12 @@ const normalizePlanId = (value) => {
   return value.trim().toLowerCase();
 };
 
-const getAuthPlanId = () => normalizePlanId(window?.DaVeriAuth?.user?.plan_id || "");
+const getAuthPlanId = () =>
+  normalizePlanId(
+    window?.DaVeriAuth?.session?.user?.user_metadata?.plan_id ||
+      window?.DaVeriAuth?.session?.user?.app_metadata?.plan_id ||
+      ""
+  );
 
 const isPaidPlanId = (planId) => {
   const normalized = normalizePlanId(planId);
@@ -529,7 +534,7 @@ const createAIWindowNode = () => {
         return { accepted: false, reason: "blocked" };
       }
 
-      const userId = window.DaVeriAuth?.user?.id || null;
+      const userId = window.DaVeriAuth?.session?.user?.id || null;
       if (typeof userId !== "string" || !userId.trim()) {
         if (isCanceled()) return { accepted: false, reason: "canceled" };
         setPaywallVisible(true, PAYWALL_REASON_AUTH);

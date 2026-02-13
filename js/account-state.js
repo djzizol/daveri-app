@@ -66,7 +66,7 @@ const setState = (patch) => {
 };
 
 const resolveUserId = () => {
-  const fromAuth = window?.DaVeriAuth?.user?.id;
+  const fromAuth = window?.DaVeriAuth?.session?.user?.id;
   if (typeof fromAuth === "string" && fromAuth.trim()) return fromAuth.trim();
   const fromSidebar = document.getElementById("daveri_sidebar")?.dataset?.userId;
   if (typeof fromSidebar === "string" && fromSidebar.trim()) return fromSidebar.trim();
@@ -96,7 +96,7 @@ const waitForAuthReady = async () => {
 
     document.addEventListener("auth:ready", () => finish(true), { once: true });
     document.addEventListener("auth:failed", () => finish(false), { once: true });
-    window.setTimeout(() => finish(Boolean(window?.DaVeriAuth?.user)), 1800);
+    window.setTimeout(() => finish(Boolean(window?.DaVeriAuth?.session?.user)), 1800);
   });
 };
 
