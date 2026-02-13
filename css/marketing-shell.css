@@ -280,14 +280,16 @@
   font-size: 12px;
 }
 
-.marketing-footer-link {
+.marketing-footer-link,
+.marketing-footer-links > a {
   color: var(--marketing-text);
   text-decoration: none;
   opacity: 0.82;
   transition: opacity 0.15s ease;
 }
 
-.marketing-footer-link:hover {
+.marketing-footer-link:hover,
+.marketing-footer-links > a:hover {
   opacity: 1;
 }
 
