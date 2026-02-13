@@ -457,6 +457,14 @@ const createAIWindowNode = () => {
   const openQuotaModal = async ({ forceRefresh = false, mode = null } = {}) => {
     const usage = await setQuotaModalUsage({ forceRefresh });
     const resolvedMode = mode || (hasNoCreditsAccess(usage) ? "no_access" : "quota_exceeded");
+    if (resolvedMode === "quota_exceeded" && !isQuotaExceeded(usage)) {
+      console.warn("[AIWindow] quota modal suppressed: usage does not exceed limits", usage);
+      return false;
+    }
+    if (resolvedMode === "no_access" && !hasNoCreditsAccess(usage)) {
+      console.warn("[AIWindow] no-access modal suppressed: usage has valid caps", usage);
+      return false;
+    }
     quotaModal.open(usage, { mode: resolvedMode });
     trackEvent("quota_exceeded_shown", {
       mode: resolvedMode,
@@ -466,6 +474,7 @@ const createAIWindowNode = () => {
       monthly_cap: toSafeInt(usage?.monthly_cap),
     });
     setPaywallVisible(false);
+    return true;
   };
 
   const refreshQuotaState = async ({ forceRefresh = true } = {}) => {
