@@ -46,6 +46,8 @@ const ensureAuthReady = () => {
   ready
     .then((data) => {
       window.DaVeriAuth.user = data.user;
+      window.DaVeriAuth.payload = data;
+      window.DaVeriAuth.supabase = data?.supabase || data?.supabase_session || data?.session || null;
       document.dispatchEvent(new CustomEvent("auth:ready", { detail: data }));
     })
     .catch((error) => {

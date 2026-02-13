@@ -18,10 +18,42 @@ const resolveSupabaseConfig = () => {
 
 const { url: supabaseUrl, anonKey: supabaseAnonKey } = resolveSupabaseConfig();
 
+const tokenPrefix = (token) => (typeof token === "string" ? token.slice(0, 12) : undefined);
+
+const asRecord = (value) => (value && typeof value === "object" ? value : null);
+
+const extractSupabaseSessionCandidate = (payload) => {
+  const candidateSources = [];
+
+  const root = asRecord(payload);
+  if (root) {
+    candidateSources.push(root);
+    candidateSources.push(asRecord(root.supabase));
+    candidateSources.push(asRecord(root.tokens));
+    candidateSources.push(asRecord(root.supabase_tokens));
+    candidateSources.push(asRecord(root.session));
+    candidateSources.push(asRecord(root.supabase_session));
+    candidateSources.push(asRecord(root.auth));
+  }
+
+  for (const source of candidateSources) {
+    if (!source) continue;
+    if (typeof source.access_token !== "string" || !source.access_token.trim()) continue;
+    if (typeof source.refresh_token !== "string" || !source.refresh_token.trim()) continue;
+
+    return {
+      access_token: source.access_token.trim(),
+      refresh_token: source.refresh_token.trim(),
+    };
+  }
+
+  return null;
+};
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: false,
-    autoRefreshToken: false,
+    persistSession: true,
+    autoRefreshToken: true,
   },
   global: {
     headers: {
@@ -30,16 +62,46 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
+const syncSupabaseSessionFromPayload = async (payload, source) => {
+  const candidate = extractSupabaseSessionCandidate(payload);
+  if (!candidate) return false;
+
+  try {
+    const { data: current } = await supabase.auth.getSession();
+    if (current?.session?.access_token === candidate.access_token) {
+      return true;
+    }
+
+    const { error } = await supabase.auth.setSession(candidate);
+    if (error) {
+      console.warn("[SUPABASE AUTH SYNC]", {
+        source,
+        error: error.message,
+      });
+      return false;
+    }
+
+    console.info("[SUPABASE AUTH SYNC]", {
+      source,
+      access_token_prefix: tokenPrefix(candidate.access_token),
+    });
+    return true;
+  } catch (error) {
+    console.warn("[SUPABASE AUTH SYNC]", {
+      source,
+      error: error?.message || String(error),
+    });
+    return false;
+  }
+};
+
 if (typeof window !== "undefined") {
   supabase.auth.onAuthStateChange((event, session) => {
     console.group("[SUPABASE AUTH STATE]");
     console.log("event:", event);
     console.log("session exists:", Boolean(session));
     console.log("user id:", session?.user?.id);
-    console.log(
-      "access_token prefix:",
-      typeof session?.access_token === "string" ? session.access_token.slice(0, 12) : undefined
-    );
+    console.log("access_token prefix:", tokenPrefix(session?.access_token));
     console.groupEnd();
   });
 
@@ -47,11 +109,22 @@ if (typeof window !== "undefined") {
     console.group("[SUPABASE AUTH INIT]");
     console.log("session exists:", Boolean(data?.session));
     console.log("user id:", data?.session?.user?.id);
-    console.log(
-      "access_token prefix:",
-      typeof data?.session?.access_token === "string" ? data.session.access_token.slice(0, 12) : undefined
-    );
+    console.log("access_token prefix:", tokenPrefix(data?.session?.access_token));
     console.groupEnd();
+
+    if (!data?.session && window?.DaVeriAuth) {
+      void syncSupabaseSessionFromPayload(window.DaVeriAuth, "window.DaVeriAuth:init");
+    }
+  });
+
+  if (window?.DaVeriAuth?.ready && typeof window.DaVeriAuth.ready.then === "function") {
+    window.DaVeriAuth.ready
+      .then((payload) => syncSupabaseSessionFromPayload(payload, "DaVeriAuth.ready"))
+      .catch(() => {});
+  }
+
+  document.addEventListener("auth:ready", (event) => {
+    void syncSupabaseSessionFromPayload(event?.detail, "auth:ready");
   });
 }
 
@@ -83,6 +156,14 @@ export const normalizeRpcRecord = (payload) => {
 };
 
 export const callRpc = async (rpcName, args = {}) => {
+  const { data: sessionData } = await supabase.auth.getSession();
+  console.group("[RPC DEBUG]");
+  console.log("rpc:", rpcName);
+  console.log("session exists:", Boolean(sessionData?.session));
+  console.log("user id:", sessionData?.session?.user?.id);
+  console.log("access_token prefix:", tokenPrefix(sessionData?.session?.access_token));
+  console.groupEnd();
+
   const { data, error } = await supabase.rpc(rpcName, args);
   if (error) {
     logRpcError(rpcName, error);
