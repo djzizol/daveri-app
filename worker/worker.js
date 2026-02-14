@@ -704,14 +704,63 @@ const ensureConversationOwned = async (env, user, accessToken, conversationId) =
   return result.data[0];
 };
 
-const readJsonBody = async (request) => {
-  const text = await request.text();
-  if (!text) return {};
-  const parsed = parseJsonSafe(text, null);
-  if (parsed === null) {
-    throw new Error("Invalid JSON payload");
+const getBodyTextOnce = async (req, ctx) => {
+  const context = ctx && typeof ctx === "object" ? ctx : {};
+  if (context.__bodyText !== undefined) return context.__bodyText;
+
+  let text = "";
+  try {
+    text = await req.clone().text();
+    if (!text && !req.bodyUsed) {
+      text = await req.text();
+    }
+  } catch (e) {
+    if (!req.bodyUsed) {
+      try {
+        text = await req.text();
+      } catch {}
+    }
   }
+
+  context.__bodyText = text || "";
+  return context.__bodyText;
+};
+
+const getBodyJsonOnce = async (req, ctx) => {
+  const context = ctx && typeof ctx === "object" ? ctx : {};
+  if (context.__bodyJson !== undefined) return context.__bodyJson;
+
+  const raw = await getBodyTextOnce(req, context);
+  if (!raw || !raw.trim()) {
+    context.__bodyJson = null;
+    return null;
+  }
+
+  try {
+    context.__bodyJson = JSON.parse(raw);
+    return context.__bodyJson;
+  } catch (e) {
+    throw Object.assign(new Error("invalid_json"), {
+      code: "invalid_json",
+      rawLen: raw.length,
+      rawHead: raw.slice(0, 120),
+    });
+  }
+};
+
+const readJsonBody = async (request, ctx) => {
+  const parsed = await getBodyJsonOnce(request, ctx);
+  if (parsed === null) return {};
   return parsed;
+};
+
+const isProductionRuntime = (env) => {
+  const mode = String(env?.NODE_ENV || env?.ENVIRONMENT || env?.APP_ENV || env?.WORKER_ENV || "").toLowerCase();
+  if (!mode) return true;
+  if (mode === "production" || mode === "prod") return true;
+  if (mode === "development" || mode === "dev" || mode === "test" || mode === "local") return false;
+  if (mode === "preview" || mode === "staging") return false;
+  return true;
 };
 
 const buildSessionHeadersIfNeeded = (authContext, request) => {
@@ -747,8 +796,8 @@ const handleBotsGet = async (request, env, cors, auth) => {
   return jsonResponse(bots.map(normalizeBot), 200, cors);
 };
 
-const handleBotsCreate = async (request, env, cors, auth) => {
-  const body = await readJsonBody(request);
+const handleBotsCreate = async (request, env, cors, auth, ctx) => {
+  const body = await readJsonBody(request, ctx);
   const name = typeof body?.name === "string" ? body.name.trim() : "";
   if (!name) {
     return jsonResponse({ error: "Bot name is required" }, 400, cors);
@@ -823,8 +872,8 @@ const handleBotGet = async (request, env, cors, auth, botId) => {
   return jsonResponse(normalizeBot(bot), 200, cors);
 };
 
-const handleBotUpdate = async (request, env, cors, auth, botId) => {
-  const body = await readJsonBody(request);
+const handleBotUpdate = async (request, env, cors, auth, botId, ctx) => {
+  const body = await readJsonBody(request, ctx);
   const existing = await getOwnedBot(env, auth.user, auth.accessToken, botId, "id,config");
   if (!existing) {
     return jsonResponse({ error: "Bot not found" }, 404, cors);
@@ -909,8 +958,8 @@ const handleBotUpdate = async (request, env, cors, auth, botId) => {
   return jsonResponse(normalizeBot(updated), 200, cors);
 };
 
-const handleFilesCreate = async (request, env, cors, auth) => {
-  const body = await readJsonBody(request);
+const handleFilesCreate = async (request, env, cors, auth, ctx) => {
+  const body = await readJsonBody(request, ctx);
   const botId = typeof body?.bot_id === "string" ? body.bot_id.trim() : "";
   if (!botId) {
     return jsonResponse({ error: "bot_id is required" }, 400, cors);
@@ -1842,10 +1891,10 @@ const handleCreditsStatus = async (request, env, cors, auth) => {
   }
 };
 
-const handleCreditsConsume = async (request, env, cors, auth) => {
+const handleCreditsConsume = async (request, env, cors, auth, ctx) => {
   let body = {};
   try {
-    body = await readJsonBody(request);
+    body = await readJsonBody(request, ctx);
   } catch {
     return jsonResponse({ error: "invalid_json" }, 400, cors);
   }
@@ -1881,10 +1930,10 @@ const handleCreditsConsume = async (request, env, cors, auth) => {
   }
 };
 
-const handleCreditsUpgrade = async (request, env, cors, auth) => {
+const handleCreditsUpgrade = async (request, env, cors, auth, ctx) => {
   let body = {};
   try {
-    body = await readJsonBody(request);
+    body = await readJsonBody(request, ctx);
   } catch {
     return jsonResponse({ error: "invalid_json" }, 400, cors);
   }
@@ -2304,7 +2353,7 @@ const handleV1BotConfig = async (env, cors, botId) => {
   return jsonResponse(payload, 200, cors);
 };
 
-const handleV1Ask = async (request, env, cors) => {
+const handleV1Ask = async (request, env, cors, ctx) => {
   const bearerToken = readBearerToken(request);
   if (isLikelyJwt(bearerToken)) {
     return jsonResponse(
@@ -2319,7 +2368,7 @@ const handleV1Ask = async (request, env, cors) => {
 
   let body;
   try {
-    body = await readJsonBody(request);
+    body = await readJsonBody(request, ctx);
   } catch {
     return jsonResponse({ error: "invalid_json" }, 400, cors);
   }
@@ -2381,7 +2430,7 @@ curl -i -X POST "https://api.daveri.io/v1/agent/ask" \
 
 Expected: HTTP 401 auth_required
 */
-const handleV1AgentAsk = async (request, env, cors) => {
+const handleV1AgentAsk = async (request, env, cors, ctx) => {
   const accessToken = readBearerToken(request);
   if (!isLikelyJwt(accessToken)) {
     return jsonResponse({ error: "auth_required", details: "Missing Bearer token" }, 401, cors);
@@ -2421,34 +2470,60 @@ const handleV1AgentAsk = async (request, env, cors) => {
     return jsonResponse({ error: "quota_exceeded", usage }, 402, cors);
   }
 
+  console.log(
+    "[ask] bodyUsed:",
+    request.bodyUsed,
+    "cl:",
+    request.headers.get("content-length"),
+    "ct:",
+    request.headers.get("content-type")
+  );
+
   let body;
   try {
-    body = await readJsonBody(request);
-  } catch {
+    body = await getBodyJsonOnce(request, ctx);
+    if (body === null || typeof body !== "object") {
+      body = {};
+    }
+  } catch (error) {
+    if (error?.code === "invalid_json") {
+      if (isProductionRuntime(env)) {
+        return jsonResponse({ error: "invalid_json" }, 400, cors);
+      }
+      return jsonResponse(
+        {
+          error: "invalid_json",
+          hint: "body must be valid JSON",
+          rawLen: Number.isFinite(error.rawLen) ? error.rawLen : (ctx?.__bodyText || "").length,
+          rawHead: typeof error.rawHead === "string" ? error.rawHead : (ctx?.__bodyText || "").slice(0, 120),
+        },
+        400,
+        cors
+      );
+    }
     return jsonResponse({ error: "invalid_json" }, 400, cors);
   }
 
+  console.log(
+    "[ask] rawLen:",
+    (ctx?.__bodyText || "").length,
+    "rawHead:",
+    (ctx?.__bodyText || "").slice(0, 80)
+  );
+
   const bot_id =
-    body?.bot_id ??
-    body?.active_bot_id ??
+    body?.bot_id ||
+    body?.active_bot_id ||
     (Array.isArray(body?.selected_bot_ids) ? body.selected_bot_ids[0] : null);
 
-  const question =
-    (body?.question ?? body?.message ?? "").toString().trim();
-
-  console.log("[ask] keys:", Object.keys(body || {}));
-  console.log("[ask] bot_id:", bot_id);
-  console.log("[ask] has_question:", !!body?.question, "has_message:", !!body?.message, "len:", question.length);
+  const question = (body?.question ?? body?.message ?? "").toString().trim();
+  const bodyKeys = Object.keys(body || {});
+  console.log("[ask] keys", bodyKeys);
+  console.log("[ask] bot_id", bot_id, "qLen", question.length);
 
   if (!bot_id || !question) {
-    return jsonResponse(
-      {
-        error: "ask_failed",
-        details: JSON.stringify({ error: "Missing bot_id or question in body." }),
-      },
-      502,
-      cors
-    );
+    console.log("[ask] missing required keys", bodyKeys);
+    return jsonResponse({ error: "invalid_payload", details: "Missing bot_id or question" }, 400, cors);
   }
 
   const message = question;
@@ -2620,6 +2695,7 @@ export default {
     const url = new URL(request.url);
     const cors = buildCorsHeaders(request);
     const publicV1Cors = buildPublicV1CorsHeaders();
+    const requestContext = {};
     const { pathname } = url;
 
     if (request.method === "OPTIONS" && pathname.startsWith("/v1/")) {
@@ -2640,13 +2716,13 @@ export default {
         }
         if (pathname === "/v1/ask") {
           if (request.method === "POST") {
-            return handleV1Ask(request, env, publicV1Cors);
+            return handleV1Ask(request, env, publicV1Cors, requestContext);
           }
           return jsonResponse({ error: "method_not_allowed" }, 405, publicV1Cors);
         }
         if (pathname === "/v1/agent/ask") {
           if (request.method === "POST") {
-            return handleV1AgentAsk(request, env, publicV1Cors);
+            return handleV1AgentAsk(request, env, publicV1Cors, requestContext);
           }
           return jsonResponse({ error: "method_not_allowed" }, 405, publicV1Cors);
         }
@@ -2703,7 +2779,7 @@ export default {
         const { auth, response } = await getAuthOrUnauthorizedJwt(request, env, cors);
         if (response) return response;
 
-        if (request.method === "POST") return handleCreditsConsume(request, env, cors, auth);
+        if (request.method === "POST") return handleCreditsConsume(request, env, cors, auth, requestContext);
         return jsonResponse({ error: "Method not allowed" }, 405, cors);
       }
 
@@ -2711,7 +2787,7 @@ export default {
         const { auth, response } = await getAuthOrUnauthorizedJwt(request, env, cors);
         if (response) return response;
 
-        if (request.method === "POST") return handleCreditsUpgrade(request, env, cors, auth);
+        if (request.method === "POST") return handleCreditsUpgrade(request, env, cors, auth, requestContext);
         return jsonResponse({ error: "Method not allowed" }, 405, cors);
       }
 
@@ -2728,7 +2804,7 @@ export default {
         if (response) return response;
 
         if (request.method === "GET") return handleBotsGet(request, env, cors, auth);
-        if (request.method === "POST") return handleBotsCreate(request, env, cors, auth);
+        if (request.method === "POST") return handleBotsCreate(request, env, cors, auth, requestContext);
         return jsonResponse({ error: "Method not allowed" }, 405, cors);
       }
 
@@ -2740,7 +2816,7 @@ export default {
         if (!botId) return jsonResponse({ error: "Missing bot id" }, 400, cors);
 
         if (request.method === "GET") return handleBotGet(request, env, cors, auth, botId);
-        if (request.method === "PATCH") return handleBotUpdate(request, env, cors, auth, botId);
+        if (request.method === "PATCH") return handleBotUpdate(request, env, cors, auth, botId, requestContext);
         if (request.method === "DELETE") return handleBotDelete(request, env, cors, auth, botId);
         return jsonResponse({ error: "Method not allowed" }, 405, cors);
       }
@@ -2750,7 +2826,7 @@ export default {
         if (response) return response;
 
         if (request.method === "GET") return handleFilesGet(request, env, cors, auth, url);
-        if (request.method === "POST") return handleFilesCreate(request, env, cors, auth);
+        if (request.method === "POST") return handleFilesCreate(request, env, cors, auth, requestContext);
         return jsonResponse({ error: "Method not allowed" }, 405, cors);
       }
 
