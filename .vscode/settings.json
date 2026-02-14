@@ -1,15 +1,37 @@
 {
-    "sqltools.connections": [
-        {
-            "ssh": "Disabled",
-            "previewLimit": 50,
-            "server": "127.0.0.1",
-            "port": 65432,
-            "driver": "PostgreSQL",
-            "database": "postgres",
-            "username": "postgres",
-            "password": "postgres",
-            "name": "supabasecon"
-        }
-    ]
+  "[typescript]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+  "deno.enablePaths": [
+    "supabase/functions"
+  ],
+  "deno.lint": true,
+  "deno.unstable": [
+    "bare-node-builtins",
+    "byonm",
+    "sloppy-imports",
+    "unsafe-proto",
+    "webgpu",
+    "broadcast-channel",
+    "worker-options",
+    "cron",
+    "kv",
+    "ffi",
+    "fs",
+    "http",
+    "net"
+  ],
+  "sqltools.connections": [
+    {
+      "database": "postgres",
+      "driver": "PostgreSQL",
+      "name": "supabasecon",
+      "password": "postgres",
+      "port": 65432,
+      "previewLimit": 50,
+      "server": "127.0.0.1",
+      "ssh": "Disabled",
+      "username": "postgres"
+    }
+  ]
 }
