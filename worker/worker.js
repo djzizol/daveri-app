@@ -2423,8 +2423,8 @@ const handleV1AgentAsk = async (request, env, cors) => {
 
   let body;
   try {
-    body = await request.json();
-  } catch (e) {
+    body = await readJsonBody(request);
+  } catch {
     return jsonResponse({ error: "invalid_json" }, 400, cors);
   }
 
@@ -2437,18 +2437,14 @@ const handleV1AgentAsk = async (request, env, cors) => {
     body?.message ??
     null;
 
-  const botId = typeof botIdRaw === "string" ? botIdRaw.trim() : botIdRaw;
-  const question = typeof questionRaw === "string" ? questionRaw.trim() : questionRaw;
+  const botId = typeof botIdRaw === "string" ? botIdRaw.trim() : "";
+  const question = typeof questionRaw === "string" ? questionRaw.trim() : "";
 
   if (!botId || !question) {
-    return jsonResponse(
-      { error: "Missing bot_id or question in body." },
-      400,
-      cors
-    );
+    return jsonResponse({ error: "invalid_payload" }, 400, cors);
   }
 
-  const message = typeof question === "string" ? question : String(question);
+  const message = question;
 
   const conversationId =
     typeof body?.conversation_id === "string" && body.conversation_id.trim()
