@@ -2428,20 +2428,27 @@ const handleV1AgentAsk = async (request, env, cors) => {
     return jsonResponse({ error: "invalid_json" }, 400, cors);
   }
 
-  const botIdRaw =
+  const bot_id =
     body?.bot_id ??
     body?.active_bot_id ??
     (Array.isArray(body?.selected_bot_ids) ? body.selected_bot_ids[0] : null);
-  const questionRaw =
-    body?.question ??
-    body?.message ??
-    null;
 
-  const botId = typeof botIdRaw === "string" ? botIdRaw.trim() : "";
-  const question = typeof questionRaw === "string" ? questionRaw.trim() : "";
+  const question =
+    (body?.question ?? body?.message ?? "").toString().trim();
 
-  if (!botId || !question) {
-    return jsonResponse({ error: "invalid_payload" }, 400, cors);
+  console.log("[ask] keys:", Object.keys(body || {}));
+  console.log("[ask] bot_id:", bot_id);
+  console.log("[ask] has_question:", !!body?.question, "has_message:", !!body?.message, "len:", question.length);
+
+  if (!bot_id || !question) {
+    return jsonResponse(
+      {
+        error: "ask_failed",
+        details: JSON.stringify({ error: "Missing bot_id or question in body." }),
+      },
+      502,
+      cors
+    );
   }
 
   const message = question;
@@ -2459,7 +2466,7 @@ const handleV1AgentAsk = async (request, env, cors) => {
     : [];
 
   const forwardPayload = {
-    bot_id: botId,
+    bot_id,
     visitor_id: authUid,
     conversation_id: conversationId,
     message,
