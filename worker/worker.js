@@ -2276,13 +2276,43 @@ const getAgentUsageAsUser = async (env, accessToken) => {
   return normalizeAgentUsage(usageResult.data);
 };
 
-const askBotViaEdge = async (env, payload) => {
+const pickSelectedBotId = (selectedBotIds) => {
+  if (!Array.isArray(selectedBotIds)) return "";
+  for (const item of selectedBotIds) {
+    if (typeof item === "string" && item.trim()) return item.trim();
+  }
+  return "";
+};
+
+const normalizeAskPayloadForEdge = (sourcePayload) => {
+  const input = isObject(sourcePayload) ? sourcePayload : {};
+  const selectedBotId = pickSelectedBotId(input.selected_bot_ids);
+  const botId =
+    (typeof input.bot_id === "string" && input.bot_id.trim() ? input.bot_id.trim() : "") ||
+    (typeof input.active_bot_id === "string" && input.active_bot_id.trim() ? input.active_bot_id.trim() : "") ||
+    selectedBotId;
+  const question = (input.question ?? input.message ?? "").toString().trim();
+  const message = (input.message ?? input.question ?? "").toString().trim() || question;
+
+  return {
+    ...input,
+    bot_id: botId,
+    question,
+    message,
+  };
+};
+
+const askBotViaEdge = async (env, sourcePayload) => {
+  const payload = normalizeAskPayloadForEdge(sourcePayload);
   const anonKey = env.SUPABASE_ANON_KEY;
   const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
   const apiKey = anonKey || serviceKey;
   if (!apiKey) {
     return { ok: false, status: 502, details: "Missing SUPABASE key in worker env", parsed: null, rawText: "" };
   }
+
+  console.log("[ask->edge] payload keys", Object.keys(payload));
+  console.log("[ask->edge] bot_id", payload.bot_id, "qLen", (payload.question || "").length);
 
   const askRequest = async (key) =>
     fetch(`${env.SUPABASE_URL}/functions/v1/ask-bot`, {
@@ -2398,6 +2428,7 @@ const handleV1Ask = async (request, env, cors, ctx) => {
 
   const forwardPayload = {
     bot_id: botId,
+    question: message,
     visitor_id: visitorId,
     conversation_id: conversationId,
     message,
@@ -2545,6 +2576,7 @@ const handleV1AgentAsk = async (request, env, cors, ctx) => {
 
   const forwardPayload = {
     bot_id,
+    question,
     visitor_id: authUid,
     conversation_id: conversationId,
     message,
