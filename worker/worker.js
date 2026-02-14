@@ -704,8 +704,17 @@ const ensureConversationOwned = async (env, user, accessToken, conversationId) =
   return result.data[0];
 };
 
+const requireRequestContext = (ctx) => {
+  if (!ctx || typeof ctx !== "object") {
+    throw Object.assign(new Error("request_context_required"), {
+      code: "request_context_required",
+    });
+  }
+  return ctx;
+};
+
 const getBodyTextOnce = async (req, ctx) => {
-  const context = ctx && typeof ctx === "object" ? ctx : {};
+  const context = requireRequestContext(ctx);
   if (context.__bodyText !== undefined) return context.__bodyText;
 
   let text = "";
@@ -727,7 +736,7 @@ const getBodyTextOnce = async (req, ctx) => {
 };
 
 const getBodyJsonOnce = async (req, ctx) => {
-  const context = ctx && typeof ctx === "object" ? ctx : {};
+  const context = requireRequestContext(ctx);
   if (context.__bodyJson !== undefined) return context.__bodyJson;
 
   const raw = await getBodyTextOnce(req, context);
@@ -2481,27 +2490,22 @@ const handleV1AgentAsk = async (request, env, cors, ctx) => {
 
   let body;
   try {
-    body = await getBodyJsonOnce(request, ctx);
-    if (body === null || typeof body !== "object") {
-      body = {};
-    }
+    body = await readJsonBody(request, ctx);
   } catch (error) {
-    if (error?.code === "invalid_json") {
-      if (isProductionRuntime(env)) {
-        return jsonResponse({ error: "invalid_json" }, 400, cors);
-      }
-      return jsonResponse(
-        {
-          error: "invalid_json",
-          hint: "body must be valid JSON",
-          rawLen: Number.isFinite(error.rawLen) ? error.rawLen : (ctx?.__bodyText || "").length,
-          rawHead: typeof error.rawHead === "string" ? error.rawHead : (ctx?.__bodyText || "").slice(0, 120),
-        },
-        400,
-        cors
-      );
+    if (error?.code !== "invalid_json") throw error;
+    if (isProductionRuntime(env)) {
+      return jsonResponse({ error: "invalid_json" }, 400, cors);
     }
-    return jsonResponse({ error: "invalid_json" }, 400, cors);
+    return jsonResponse(
+      {
+        error: "invalid_json",
+        hint: "body must be valid JSON",
+        rawLen: Number.isFinite(error.rawLen) ? error.rawLen : (ctx.__bodyText || "").length,
+        rawHead: typeof error.rawHead === "string" ? error.rawHead : (ctx.__bodyText || "").slice(0, 120),
+      },
+      400,
+      cors
+    );
   }
 
   console.log(
@@ -2522,7 +2526,6 @@ const handleV1AgentAsk = async (request, env, cors, ctx) => {
   console.log("[ask] bot_id", bot_id, "qLen", question.length);
 
   if (!bot_id || !question) {
-    console.log("[ask] missing required keys", bodyKeys);
     return jsonResponse({ error: "invalid_payload", details: "Missing bot_id or question" }, 400, cors);
   }
 
