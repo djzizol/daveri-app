@@ -1,6 +1,7 @@
 const SESSION_COOKIE = "session";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 const DEFAULT_APP_ORIGIN = "https://daveri.io";
+const AGENT_ASK_DOWNSTREAM_URL = "https://inayqymryrriobowyysw.supabase.co/functions/v1/agent-ask";
 
 const jsonResponse = (payload, status = 200, cors = {}, extraHeaders = {}) =>
   new Response(JSON.stringify(payload), {
@@ -110,6 +111,12 @@ const buildCorsHeaders = (request) => {
 const buildPublicV1CorsHeaders = () => ({
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+});
+
+const buildAgentAskCorsHeaders = () => ({
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST,OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 });
 
@@ -2461,152 +2468,87 @@ curl -i -X POST "https://api.daveri.io/v1/agent/ask" \
   -H "Content-Type: application/json" \
   -d "{\"bot_id\":\"<BOT_ID>\",\"message\":\"Hello from agent\"}"
 
-Expected: HTTP 200 + { assistant_message, conversation_id, usage? }
+Expected: HTTP 200 + downstream JSON from agent-ask (e.g. { ok, bot_id, question, user_id, usage })
 
 Manual test (without JWT):
 curl -i -X POST "https://api.daveri.io/v1/agent/ask" \
   -H "Content-Type: application/json" \
   -d "{\"bot_id\":\"<BOT_ID>\",\"message\":\"Hello\"}"
 
-Expected: HTTP 401 auth_required
+Expected: HTTP 401 { error: "missing_bearer" }
 */
 const handleV1AgentAsk = async (request, env, cors, ctx) => {
-  const accessToken = readBearerToken(request);
-  if (!isLikelyJwt(accessToken)) {
-    return jsonResponse({ error: "auth_required", details: "Missing Bearer token" }, 401, cors);
+  const authorization = request.headers.get("Authorization") || request.headers.get("authorization") || "";
+  if (!authorization || !/^Bearer\s+\S+/i.test(authorization.trim())) {
+    return jsonResponse({ error: "missing_bearer" }, 401, cors);
   }
-
-  const authResult = await getSupabaseAuthUserFromToken(env, accessToken);
-  if (!authResult.user) {
-    return jsonResponse(
-      { error: "auth_required", details: authResult.error || "Unauthorized" },
-      authResult.status || 401,
-      cors
-    );
-  }
-
-  const authUid = String(authResult.user.id || "").trim();
-  const authEmail = typeof authResult.user.email === "string" ? authResult.user.email.trim() : "";
-  if (!authUid) {
-    return jsonResponse({ error: "auth_required", details: "Invalid auth user id" }, 401, cors);
-  }
-
-  const userContext = await ensureAgentUserContext(env, accessToken);
-  if (!userContext.ok) {
-    return jsonResponse(
-      { error: "user_mapping_failed", details: userContext.error },
-      userContext.status || 500,
-      cors
-    );
-  }
-
-  const usage = await getAgentUsageAsUser(env, accessToken);
-  if (!usage) {
-    return jsonResponse({ error: "usage_unavailable" }, 502, cors);
-  }
-
-  const isBlocked = usage.daily_used >= usage.daily_cap || usage.monthly_used >= usage.monthly_cap;
-  if (isBlocked) {
-    return jsonResponse({ error: "quota_exceeded", usage }, 402, cors);
-  }
-
-  console.log(
-    "[ask] bodyUsed:",
-    request.bodyUsed,
-    "cl:",
-    request.headers.get("content-length"),
-    "ct:",
-    request.headers.get("content-type")
-  );
 
   let body;
   try {
     body = await readJsonBody(request, ctx);
   } catch (error) {
     if (error?.code !== "invalid_json") throw error;
-    if (isProductionRuntime(env)) {
-      return jsonResponse({ error: "invalid_json" }, 400, cors);
-    }
+    return jsonResponse({ error: "invalid_json" }, 400, cors);
+  }
+
+  const payload = normalizeAskPayloadForEdge(body);
+  const missing = [];
+  if (!payload.bot_id) missing.push("bot_id");
+  if (!payload.question) missing.push("question");
+  if (missing.length) {
+    return jsonResponse({ error: "invalid_payload", missing }, 400, cors);
+  }
+
+  const rid = request.headers.get("x-request-id") || crypto.randomUUID();
+  const startedAt = Date.now();
+
+  console.log("[agent->edge] url", AGENT_ASK_DOWNSTREAM_URL);
+  console.log("[agent->edge] keys", Object.keys(payload));
+  console.log("[agent->edge] bot_id", payload.bot_id, "qLen", (payload.question || "").length);
+  console.log("[agent->edge] rid", rid);
+
+  let upstreamResponse;
+  try {
+    upstreamResponse = await fetch(AGENT_ASK_DOWNSTREAM_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: authorization,
+        "x-request-id": rid,
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    const elapsedMs = Date.now() - startedAt;
+    console.log("[agent->edge] status", "fetch_error", "ms", elapsedMs, "rid", rid);
     return jsonResponse(
       {
-        error: "invalid_json",
-        hint: "body must be valid JSON",
-        rawLen: Number.isFinite(error.rawLen) ? error.rawLen : (ctx.__bodyText || "").length,
-        rawHead: typeof error.rawHead === "string" ? error.rawHead : (ctx.__bodyText || "").slice(0, 120),
+        error: "upstream_failed",
+        message: error?.message || "fetch_failed",
+        rid,
       },
-      400,
+      502,
       cors
     );
   }
 
-  console.log(
-    "[ask] rawLen:",
-    (ctx?.__bodyText || "").length,
-    "rawHead:",
-    (ctx?.__bodyText || "").slice(0, 80)
-  );
+  const elapsedMs = Date.now() - startedAt;
+  console.log("[agent->edge] status", upstreamResponse.status, "ms", elapsedMs, "rid", rid);
 
-  const bot_id =
-    body?.bot_id ||
-    body?.active_bot_id ||
-    (Array.isArray(body?.selected_bot_ids) ? body.selected_bot_ids[0] : null);
-
-  const question = (body?.question ?? body?.message ?? "").toString().trim();
-  const bodyKeys = Object.keys(body || {});
-  console.log("[ask] keys", bodyKeys);
-  console.log("[ask] bot_id", bot_id, "qLen", question.length);
-
-  if (!bot_id || !question) {
-    return jsonResponse({ error: "invalid_payload", details: "Missing bot_id or question" }, 400, cors);
+  const upstreamBody = await upstreamResponse.arrayBuffer();
+  const headers = new Headers(upstreamResponse.headers);
+  if (!headers.has("content-type")) {
+    headers.set("Content-Type", "application/json");
   }
-
-  const message = question;
-
-  const conversationId =
-    typeof body?.conversation_id === "string" && body.conversation_id.trim()
-      ? body.conversation_id.trim()
-      : null;
-  const history = Array.isArray(body?.history) ? body.history : [];
-  const activeBotId = typeof body?.active_bot_id === "string" && body.active_bot_id.trim() ? body.active_bot_id.trim() : null;
-  const selectedBotIds = Array.isArray(body?.selected_bot_ids)
-    ? body.selected_bot_ids
-        .map((item) => (typeof item === "string" ? item.trim() : ""))
-        .filter(Boolean)
-    : [];
-
-  const forwardPayload = {
-    bot_id,
-    question,
-    visitor_id: authUid,
-    conversation_id: conversationId,
-    message,
-    history,
-    active_bot_id: activeBotId,
-    selected_bot_ids: selectedBotIds,
-    agent_auth_uid: authUid,
-    agent_email: authEmail || null,
-    agent_internal_user_id: userContext.internal_user_id,
-  };
-
-  const askResult = await askBotViaEdge(env, forwardPayload);
-  if (!askResult.ok) {
-    return jsonResponse({ error: "ask_failed", details: askResult.details }, askResult.status || 502, cors);
+  for (const [name, value] of Object.entries(cors)) {
+    headers.set(name, value);
   }
+  headers.set("x-request-id", rid);
 
-  const answer = pickAskAnswer(askResult.parsed || askResult.rawText);
-  const nextConversationId = pickConversationId(askResult.parsed);
-  const assistantMessage = typeof answer === "string" ? answer : String(answer || "");
-
-  return jsonResponse(
-    {
-      assistant_message: assistantMessage,
-      answer: assistantMessage,
-      conversation_id: nextConversationId,
-      usage: usage || null,
-    },
-    200,
-    cors
-  );
+  return new Response(upstreamBody, {
+    status: upstreamResponse.status,
+    headers,
+  });
 };
 
 const SUPABASE_GOOGLE_CALLBACK_URL = "https://inayqymryrriobowyysw.supabase.co/auth/v1/callback";
@@ -2730,8 +2672,13 @@ export default {
     const url = new URL(request.url);
     const cors = buildCorsHeaders(request);
     const publicV1Cors = buildPublicV1CorsHeaders();
+    const agentAskCors = buildAgentAskCorsHeaders();
     const requestContext = {};
     const { pathname } = url;
+
+    if (request.method === "OPTIONS" && pathname === "/v1/agent/ask") {
+      return new Response(null, { status: 204, headers: agentAskCors });
+    }
 
     if (request.method === "OPTIONS" && pathname.startsWith("/v1/")) {
       return new Response(null, { status: 204, headers: publicV1Cors });
@@ -2757,9 +2704,9 @@ export default {
         }
         if (pathname === "/v1/agent/ask") {
           if (request.method === "POST") {
-            return handleV1AgentAsk(request, env, publicV1Cors, requestContext);
+            return handleV1AgentAsk(request, env, agentAskCors, requestContext);
           }
-          return jsonResponse({ error: "method_not_allowed" }, 405, publicV1Cors);
+          return jsonResponse({ error: "method_not_allowed" }, 405, agentAskCors);
         }
 
         const parts = pathname.split("/").filter(Boolean);

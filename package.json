@@ -1,0 +1,27 @@
+{
+  "name": "daveri",
+  "version": "1.0.0",
+  "description": "- Agent chat manual QA checklist: `docs/agent-chat-qa-checklist.md`",
+  "main": "login.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/djzizol/daveri-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/djzizol/daveri-app/issues"
+  },
+  "homepage": "https://github.com/djzizol/daveri-app#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.95.3"
+  }
+}

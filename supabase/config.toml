@@ -95,7 +95,7 @@ openai_api_key = "env(OPENAI_API_KEY)"
 [inbucket]
 enabled = true
 # Port to use for the email testing server web interface.
-port = 65435
+port = 54327
 # Uncomment to expose additional ports for testing user applications that send emails.
 # smtp_port = 54325
 # pop3_port = 54326
@@ -366,7 +366,7 @@ deno_version = 2
 
 [analytics]
 enabled = true
-port = 65436
+port = 54326
 # Configure one of the supported backends: `postgres`, `bigquery`.
 backend = "postgres"
 
