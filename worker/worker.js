@@ -2537,7 +2537,7 @@ const getAuthOrUnauthorizedJwt = async (request, env, cors) => {
   }
 
   const authResult = await getSupabaseAuthUserFromToken(env, accessToken);
-  if (!authResult.user) {
+  if (!authResult?.user) {
     return { auth: null, response: jsonResponse({ error: "Unauthorized" }, 401, cors) };
   }
 
@@ -2569,16 +2569,18 @@ const getAuthOrUnauthorizedJwt = async (request, env, cors) => {
   const authUser = authResult.user;
   const email = typeof authUser?.email === "string" ? authUser.email.trim() : "";
   let user = await fetchUserById(env, internalUserId);
-  if (!user) {
-    return {
-      auth: null,
-      response: jsonResponse(
-        { error: "user_mapping_failed", details: "User row not found for internal_user_id" },
-        500,
-        cors
-      ),
-    };
+  if (!user && email) {
+    user = await getOrCreateUser(env, {
+      id: internalUserId,
+      email,
+      name: deriveDisplayName(email),
+    });
   }
+
+  if (!user) {
+    return { auth: null, response: jsonResponse({ error: "Unauthorized" }, 401, cors) };
+  }
+
   if (!user.email && email) {
     user = {
       ...user,
@@ -2586,16 +2588,15 @@ const getAuthOrUnauthorizedJwt = async (request, env, cors) => {
     };
   }
 
-  return {
-    auth: {
-      accessToken,
-      authUser,
-      internal_user_id: internalUserId,
-      email: email || user.email || "",
-      user,
-    },
-    response: null,
+  const auth = {
+    accessToken,
+    authUser,
+    internal_user_id: internalUserId,
+    email: email || user.email || "",
+    user,
   };
+
+  return { auth, response: null };
 };
 
 export default {
