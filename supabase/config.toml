@@ -25,12 +25,15 @@ enabled = false
 # key_path = "../certs/my-key.pem"
 
 [db]
+# Port to use for the local database URL.
 port = 54322
+# Port used by db diff command to initialize the shadow database.
 shadow_port = 54323
+# Maximum amount of time to wait for health check when starting the local database.
 health_timeout = "2m"
+# The database major version to use. This has to be the same as your remote database's. Run `SHOW
+# server_version;` on the remote database to check.
 major_version = 17
-
-
 
 [db.pooler]
 enabled = false
@@ -81,9 +84,7 @@ enabled = true
 [studio]
 enabled = true
 # Port to use for Supabase Studio.
-port = [studio]
 port = 54324
-
 # External URL of the API server that frontend connects to.
 api_url = "http://127.0.0.1"
 # OpenAI API Key to use for Supabase AI in the Supabase Studio.
