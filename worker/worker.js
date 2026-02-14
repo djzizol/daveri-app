@@ -2423,19 +2423,32 @@ const handleV1AgentAsk = async (request, env, cors) => {
 
   let body;
   try {
-    body = await readJsonBody(request);
-  } catch {
+    body = await request.json();
+  } catch (e) {
     return jsonResponse({ error: "invalid_json" }, 400, cors);
   }
 
-  const message =
-    (typeof body?.message === "string" ? body.message.trim() : "") ||
-    (typeof body?.question === "string" ? body.question.trim() : "");
-  if (!message) {
-    return jsonResponse({ error: "missing_message" }, 400, cors);
+  const botIdRaw =
+    body?.bot_id ??
+    body?.active_bot_id ??
+    (Array.isArray(body?.selected_bot_ids) ? body.selected_bot_ids[0] : null);
+  const questionRaw =
+    body?.question ??
+    body?.message ??
+    null;
+
+  const botId = typeof botIdRaw === "string" ? botIdRaw.trim() : botIdRaw;
+  const question = typeof questionRaw === "string" ? questionRaw.trim() : questionRaw;
+
+  if (!botId || !question) {
+    return jsonResponse(
+      { error: "Missing bot_id or question in body." },
+      400,
+      cors
+    );
   }
-  const botId =
-    typeof body?.bot_id === "string" && body.bot_id.trim() ? body.bot_id.trim() : null;
+
+  const message = typeof question === "string" ? question : String(question);
 
   const conversationId =
     typeof body?.conversation_id === "string" && body.conversation_id.trim()
