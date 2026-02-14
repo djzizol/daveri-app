@@ -1,4 +1,4 @@
-import { getApiUrl } from "./api.js";
+import { apiFetch, getApiUrl } from "./api.js";
 import { callRpcRecord, getCurrentUserId, hasSupabaseAccessToken } from "./supabaseClient.js";
 
 const CREDITS_UPDATED_EVENT = "daveri:credits-updated";
@@ -82,8 +82,7 @@ const requestWorkerJson = async (url, options = {}) => {
     headers["Content-Type"] = "application/json";
   }
 
-  const response = await fetch(url, {
-    credentials: "include",
+  const response = await apiFetch(url, {
     ...options,
     method,
     headers,

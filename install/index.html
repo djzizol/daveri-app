@@ -434,7 +434,7 @@
   </script>
 
   <script type="module">
-    import { getApiUrl } from "../js/api.js";
+    import { apiFetchJson, getApiUrl } from "../js/api.js";
 
     const botSelect = document.getElementById("installBotSelect");
     const apiBaseInput = document.getElementById("installApiBase");
@@ -546,18 +546,9 @@
       botSelect.innerHTML = '<option value="">Wczytywanie botów...</option>';
 
       try {
-        const response = await fetch(getApiUrl("/api/bots"), {
+        const payload = await apiFetchJson(getApiUrl("/api/bots"), {
           method: "GET",
-          credentials: "include",
         });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-        let payload = null;
-        try {
-          payload = await response.json();
-        } catch {
-          payload = null;
-        }
         const bots = Array.isArray(payload)
           ? payload
           : Array.isArray(payload?.bots)

@@ -6732,26 +6732,8 @@
         window.localStorage.setItem(ACTIVE_BOT_KEY, value);
       };
       const fetchJson = async (url, options = {}) => {
-        const method = String(options.method || "GET").toUpperCase();
-        const headers = { ...(options.headers || {}) };
-        if (method !== "GET" && method !== "HEAD" && !("Content-Type" in headers)) {
-          headers["Content-Type"] = "application/json";
-        }
-        const response = await fetch(url, {
-          credentials: "include",
-          ...options,
-          headers,
-        });
-        let payload = null;
-        try {
-          payload = await response.json();
-        } catch {
-          payload = null;
-        }
-        if (!response.ok) {
-          throw new Error(payload?.error || `Request failed: ${response.status}`);
-        }
-        return payload;
+        const { apiFetchJson } = await import("../js/api.js");
+        return apiFetchJson(url, options);
       };
       const asObject = (value) => value && typeof value === "object" && !Array.isArray(value);
       const toPlanSlug = (value, fallback = "premium") => {

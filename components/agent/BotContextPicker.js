@@ -1,4 +1,4 @@
-import { getApiUrl } from "../../js/api.js";
+import { apiFetch, getApiUrl } from "../../js/api.js";
 import { getActiveBotId } from "../../js/active-bot.js";
 
 const API_BOTS = getApiUrl("/api/bots");
@@ -289,9 +289,8 @@ export const createBotContextPicker = ({ maxSelected = 3 } = {}) => {
     renderDropdown();
 
     try {
-      const response = await fetch(API_BOTS, {
+      const response = await apiFetch(API_BOTS, {
         method: "GET",
-        credentials: "include",
       });
       if (!response.ok) {
         throw new Error(`Could not load bots (${response.status})`);

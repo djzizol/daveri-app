@@ -1,6 +1,6 @@
 import { initCreateBotModal, openCreateModal } from "./bot-create-modal.js";
 import { initEditBotModal, openEditBotModal } from "./bot-edit-modal.js";
-import { getApiUrl } from "./api.js";
+import { apiFetch, getApiUrl } from "./api.js";
 import { getActiveBotId, setActiveBotId } from "./active-bot.js";
 
 const API_BASE = getApiUrl("/api/bots");
@@ -164,7 +164,7 @@ const loadBots = async () => {
   if (!grid) return;
 
   try {
-    const response = await fetch(API_BASE, { method: "GET", credentials: "include" });
+    const response = await apiFetch(API_BASE, { method: "GET" });
     if (!response.ok) {
       console.error("[Bots] GET failed:", response.status, response.statusText);
       grid.innerHTML = "";

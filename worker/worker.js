@@ -162,6 +162,49 @@ const supabaseRequestWithKey = async (env, apiKey, path, options = {}) => {
   };
 };
 
+const supabaseRestAsUser = async (env, accessToken, path, options = {}) => {
+  const anonKey = typeof env?.SUPABASE_ANON_KEY === "string" ? env.SUPABASE_ANON_KEY.trim() : "";
+  if (!anonKey) {
+    return {
+      ok: false,
+      status: 502,
+      data: { error: "Missing SUPABASE_ANON_KEY in worker env" },
+      response: null,
+    };
+  }
+  if (typeof accessToken !== "string" || !accessToken.trim()) {
+    return {
+      ok: false,
+      status: 401,
+      data: { error: "Missing access token" },
+      response: null,
+    };
+  }
+
+  const url = `${env.SUPABASE_URL}${path}`;
+  const headers = {
+    apikey: anonKey,
+    Authorization: `Bearer ${accessToken}`,
+    ...(options.headers || {}),
+  };
+  const response = await fetch(url, { ...options, headers });
+
+  let data = null;
+  if ((options.method || "GET").toUpperCase() !== "HEAD") {
+    const raw = await response.text();
+    if (raw) {
+      data = parseJsonSafe(raw, raw);
+    }
+  }
+
+  return {
+    ok: response.ok,
+    status: response.status,
+    data,
+    response,
+  };
+};
+
 const getSupabasePublicKey = (env) => env.SUPABASE_ANON_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
 
 const getServiceRoleKeyIssue = (env) => {
@@ -484,7 +527,7 @@ const buildBotOwnershipOrClause = (user) => {
   return `(${parts.join(",")})`;
 };
 
-const listOwnedBots = async (env, user, options = {}) => {
+const listOwnedBots = async (env, user, accessToken, options = {}) => {
   const ownerFilter = buildBotOwnershipOrClause(user);
   if (!ownerFilter) return [];
 
@@ -501,15 +544,15 @@ const listOwnedBots = async (env, user, options = {}) => {
     params.set("limit", String(options.limit));
   }
 
-  const result = await supabaseRequest(env, `/rest/v1/bots?${params.toString()}`);
+  const result = await supabaseRestAsUser(env, accessToken, `/rest/v1/bots?${params.toString()}`);
   if (!result.ok) {
     throw new Error(`Failed to load bots (${result.status})`);
   }
   return Array.isArray(result.data) ? result.data : [];
 };
 
-const getOwnedBot = async (env, user, botId, select) => {
-  const rows = await listOwnedBots(env, user, {
+const getOwnedBot = async (env, user, accessToken, botId, select) => {
+  const rows = await listOwnedBots(env, user, accessToken, {
     select: select || "*",
     id: botId,
     limit: 1,
@@ -517,8 +560,8 @@ const getOwnedBot = async (env, user, botId, select) => {
   return rows[0] || null;
 };
 
-const getOwnedBotIds = async (env, user) => {
-  const bots = await listOwnedBots(env, user, {
+const getOwnedBotIds = async (env, user, accessToken) => {
+  const bots = await listOwnedBots(env, user, accessToken, {
     select: "id",
     order: "created_at.desc",
   });
@@ -546,34 +589,73 @@ const readQuotaPolicy = (entitlementRows, featureKeys) => {
   };
 };
 
-const canCreateBotForUser = async (env, user) => {
+const sanitizeFeatureKeys = (featureKeys) =>
+  Array.isArray(featureKeys)
+    ? featureKeys
+        .map((value) => (typeof value === "string" ? value.trim() : ""))
+        .filter(Boolean)
+        .map((value) => value.replace(/[(),]/g, ""))
+    : [];
+
+const fetchEffectiveEntitlementRowsAsUser = async (env, userId, accessToken, featureKeys = null) => {
+  if (!userId) return [];
+
+  const params = new URLSearchParams({
+    select: "plan_id,feature_key,enabled,limit_value,meta",
+    user_id: `eq.${userId}`,
+  });
+  const values = sanitizeFeatureKeys(featureKeys);
+  if (values.length) {
+    params.set("feature_key", `in.(${values.join(",")})`);
+  }
+
+  const result = await supabaseRestAsUser(
+    env,
+    accessToken,
+    `/rest/v1/v_effective_entitlements?${params.toString()}`
+  );
+  if (!result.ok || !Array.isArray(result.data)) return [];
+  return result.data;
+};
+
+const canCreateBotForUser = async (env, user, accessToken) => {
   if (!user?.id) return false;
-  const entitlementRows = await fetchEffectiveEntitlementRows(env, user.id, BOT_LIMIT_FEATURE_KEYS);
+  const entitlementRows = await fetchEffectiveEntitlementRowsAsUser(
+    env,
+    user.id,
+    accessToken,
+    BOT_LIMIT_FEATURE_KEYS
+  );
   const policy = readQuotaPolicy(entitlementRows, BOT_LIMIT_FEATURE_KEYS);
   if (policy.configured && policy.enabled !== true) return false;
   if (policy.limit === null) return true;
 
-  const bots = await listOwnedBots(env, user, {
+  const bots = await listOwnedBots(env, user, accessToken, {
     select: "id",
   });
   return bots.length < policy.limit;
 };
 
-const canUploadFilesForUser = async (env, user) => {
+const canUploadFilesForUser = async (env, user, accessToken) => {
   if (!user?.id) return false;
-  const entitlementRows = await fetchEffectiveEntitlementRows(env, user.id, FILE_LIMIT_FEATURE_KEYS);
+  const entitlementRows = await fetchEffectiveEntitlementRowsAsUser(
+    env,
+    user.id,
+    accessToken,
+    FILE_LIMIT_FEATURE_KEYS
+  );
   const policy = readQuotaPolicy(entitlementRows, FILE_LIMIT_FEATURE_KEYS);
   if (policy.configured && policy.enabled !== true) return false;
   if (policy.limit === null) return true;
 
-  const botIds = await getOwnedBotIds(env, user);
+  const botIds = await getOwnedBotIds(env, user, accessToken);
   if (!botIds.length) return true;
 
   const countParams = new URLSearchParams({
     select: "id",
     bot_id: `in.(${botIds.join(",")})`,
   });
-  const countResult = await supabaseRequest(env, `/rest/v1/bot_files?${countParams.toString()}`, {
+  const countResult = await supabaseRestAsUser(env, accessToken, `/rest/v1/bot_files?${countParams.toString()}`, {
     headers: {
       Prefer: "count=exact",
       Range: "0-0",
@@ -586,7 +668,7 @@ const canUploadFilesForUser = async (env, user) => {
   return currentCount < policy.limit;
 };
 
-const getMessageCountForConversations = async (env, conversationIds, sinceIso = null) => {
+const getMessageCountForConversations = async (env, accessToken, conversationIds, sinceIso = null) => {
   if (!Array.isArray(conversationIds) || !conversationIds.length) return 0;
 
   const params = new URLSearchParams();
@@ -596,7 +678,7 @@ const getMessageCountForConversations = async (env, conversationIds, sinceIso = 
     params.set("created_at", `gte.${sinceIso}`);
   }
 
-  const result = await supabaseRequest(env, `/rest/v1/messages?${params.toString()}`, {
+  const result = await supabaseRestAsUser(env, accessToken, `/rest/v1/messages?${params.toString()}`, {
     headers: {
       Prefer: "count=exact",
       Range: "0-0",
@@ -607,8 +689,8 @@ const getMessageCountForConversations = async (env, conversationIds, sinceIso = 
   return parseCountFromContentRange(result.response) || 0;
 };
 
-const ensureConversationOwned = async (env, user, conversationId) => {
-  const botIds = await getOwnedBotIds(env, user);
+const ensureConversationOwned = async (env, user, accessToken, conversationId) => {
+  const botIds = await getOwnedBotIds(env, user, accessToken);
   if (!botIds.length) return null;
 
   const params = new URLSearchParams();
@@ -617,7 +699,7 @@ const ensureConversationOwned = async (env, user, conversationId) => {
   params.set("bot_id", `in.(${botIds.join(",")})`);
   params.set("limit", "1");
 
-  const result = await supabaseRequest(env, `/rest/v1/conversations?${params.toString()}`);
+  const result = await supabaseRestAsUser(env, accessToken, `/rest/v1/conversations?${params.toString()}`);
   if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) return null;
   return result.data[0];
 };
@@ -657,12 +739,12 @@ const handleAuthMe = async (request, env, cors) => {
 };
 
 const handleBotsGet = async (request, env, cors, auth) => {
-  const bots = await listOwnedBots(env, auth.user, {
+  const bots = await listOwnedBots(env, auth.user, auth.accessToken, {
     select:
       "id,name,status,installed,created_at,updated_at,prompt_mode,config,system_prompt,model,temperature",
     order: "created_at.desc",
   });
-  return jsonResponse(bots.map(normalizeBot), 200, cors, buildSessionHeadersIfNeeded(auth, request));
+  return jsonResponse(bots.map(normalizeBot), 200, cors);
 };
 
 const handleBotsCreate = async (request, env, cors, auth) => {
@@ -672,7 +754,7 @@ const handleBotsCreate = async (request, env, cors, auth) => {
     return jsonResponse({ error: "Bot name is required" }, 400, cors);
   }
 
-  const canCreateBot = await canCreateBotForUser(env, auth.user);
+  const canCreateBot = await canCreateBotForUser(env, auth.user, auth.accessToken);
   if (!canCreateBot) {
     return jsonResponse({ error: "Bots limit reached for your plan" }, 403, cors);
   }
@@ -706,7 +788,7 @@ const handleBotsCreate = async (request, env, cors, auth) => {
     updated_at: now,
   };
 
-  const result = await supabaseRequest(env, "/rest/v1/bots", {
+  const result = await supabaseRestAsUser(env, auth.accessToken, "/rest/v1/bots", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -724,25 +806,26 @@ const handleBotsCreate = async (request, env, cors, auth) => {
   }
 
   const created = Array.isArray(result.data) ? result.data[0] : result.data;
-  return jsonResponse(normalizeBot(created), 201, cors, buildSessionHeadersIfNeeded(auth, request));
+  return jsonResponse(normalizeBot(created), 201, cors);
 };
 
 const handleBotGet = async (request, env, cors, auth, botId) => {
   const bot = await getOwnedBot(
     env,
     auth.user,
+    auth.accessToken,
     botId,
     "id,name,status,installed,created_at,updated_at,prompt_mode,config,system_prompt,model,temperature"
   );
   if (!bot) {
     return jsonResponse({ error: "Bot not found" }, 404, cors);
   }
-  return jsonResponse(normalizeBot(bot), 200, cors, buildSessionHeadersIfNeeded(auth, request));
+  return jsonResponse(normalizeBot(bot), 200, cors);
 };
 
 const handleBotUpdate = async (request, env, cors, auth, botId) => {
   const body = await readJsonBody(request);
-  const existing = await getOwnedBot(env, auth.user, botId, "id,config");
+  const existing = await getOwnedBot(env, auth.user, auth.accessToken, botId, "id,config");
   if (!existing) {
     return jsonResponse({ error: "Bot not found" }, 404, cors);
   }
@@ -805,7 +888,7 @@ const handleBotUpdate = async (request, env, cors, auth, botId) => {
   updates.updated_at = new Date().toISOString();
 
   const params = new URLSearchParams({ id: `eq.${botId}` });
-  const result = await supabaseRequest(env, `/rest/v1/bots?${params.toString()}`, {
+  const result = await supabaseRestAsUser(env, auth.accessToken, `/rest/v1/bots?${params.toString()}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -823,7 +906,7 @@ const handleBotUpdate = async (request, env, cors, auth, botId) => {
   }
 
   const updated = Array.isArray(result.data) ? result.data[0] : result.data;
-  return jsonResponse(normalizeBot(updated), 200, cors, buildSessionHeadersIfNeeded(auth, request));
+  return jsonResponse(normalizeBot(updated), 200, cors);
 };
 
 const handleFilesCreate = async (request, env, cors, auth) => {
@@ -833,12 +916,12 @@ const handleFilesCreate = async (request, env, cors, auth) => {
     return jsonResponse({ error: "bot_id is required" }, 400, cors);
   }
 
-  const bot = await getOwnedBot(env, auth.user, botId, "id");
+  const bot = await getOwnedBot(env, auth.user, auth.accessToken, botId, "id");
   if (!bot) {
     return jsonResponse({ error: "Forbidden bot access" }, 403, cors);
   }
 
-  const canUploadFiles = await canUploadFilesForUser(env, auth.user);
+  const canUploadFiles = await canUploadFilesForUser(env, auth.user, auth.accessToken);
   if (!canUploadFiles) {
     return jsonResponse({ error: "Files limit reached for your plan" }, 403, cors);
   }
@@ -869,7 +952,7 @@ const handleFilesCreate = async (request, env, cors, auth) => {
     return jsonResponse({ error: "No valid files payload" }, 400, cors);
   }
 
-  const insertResult = await supabaseRequest(env, "/rest/v1/bot_files", {
+  const insertResult = await supabaseRestAsUser(env, auth.accessToken, "/rest/v1/bot_files", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -887,17 +970,17 @@ const handleFilesCreate = async (request, env, cors, auth) => {
   }
 
   const files = (Array.isArray(insertResult.data) ? insertResult.data : []).map(normalizeFile);
-  return jsonResponse({ files }, 201, cors, buildSessionHeadersIfNeeded(auth, request));
+  return jsonResponse({ files }, 201, cors);
 };
 
 const handleBotDelete = async (request, env, cors, auth, botId) => {
-  const existing = await getOwnedBot(env, auth.user, botId, "id");
+  const existing = await getOwnedBot(env, auth.user, auth.accessToken, botId, "id");
   if (!existing) {
     return jsonResponse({ error: "Bot not found" }, 404, cors);
   }
 
   const params = new URLSearchParams({ id: `eq.${botId}` });
-  const result = await supabaseRequest(env, `/rest/v1/bots?${params.toString()}`, {
+  const result = await supabaseRestAsUser(env, auth.accessToken, `/rest/v1/bots?${params.toString()}`, {
     method: "DELETE",
   });
 
@@ -908,13 +991,13 @@ const handleBotDelete = async (request, env, cors, auth, botId) => {
       cors
     );
   }
-  return jsonResponse({ ok: true }, 200, cors, buildSessionHeadersIfNeeded(auth, request));
+  return jsonResponse({ ok: true }, 200, cors);
 };
 
 const handleFilesGet = async (request, env, cors, auth, url) => {
-  const botIds = await getOwnedBotIds(env, auth.user);
+  const botIds = await getOwnedBotIds(env, auth.user, auth.accessToken);
   if (!botIds.length) {
-    return jsonResponse({ files: [], count: 0 }, 200, cors, buildSessionHeadersIfNeeded(auth, request));
+    return jsonResponse({ files: [], count: 0 }, 200, cors);
   }
 
   const botId = url.searchParams.get("bot_id");
@@ -941,7 +1024,11 @@ const handleFilesGet = async (request, env, cors, auth, url) => {
     params.set("bot_id", `in.(${botIds.join(",")})`);
   }
 
-  const rowsResult = await supabaseRequest(env, `/rest/v1/bot_files?${params.toString()}`);
+  const rowsResult = await supabaseRestAsUser(
+    env,
+    auth.accessToken,
+    `/rest/v1/bot_files?${params.toString()}`
+  );
   if (!rowsResult.ok) {
     return jsonResponse(
       { error: "Failed to fetch files", details: rowsResult.data || null },
@@ -962,28 +1049,28 @@ const handleFilesGet = async (request, env, cors, auth, url) => {
       countParams.set("bot_id", `in.(${botIds.join(",")})`);
     }
 
-    const countResult = await supabaseRequest(env, `/rest/v1/bot_files?${countParams.toString()}`, {
-      headers: {
-        Prefer: "count=exact",
-        Range: "0-0",
-      },
-    });
+    const countResult = await supabaseRestAsUser(
+      env,
+      auth.accessToken,
+      `/rest/v1/bot_files?${countParams.toString()}`,
+      {
+        headers: {
+          Prefer: "count=exact",
+          Range: "0-0",
+        },
+      }
+    );
 
     if (countResult.ok) {
       totalCount = parseCountFromContentRange(countResult.response) ?? totalCount;
     }
   }
 
-  return jsonResponse(
-    { files, count: totalCount },
-    200,
-    cors,
-    buildSessionHeadersIfNeeded(auth, request)
-  );
+  return jsonResponse({ files, count: totalCount }, 200, cors);
 };
 
 const handleFileDelete = async (request, env, cors, auth, fileId) => {
-  const botIds = await getOwnedBotIds(env, auth.user);
+  const botIds = await getOwnedBotIds(env, auth.user, auth.accessToken);
   if (!botIds.length) {
     return jsonResponse({ error: "File not found" }, 404, cors);
   }
@@ -993,16 +1080,25 @@ const handleFileDelete = async (request, env, cors, auth, fileId) => {
     id: `eq.${fileId}`,
     limit: "1",
   });
-  const fileResult = await supabaseRequest(env, `/rest/v1/bot_files?${findParams.toString()}`);
+  const fileResult = await supabaseRestAsUser(
+    env,
+    auth.accessToken,
+    `/rest/v1/bot_files?${findParams.toString()}`
+  );
   const file = Array.isArray(fileResult.data) ? fileResult.data[0] : null;
   if (!file || !botIds.includes(file.bot_id)) {
     return jsonResponse({ error: "File not found" }, 404, cors);
   }
 
   const deleteParams = new URLSearchParams({ id: `eq.${fileId}` });
-  const deleteResult = await supabaseRequest(env, `/rest/v1/bot_files?${deleteParams.toString()}`, {
-    method: "DELETE",
-  });
+  const deleteResult = await supabaseRestAsUser(
+    env,
+    auth.accessToken,
+    `/rest/v1/bot_files?${deleteParams.toString()}`,
+    {
+      method: "DELETE",
+    }
+  );
   if (!deleteResult.ok) {
     return jsonResponse(
       { error: "Failed to delete file", details: deleteResult.data || null },
@@ -1011,18 +1107,13 @@ const handleFileDelete = async (request, env, cors, auth, fileId) => {
     );
   }
 
-  return jsonResponse({ ok: true }, 200, cors, buildSessionHeadersIfNeeded(auth, request));
+  return jsonResponse({ ok: true }, 200, cors);
 };
 
 const handleConversationsGet = async (request, env, cors, auth, url) => {
-  const botIds = await getOwnedBotIds(env, auth.user);
+  const botIds = await getOwnedBotIds(env, auth.user, auth.accessToken);
   if (!botIds.length) {
-    return jsonResponse(
-      { conversations: [], messages_count: 0 },
-      200,
-      cors,
-      buildSessionHeadersIfNeeded(auth, request)
-    );
+    return jsonResponse({ conversations: [], messages_count: 0 }, 200, cors);
   }
 
   const botId = url.searchParams.get("bot_id");
@@ -1054,7 +1145,11 @@ const handleConversationsGet = async (request, env, cors, auth, url) => {
     params.set("created_at", `gte.${sinceIso}`);
   }
 
-  const result = await supabaseRequest(env, `/rest/v1/conversations?${params.toString()}`);
+  const result = await supabaseRestAsUser(
+    env,
+    auth.accessToken,
+    `/rest/v1/conversations?${params.toString()}`
+  );
   if (!result.ok) {
     return jsonResponse(
       { error: "Failed to fetch conversations", details: result.data || null },
@@ -1067,6 +1162,7 @@ const handleConversationsGet = async (request, env, cors, auth, url) => {
   const messagesCount = includeMessageCount
     ? await getMessageCountForConversations(
         env,
+        auth.accessToken,
         conversations.map((conversation) => conversation.id).filter(Boolean),
         sinceIso
       )
@@ -1078,8 +1174,7 @@ const handleConversationsGet = async (request, env, cors, auth, url) => {
       messages_count: messagesCount,
     },
     200,
-    cors,
-    buildSessionHeadersIfNeeded(auth, request)
+    cors
   );
 };
 
@@ -1089,7 +1184,12 @@ const handleMessagesGet = async (request, env, cors, auth, url) => {
     return jsonResponse({ error: "conversation_id is required" }, 400, cors);
   }
 
-  const ownedConversation = await ensureConversationOwned(env, auth.user, conversationId);
+  const ownedConversation = await ensureConversationOwned(
+    env,
+    auth.user,
+    auth.accessToken,
+    conversationId
+  );
   if (!ownedConversation) {
     return jsonResponse({ error: "Conversation not found" }, 404, cors);
   }
@@ -1099,7 +1199,7 @@ const handleMessagesGet = async (request, env, cors, auth, url) => {
     conversation_id: `eq.${conversationId}`,
     order: "created_at.asc",
   });
-  const result = await supabaseRequest(env, `/rest/v1/messages?${params.toString()}`);
+  const result = await supabaseRestAsUser(env, auth.accessToken, `/rest/v1/messages?${params.toString()}`);
 
   if (!result.ok) {
     return jsonResponse(
@@ -1115,8 +1215,7 @@ const handleMessagesGet = async (request, env, cors, auth, url) => {
       messages: (Array.isArray(result.data) ? result.data : []).map(normalizeMessage),
     },
     200,
-    cors,
-    buildSessionHeadersIfNeeded(auth, request)
+    cors
   );
 };
 
@@ -1727,8 +1826,7 @@ const handleCreditsStatus = async (request, env, cors, auth) => {
     return jsonResponse(
       { status: status || null },
       200,
-      cors,
-      buildSessionHeadersIfNeeded(auth, request)
+      cors
     );
   } catch (error) {
     return jsonResponse(
@@ -1739,8 +1837,7 @@ const handleCreditsStatus = async (request, env, cors, auth) => {
         details: error?.message || null,
       },
       200,
-      cors,
-      buildSessionHeadersIfNeeded(auth, request)
+      cors
     );
   }
 };
@@ -1767,8 +1864,7 @@ const handleCreditsConsume = async (request, env, cors, auth) => {
         status,
       },
       200,
-      cors,
-      buildSessionHeadersIfNeeded(auth, request)
+      cors
     );
   } catch (error) {
     return jsonResponse(
@@ -1780,8 +1876,7 @@ const handleCreditsConsume = async (request, env, cors, auth) => {
         details: error?.message || null,
       },
       200,
-      cors,
-      buildSessionHeadersIfNeeded(auth, request)
+      cors
     );
   }
 };
@@ -1823,8 +1918,7 @@ const handleCreditsUpgrade = async (request, env, cors, auth) => {
         status: updateResult.status || null,
       },
       200,
-      cors,
-      buildSessionHeadersIfNeeded(auth, request)
+      cors
     );
   } catch (error) {
     return jsonResponse(
@@ -1862,8 +1956,7 @@ const handleEntitlementsMap = async (request, env, cors, auth) => {
         entitlements_map: normalizeEntitlementsMap(map),
       },
       200,
-      cors,
-      buildSessionHeadersIfNeeded(auth, request)
+      cors
     );
   } catch (error) {
     return jsonResponse(
@@ -1874,8 +1967,7 @@ const handleEntitlementsMap = async (request, env, cors, auth) => {
         details: error?.message || null,
       },
       200,
-      cors,
-      buildSessionHeadersIfNeeded(auth, request)
+      cors
     );
   }
 };
@@ -2178,11 +2270,11 @@ const handleV1BotConfig = async (env, cors, botId) => {
   }
 
   const params = new URLSearchParams({
-    select: "id,config",
+    select: "id,config,name,status,model",
     id: `eq.${safeBotId}`,
     limit: "1",
   });
-  const result = await supabasePublicRequest(env, `/rest/v1/bots?${params.toString()}`);
+  const result = await supabasePublicRequest(env, `/rest/v1/bots_public_config?${params.toString()}`);
   if (!result.ok) {
     return jsonResponse(
       { error: "config_fetch_failed", details: result.data || null },
@@ -2200,6 +2292,9 @@ const handleV1BotConfig = async (env, cors, botId) => {
   const payload = {
     bot_id: String(bot.id || safeBotId),
     config: parsedConfig.value ?? null,
+    name: typeof bot.name === "string" ? bot.name : null,
+    status: typeof bot.status === "string" ? bot.status : null,
+    model: typeof bot.model === "string" ? bot.model : null,
   };
 
   if (parsedConfig.raw !== null) {
@@ -2316,6 +2411,16 @@ const handleV1AgentAsk = async (request, env, cors) => {
     );
   }
 
+  const usage = await getAgentUsageAsUser(env, accessToken);
+  if (!usage) {
+    return jsonResponse({ error: "usage_unavailable" }, 502, cors);
+  }
+
+  const isBlocked = usage.daily_used >= usage.daily_cap || usage.monthly_used >= usage.monthly_cap;
+  if (isBlocked) {
+    return jsonResponse({ error: "quota_exceeded", usage }, 402, cors);
+  }
+
   let body;
   try {
     body = await readJsonBody(request);
@@ -2323,11 +2428,14 @@ const handleV1AgentAsk = async (request, env, cors) => {
     return jsonResponse({ error: "invalid_json" }, 400, cors);
   }
 
-  const botId = typeof body?.bot_id === "string" ? body.bot_id.trim() : "";
-  const message = typeof body?.message === "string" ? body.message.trim() : "";
-  if (!botId || !message) {
-    return jsonResponse({ error: "invalid_payload", details: "bot_id and message are required" }, 400, cors);
+  const message =
+    (typeof body?.message === "string" ? body.message.trim() : "") ||
+    (typeof body?.question === "string" ? body.question.trim() : "");
+  if (!message) {
+    return jsonResponse({ error: "missing_message" }, 400, cors);
   }
+  const botId =
+    typeof body?.bot_id === "string" && body.bot_id.trim() ? body.bot_id.trim() : null;
 
   const conversationId =
     typeof body?.conversation_id === "string" && body.conversation_id.trim()
@@ -2359,7 +2467,6 @@ const handleV1AgentAsk = async (request, env, cors) => {
     return jsonResponse({ error: "ask_failed", details: askResult.details }, askResult.status || 502, cors);
   }
 
-  const usage = await getAgentUsageAsUser(env, accessToken);
   const answer = pickAskAnswer(askResult.parsed || askResult.rawText);
   const nextConversationId = pickConversationId(askResult.parsed);
   const assistantMessage = typeof answer === "string" ? answer : String(answer || "");
@@ -2423,12 +2530,72 @@ const handleLogout = (request, env, cors) =>
     },
   });
 
-const getAuthOrUnauthorized = async (request, env, cors) => {
-  const auth = await getAuthContext(request, env);
-  if (!auth.user) {
+const getAuthOrUnauthorizedJwt = async (request, env, cors) => {
+  const accessToken = readBearerToken(request);
+  if (!accessToken || !isLikelyJwt(accessToken)) {
     return { auth: null, response: jsonResponse({ error: "Unauthorized" }, 401, cors) };
   }
-  return { auth, response: null };
+
+  const authResult = await getSupabaseAuthUserFromToken(env, accessToken);
+  if (!authResult.user) {
+    return { auth: null, response: jsonResponse({ error: "Unauthorized" }, 401, cors) };
+  }
+
+  const userContext = await ensureAgentUserContext(env, accessToken);
+  if (!userContext.ok) {
+    return {
+      auth: null,
+      response: jsonResponse(
+        { error: "user_mapping_failed", details: userContext.error || null },
+        500,
+        cors
+      ),
+    };
+  }
+
+  const internalUserId =
+    typeof userContext.internal_user_id === "string" ? userContext.internal_user_id.trim() : "";
+  if (!internalUserId) {
+    return {
+      auth: null,
+      response: jsonResponse(
+        { error: "user_mapping_failed", details: "Missing internal_user_id" },
+        500,
+        cors
+      ),
+    };
+  }
+
+  const authUser = authResult.user;
+  const email = typeof authUser?.email === "string" ? authUser.email.trim() : "";
+  let user = await fetchUserById(env, internalUserId);
+  if (!user) {
+    return {
+      auth: null,
+      response: jsonResponse(
+        { error: "user_mapping_failed", details: "User row not found for internal_user_id" },
+        500,
+        cors
+      ),
+    };
+  }
+  if (!user.email && email) {
+    user = {
+      ...user,
+      email,
+    };
+  }
+
+  return {
+    auth: {
+      accessToken,
+      authUser,
+      internal_user_id: internalUserId,
+      email: email || user.email || "",
+      user,
+    },
+    response: null,
+  };
 };
 
 export default {
@@ -2448,6 +2615,12 @@ export default {
 
     try {
       if (pathname.startsWith("/v1/")) {
+        if (pathname === "/v1/agent/ping") {
+          if (request.method === "GET") {
+            return jsonResponse({ ok: true }, 200, publicV1Cors);
+          }
+          return jsonResponse({ error: "method_not_allowed" }, 405, publicV1Cors);
+        }
         if (pathname === "/v1/ask") {
           if (request.method === "POST") {
             return handleV1Ask(request, env, publicV1Cors);
@@ -2485,7 +2658,7 @@ export default {
         return handleGoogleCallback(request, env, cors);
       }
 
-      if (pathname === "/auth/me" || pathname === "/api/me") {
+      if (pathname === "/auth/me") {
         return handleAuthMe(request, env, cors);
       }
 
@@ -2502,7 +2675,7 @@ export default {
       }
 
       if (pathname === "/api/credits/status") {
-        const { auth, response } = await getAuthOrUnauthorized(request, env, cors);
+        const { auth, response } = await getAuthOrUnauthorizedJwt(request, env, cors);
         if (response) return response;
 
         if (request.method === "GET") return handleCreditsStatus(request, env, cors, auth);
@@ -2510,7 +2683,7 @@ export default {
       }
 
       if (pathname === "/api/credits/consume") {
-        const { auth, response } = await getAuthOrUnauthorized(request, env, cors);
+        const { auth, response } = await getAuthOrUnauthorizedJwt(request, env, cors);
         if (response) return response;
 
         if (request.method === "POST") return handleCreditsConsume(request, env, cors, auth);
@@ -2518,7 +2691,7 @@ export default {
       }
 
       if (pathname === "/api/credits/upgrade") {
-        const { auth, response } = await getAuthOrUnauthorized(request, env, cors);
+        const { auth, response } = await getAuthOrUnauthorizedJwt(request, env, cors);
         if (response) return response;
 
         if (request.method === "POST") return handleCreditsUpgrade(request, env, cors, auth);
@@ -2526,7 +2699,7 @@ export default {
       }
 
       if (pathname === "/api/entitlements") {
-        const { auth, response } = await getAuthOrUnauthorized(request, env, cors);
+        const { auth, response } = await getAuthOrUnauthorizedJwt(request, env, cors);
         if (response) return response;
 
         if (request.method === "GET") return handleEntitlementsMap(request, env, cors, auth);
@@ -2534,7 +2707,7 @@ export default {
       }
 
       if (pathname === "/api/bots") {
-        const { auth, response } = await getAuthOrUnauthorized(request, env, cors);
+        const { auth, response } = await getAuthOrUnauthorizedJwt(request, env, cors);
         if (response) return response;
 
         if (request.method === "GET") return handleBotsGet(request, env, cors, auth);
@@ -2543,7 +2716,7 @@ export default {
       }
 
       if (pathname.startsWith("/api/bots/")) {
-        const { auth, response } = await getAuthOrUnauthorized(request, env, cors);
+        const { auth, response } = await getAuthOrUnauthorizedJwt(request, env, cors);
         if (response) return response;
 
         const botId = decodeURIComponent(pathname.split("/")[3] || "");
@@ -2556,7 +2729,7 @@ export default {
       }
 
       if (pathname === "/api/files") {
-        const { auth, response } = await getAuthOrUnauthorized(request, env, cors);
+        const { auth, response } = await getAuthOrUnauthorizedJwt(request, env, cors);
         if (response) return response;
 
         if (request.method === "GET") return handleFilesGet(request, env, cors, auth, url);
@@ -2565,7 +2738,7 @@ export default {
       }
 
       if (pathname.startsWith("/api/files/")) {
-        const { auth, response } = await getAuthOrUnauthorized(request, env, cors);
+        const { auth, response } = await getAuthOrUnauthorizedJwt(request, env, cors);
         if (response) return response;
 
         const fileId = decodeURIComponent(pathname.split("/")[3] || "");
@@ -2576,7 +2749,7 @@ export default {
       }
 
       if (pathname === "/api/conversations") {
-        const { auth, response } = await getAuthOrUnauthorized(request, env, cors);
+        const { auth, response } = await getAuthOrUnauthorizedJwt(request, env, cors);
         if (response) return response;
 
         if (request.method === "GET") return handleConversationsGet(request, env, cors, auth, url);
@@ -2584,7 +2757,7 @@ export default {
       }
 
       if (pathname === "/api/messages") {
-        const { auth, response } = await getAuthOrUnauthorized(request, env, cors);
+        const { auth, response } = await getAuthOrUnauthorizedJwt(request, env, cors);
         if (response) return response;
 
         if (request.method === "GET") return handleMessagesGet(request, env, cors, auth, url);

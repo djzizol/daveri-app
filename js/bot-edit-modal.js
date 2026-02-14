@@ -1,4 +1,4 @@
-import { getApiUrl } from "./api.js";
+import { apiFetch, getApiUrl } from "./api.js";
 import { setActiveBotId } from "./active-bot.js";
 
 const API_BASE = getApiUrl("/api/bots");
@@ -56,9 +56,8 @@ const saveBot = async () => {
   }
 
   try {
-    const response = await fetch(`${API_BASE}/${activeBot.id}`, {
+    const response = await apiFetch(`${API_BASE}/${activeBot.id}`, {
       method: "PATCH",
-      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, enabled: !!enabledInput.checked }),
     });
@@ -79,9 +78,8 @@ const saveBot = async () => {
 const cloneBot = async () => {
   if (!activeBot) return;
   try {
-    const response = await fetch(API_BASE, {
+    const response = await apiFetch(API_BASE, {
       method: "POST",
-      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: `${activeBot.name || "Bot"} (copy)`,
@@ -118,9 +116,8 @@ const deleteBot = async () => {
   if (!confirmed) return;
 
   try {
-    const response = await fetch(`${API_BASE}/${activeBot.id}`, {
+    const response = await apiFetch(`${API_BASE}/${activeBot.id}`, {
       method: "DELETE",
-      credentials: "include",
     });
 
     if (!response.ok) {

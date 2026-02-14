@@ -1,4 +1,4 @@
-import { getApiUrl } from "./api.js";
+import { apiFetch, getApiUrl } from "./api.js";
 import { setActiveBotId } from "./active-bot.js";
 
 const API_BASE = getApiUrl("/api/bots");
@@ -79,9 +79,8 @@ const submitCreateBot = async () => {
     }
     setCreateStatus("");
 
-    const response = await fetch(API_BASE, {
+    const response = await apiFetch(API_BASE, {
       method: "POST",
-      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name,

@@ -1,4 +1,4 @@
-import { getApiUrl } from "./api.js";
+import { apiFetch, getApiUrl } from "./api.js";
 
 const ACTIVE_BOT_KEY = "daveri_active_bot_id";
 const API_BOTS = getApiUrl("/api/bots");
@@ -29,9 +29,8 @@ export const setActiveBotId = (botId) => {
 };
 
 export const resolveActiveBot = async (options = {}) => {
-  const response = await fetch(options.apiBots || API_BOTS, {
+  const response = await apiFetch(options.apiBots || API_BOTS, {
     method: "GET",
-    credentials: "include",
   });
   if (!response.ok) {
     throw new Error(`Failed to fetch bots (${response.status})`);
@@ -55,4 +54,3 @@ export const resolveActiveBot = async (options = {}) => {
   setActiveBotId(botId);
   return { botId, bots };
 };
-

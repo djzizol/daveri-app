@@ -523,7 +523,7 @@
   </div>
 
   <script type="module">
-    import { getApiUrl } from "../js/api.js";
+    import { apiFetchJson, getApiUrl } from "../js/api.js";
 
     const API_CONVERSATIONS = getApiUrl("/api/conversations");
     const API_MESSAGES = getApiUrl("/api/messages");
@@ -559,27 +559,7 @@
     }
 
     async function fetchJson(url, options = {}) {
-      const method = String(options.method || "GET").toUpperCase();
-      const headers = { ...(options.headers || {}) };
-      if (method !== "GET" && method !== "HEAD" && !("Content-Type" in headers)) {
-        headers["Content-Type"] = "application/json";
-      }
-
-      const response = await fetch(url, {
-        credentials: "include",
-        ...options,
-        headers,
-      });
-      let payload = null;
-      try {
-        payload = await response.json();
-      } catch {
-        payload = null;
-      }
-      if (!response.ok) {
-        throw new Error(payload?.error || `Request failed: ${response.status}`);
-      }
-      return payload;
+      return apiFetchJson(url, options);
     }
 
     const waitForAuthReady = async () => {
