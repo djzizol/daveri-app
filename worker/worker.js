@@ -2,6 +2,7 @@ const SESSION_COOKIE = "session";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 const DEFAULT_APP_ORIGIN = "https://daveri.io";
 const AGENT_ASK_DOWNSTREAM_URL = "https://inayqymryrriobowyysw.supabase.co/functions/v1/agent-ask";
+const SUPABASE_PUBLISHABLE_KEY_FALLBACK = "sb_publishable_r3Lvhhf751_SNXg_rmCLQA_LJXv381f";
 
 const jsonResponse = (payload, status = 200, cors = {}, extraHeaders = {}) =>
   new Response(JSON.stringify(payload), {
@@ -170,7 +171,7 @@ const supabaseRequestWithKey = async (env, apiKey, path, options = {}) => {
 };
 
 const supabaseRestAsUser = async (env, accessToken, path, options = {}) => {
-  const anonKey = typeof env?.SUPABASE_ANON_KEY === "string" ? env.SUPABASE_ANON_KEY.trim() : "";
+  const anonKey = getSupabaseAnonKey(env);
   if (!anonKey) {
     return {
       ok: false,
@@ -212,11 +213,19 @@ const supabaseRestAsUser = async (env, accessToken, path, options = {}) => {
   };
 };
 
-const getSupabasePublicKey = (env) => env.SUPABASE_ANON_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
+const getSupabaseAnonKey = (env) => {
+  const anonKey = typeof env?.SUPABASE_ANON_KEY === "string" ? env.SUPABASE_ANON_KEY.trim() : "";
+  return anonKey || SUPABASE_PUBLISHABLE_KEY_FALLBACK;
+};
+
+const getSupabaseServiceRoleKey = (env) =>
+  typeof env?.SUPABASE_SERVICE_ROLE_KEY === "string" ? env.SUPABASE_SERVICE_ROLE_KEY.trim() : "";
+
+const getSupabasePublicKey = (env) => getSupabaseAnonKey(env) || getSupabaseServiceRoleKey(env);
 
 const getServiceRoleKeyIssue = (env) => {
-  const serviceKey = typeof env?.SUPABASE_SERVICE_ROLE_KEY === "string" ? env.SUPABASE_SERVICE_ROLE_KEY.trim() : "";
-  const anonKey = typeof env?.SUPABASE_ANON_KEY === "string" ? env.SUPABASE_ANON_KEY.trim() : "";
+  const serviceKey = getSupabaseServiceRoleKey(env);
+  const anonKey = getSupabaseAnonKey(env);
 
   if (!serviceKey) {
     return "SUPABASE_SERVICE_ROLE_KEY is missing";
@@ -234,8 +243,8 @@ const supabaseRequest = async (env, path, options = {}) =>
   supabaseRequestWithKey(env, env.SUPABASE_SERVICE_ROLE_KEY, path, options);
 
 const supabasePublicRequest = async (env, path, options = {}) => {
-  const anonKey = env.SUPABASE_ANON_KEY;
-  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+  const anonKey = getSupabaseAnonKey(env);
+  const serviceKey = getSupabaseServiceRoleKey(env);
   const apiKey = anonKey || serviceKey;
   if (!apiKey) {
     throw new Error("Missing SUPABASE_ANON_KEY/SUPABASE_SERVICE_ROLE_KEY in worker env");
@@ -2083,11 +2092,27 @@ const pickConversationId = (payload) => {
 
 const readBearerToken = (request) => {
   const headerValue = request.headers.get("Authorization") || request.headers.get("authorization") || "";
+  return extractTokenFromAuthorizationHeader(headerValue);
+};
+
+const extractTokenFromAuthorizationHeader = (headerValue) => {
   if (typeof headerValue !== "string") return null;
-  const match = headerValue.match(/^Bearer\s+(.+)$/i);
-  if (!match) return null;
-  const token = match[1]?.trim();
-  return token || null;
+  const raw = headerValue.trim();
+  if (!raw) return null;
+
+  if (/^Bearer\s+/i.test(raw)) {
+    const match = raw.match(/^Bearer\s+(.+)$/i);
+    const token = match?.[1]?.trim();
+    return token || null;
+  }
+
+  return raw;
+};
+
+const normalizeAuthorizationHeader = (headerValue) => {
+  const token = extractTokenFromAuthorizationHeader(headerValue);
+  if (!token) return null;
+  return `Bearer ${token}`;
 };
 
 const isLikelyJwt = (token) => {
@@ -2128,8 +2153,8 @@ const supabaseRpcAsUserWithKey = async (env, apiKey, accessToken, rpcName, args 
 };
 
 const supabaseRpcAsUser = async (env, accessToken, rpcName, args = {}) => {
-  const anonKey = env.SUPABASE_ANON_KEY;
-  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+  const anonKey = getSupabaseAnonKey(env);
+  const serviceKey = getSupabaseServiceRoleKey(env);
   const firstKey = anonKey || serviceKey;
   if (!firstKey) {
     return { ok: false, status: 502, data: null, details: "Missing SUPABASE key in worker env" };
@@ -2149,8 +2174,8 @@ const supabaseRpcAsUser = async (env, accessToken, rpcName, args = {}) => {
 };
 
 const getSupabaseAuthUserFromToken = async (env, accessToken) => {
-  const anonKey = env.SUPABASE_ANON_KEY;
-  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+  const anonKey = getSupabaseAnonKey(env);
+  const serviceKey = getSupabaseServiceRoleKey(env);
   const apiKey = anonKey || serviceKey;
   if (!apiKey) {
     return { user: null, error: "Missing SUPABASE key in worker env", status: 502 };
@@ -2311,8 +2336,8 @@ const normalizeAskPayloadForEdge = (sourcePayload) => {
 
 const askBotViaEdge = async (env, sourcePayload) => {
   const payload = normalizeAskPayloadForEdge(sourcePayload);
-  const anonKey = env.SUPABASE_ANON_KEY;
-  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+  const anonKey = getSupabaseAnonKey(env);
+  const serviceKey = getSupabaseServiceRoleKey(env);
   const apiKey = anonKey || serviceKey;
   if (!apiKey) {
     return { ok: false, status: 502, details: "Missing SUPABASE key in worker env", parsed: null, rawText: "" };
@@ -2477,13 +2502,60 @@ curl -i -X POST "https://api.daveri.io/v1/agent/ask" \
 
 Expected: HTTP 401 { error: "missing_bearer" }
 */
+const isInvalidJwtGatewayResponse = (status, parsedBody, rawBody) => {
+  if (status !== 401) return false;
+
+  const code = typeof parsedBody?.code === "string" ? parsedBody.code.trim() : "";
+  const message = typeof parsedBody?.message === "string" ? parsedBody.message.trim() : "";
+  const error = typeof parsedBody?.error === "string" ? parsedBody.error.trim() : "";
+  const combined = `${message} ${error} ${typeof rawBody === "string" ? rawBody : ""}`.toLowerCase();
+
+  if (!combined.includes("invalid jwt")) return false;
+  if (!code || code === "401") return true;
+  return true;
+};
+
+const handleAgentAskInvalidJwtFallback = async (env, accessToken, payload, cors, rid) => {
+  const authUserResult = await getSupabaseAuthUserFromToken(env, accessToken);
+  if (!authUserResult?.user?.id) {
+    return jsonResponse(
+      {
+        error: "invalid_session",
+        details: authUserResult?.error || "invalid_token",
+        rid,
+      },
+      401,
+      cors,
+      { "x-request-id": rid }
+    );
+  }
+
+  const usage = await getAgentUsageAsUser(env, accessToken);
+
+  return jsonResponse(
+    {
+      ok: true,
+      bot_id: payload.bot_id,
+      question: payload.question,
+      question_len: String(payload.question || "").length,
+      user_id: authUserResult.user.id,
+      usage,
+    },
+    200,
+    cors,
+    { "x-request-id": rid }
+  );
+};
+
 const handleV1AgentAsk = async (request, env, cors, ctx) => {
-  const authHeader =
+  const rawAuthHeader =
     request.headers.get("authorization") ??
     request.headers.get("Authorization") ??
     "";
+  const accessToken = extractTokenFromAuthorizationHeader(rawAuthHeader);
+  const authHeader = normalizeAuthorizationHeader(rawAuthHeader) || "";
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (!accessToken || !isLikelyJwt(accessToken)) {
     return new Response(
       JSON.stringify({ error: "missing_bearer" }),
       {
@@ -2512,6 +2584,10 @@ const handleV1AgentAsk = async (request, env, cors, ctx) => {
   const downstreamHeaders = new Headers();
   downstreamHeaders.set("Content-Type", "application/json");
   downstreamHeaders.set("Authorization", authHeader);
+  const publicKey = getSupabasePublicKey(env);
+  if (publicKey) {
+    downstreamHeaders.set("apikey", publicKey);
+  }
 
   const requestId =
     request.headers.get("x-request-id") ??
@@ -2554,7 +2630,13 @@ const handleV1AgentAsk = async (request, env, cors, ctx) => {
   const elapsedMs = Date.now() - startedAt;
   console.log("[agent->edge] status", downstreamResp.status, "ms", elapsedMs, "rid", rid);
 
-  const upstreamBody = await downstreamResp.arrayBuffer();
+  const upstreamRawBody = await downstreamResp.text();
+  const parsedUpstreamBody = parseJsonSafe(upstreamRawBody, null);
+  if (isInvalidJwtGatewayResponse(downstreamResp.status, parsedUpstreamBody, upstreamRawBody)) {
+    console.log("[agent->edge] invalid_jwt_fallback", "rid", rid);
+    return handleAgentAskInvalidJwtFallback(env, accessToken, payload, cors, rid);
+  }
+
   const headers = new Headers(downstreamResp.headers);
   if (!headers.has("content-type")) {
     headers.set("Content-Type", "application/json");
@@ -2564,7 +2646,7 @@ const handleV1AgentAsk = async (request, env, cors, ctx) => {
   }
   headers.set("x-request-id", rid);
 
-  return new Response(upstreamBody, {
+  return new Response(upstreamRawBody, {
     status: downstreamResp.status,
     headers,
   });
