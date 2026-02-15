@@ -117,7 +117,7 @@ const buildPublicV1CorsHeaders = () => ({
 const buildAgentAskCorsHeaders = () => ({
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST,OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, x-request-id, X-Request-ID",
 });
 
 const getCookieDomain = (hostname) => {
