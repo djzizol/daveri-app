@@ -2478,9 +2478,19 @@ curl -i -X POST "https://api.daveri.io/v1/agent/ask" \
 Expected: HTTP 401 { error: "missing_bearer" }
 */
 const handleV1AgentAsk = async (request, env, cors, ctx) => {
-  const authorization = request.headers.get("Authorization") || request.headers.get("authorization") || "";
-  if (!authorization || !/^Bearer\s+\S+/i.test(authorization.trim())) {
-    return jsonResponse({ error: "missing_bearer" }, 401, cors);
+  const authHeader =
+    request.headers.get("authorization") ??
+    request.headers.get("Authorization") ??
+    "";
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return new Response(
+      JSON.stringify({ error: "missing_bearer" }),
+      {
+        status: 401,
+        headers: buildAgentAskCorsHeaders(),
+      }
+    );
   }
 
   let body;
@@ -2499,7 +2509,20 @@ const handleV1AgentAsk = async (request, env, cors, ctx) => {
     return jsonResponse({ error: "invalid_payload", missing }, 400, cors);
   }
 
-  const rid = request.headers.get("x-request-id") || crypto.randomUUID();
+  const downstreamHeaders = new Headers();
+  downstreamHeaders.set("Content-Type", "application/json");
+  downstreamHeaders.set("Authorization", authHeader);
+
+  const requestId =
+    request.headers.get("x-request-id") ??
+    crypto.randomUUID();
+
+  downstreamHeaders.set("x-request-id", requestId);
+
+  console.log("[agent->edge] auth len", authHeader.length);
+  console.log("[agent->edge] auth prefix", authHeader.slice(0, 20));
+
+  const rid = requestId;
   const startedAt = Date.now();
 
   console.log("[agent->edge] url", AGENT_ASK_DOWNSTREAM_URL);
@@ -2507,15 +2530,11 @@ const handleV1AgentAsk = async (request, env, cors, ctx) => {
   console.log("[agent->edge] bot_id", payload.bot_id, "qLen", (payload.question || "").length);
   console.log("[agent->edge] rid", rid);
 
-  let upstreamResponse;
+  let downstreamResp;
   try {
-    upstreamResponse = await fetch(AGENT_ASK_DOWNSTREAM_URL, {
+    downstreamResp = await fetch(AGENT_ASK_DOWNSTREAM_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authorization,
-        "x-request-id": rid,
-      },
+      headers: downstreamHeaders,
       body: JSON.stringify(payload),
     });
   } catch (error) {
@@ -2533,10 +2552,10 @@ const handleV1AgentAsk = async (request, env, cors, ctx) => {
   }
 
   const elapsedMs = Date.now() - startedAt;
-  console.log("[agent->edge] status", upstreamResponse.status, "ms", elapsedMs, "rid", rid);
+  console.log("[agent->edge] status", downstreamResp.status, "ms", elapsedMs, "rid", rid);
 
-  const upstreamBody = await upstreamResponse.arrayBuffer();
-  const headers = new Headers(upstreamResponse.headers);
+  const upstreamBody = await downstreamResp.arrayBuffer();
+  const headers = new Headers(downstreamResp.headers);
   if (!headers.has("content-type")) {
     headers.set("Content-Type", "application/json");
   }
@@ -2546,7 +2565,7 @@ const handleV1AgentAsk = async (request, env, cors, ctx) => {
   headers.set("x-request-id", rid);
 
   return new Response(upstreamBody, {
-    status: upstreamResponse.status,
+    status: downstreamResp.status,
     headers,
   });
 };
