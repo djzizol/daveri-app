@@ -157,6 +157,49 @@ const logAgentAskDev = (session, endpoint) => {
     token_prefix: tokenPrefix(session?.access_token),
   });
 };
+const createAuthRequiredError = (message = "Zaloguj sie ponownie") => {
+  const error = new Error(message);
+  error.code = "auth_required";
+  return error;
+};
+const getValidatedAccessToken = async ({ forceRefresh = false } = {}) => {
+  let session = null;
+  let sessionError = null;
+
+  if (forceRefresh) {
+    const { data, error } = await supabase.auth.refreshSession();
+    session = data?.session || null;
+    sessionError = error || null;
+  } else {
+    const { data, error } = await supabase.auth.getSession();
+    session = data?.session || null;
+    sessionError = error || null;
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const expiresAt = Number(session?.expires_at || 0);
+    const expiresSoon = Number.isFinite(expiresAt) && expiresAt > 0 && expiresAt - nowSeconds <= 30;
+    if (!sessionError && session && expiresSoon) {
+      const { data: refreshedData, error: refreshError } = await supabase.auth.refreshSession();
+      if (!refreshError && refreshedData?.session?.access_token) {
+        session = refreshedData.session;
+      } else if (refreshError) {
+        sessionError = refreshError;
+      }
+    }
+  }
+
+  const accessToken = typeof session?.access_token === "string" ? session.access_token : "";
+  if (sessionError || !accessToken) {
+    throw createAuthRequiredError(sessionError?.message || "No Supabase session");
+  }
+
+  const { data: userData, error: userError } = await supabase.auth.getUser(accessToken);
+  if (userError || !userData?.user?.id) {
+    throw createAuthRequiredError(userError?.message || "Invalid Supabase session");
+  }
+
+  return accessToken;
+};
 const isAuthRequiredError = (error) => {
   const code = String(error?.code || "").trim().toLowerCase();
   const message = String(error?.message || "").trim().toLowerCase();
@@ -295,37 +338,39 @@ const getAiFeatureAccess = async () => {
 };
 
 const askAgent = async (botId, userMessage, selectedBotIds = []) => {
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-  const session = sessionData?.session || null;
-  logAgentAskDev(session, AGENT_ASK_ENDPOINT);
+  let accessToken = await getValidatedAccessToken();
+  logAgentAskDev({ access_token: accessToken }, AGENT_ASK_ENDPOINT);
 
-  const accessToken = typeof session?.access_token === "string" ? session.access_token : "";
-  if (sessionError || !accessToken) {
-    const error = new Error("Zaloguj sie ponownie");
-    error.code = "auth_required";
-    throw error;
+  const requestId = createClientRequestId();
+  const sendAskRequest = (token) =>
+    fetch(AGENT_ASK_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        "x-request-id": requestId,
+      },
+      body: JSON.stringify({
+        bot_id: botId,
+        visitor_id: getVisitorId(),
+        conversation_id: askConversationsByBot.get(botId) || null,
+        message: userMessage,
+        active_bot_id: botId,
+        selected_bot_ids: normalizeSelectedBotIds(selectedBotIds),
+        history: [],
+      }),
+    });
+
+  let response = await sendAskRequest(accessToken);
+  let rawText = await response.text();
+  let payload = parseJsonSafe(rawText, rawText);
+
+  if (response.status === 401) {
+    accessToken = await getValidatedAccessToken({ forceRefresh: true });
+    response = await sendAskRequest(accessToken);
+    rawText = await response.text();
+    payload = parseJsonSafe(rawText, rawText);
   }
-
-  const conversationId = askConversationsByBot.get(botId) || null;
-  const response = await fetch(AGENT_ASK_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({
-      bot_id: botId,
-      visitor_id: getVisitorId(),
-      conversation_id: conversationId,
-      message: userMessage,
-      active_bot_id: botId,
-      selected_bot_ids: normalizeSelectedBotIds(selectedBotIds),
-      history: [],
-    }),
-  });
-
-  const rawText = await response.text();
-  const payload = parseJsonSafe(rawText, rawText);
 
   if (!response.ok) {
     if (isObject(payload) && (payload.error || payload.details)) {
